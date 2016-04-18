@@ -5,17 +5,33 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.sahli.confluence.publisher.metadata.ConfluencePage;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
-import org.sahli.confluence.publisher.payloads.*;
+import org.sahli.confluence.publisher.payloads.Ancestor;
+import org.sahli.confluence.publisher.payloads.Body;
+import org.sahli.confluence.publisher.payloads.NewPage;
+import org.sahli.confluence.publisher.payloads.Space;
+import org.sahli.confluence.publisher.payloads.Storage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -68,10 +84,45 @@ public class ConfluencePublisher {
         pages.forEach(page -> {
             HttpPost postRequest = newPageRequest(page, parentContentId);
             CloseableHttpResponse response = sendRequest(postRequest);
+
+            StatusLine statusLine = response.getStatusLine();
+            if (statusLine.getStatusCode() != 200) {
+                throw new RuntimeException("Error while creating page " + statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
+            }
+
             JsonNode jsonNode = toJsonNode(response);
-            JsonNode id = jsonNode.get("id");
-            this.publishPageTree(page.getChildren(), id.textValue());
+            String contentId = jsonNode.get("id").textValue();
+
+            uploadAttachments(page.getAttachments(), contentId);
+            this.publishPageTree(page.getChildren(), contentId);
         });
+    }
+
+    private void uploadAttachments(List<String> attachments, String contentId) {
+        attachments.forEach(attachment -> {
+            HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+            attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
+
+            HttpEntity multipartEntity = multipartEntity(new File(this.contentRoot, attachment));
+            attachmentPostRequest.setEntity(multipartEntity);
+
+            CloseableHttpResponse response = sendRequest(attachmentPostRequest);
+
+            StatusLine statusLine = response.getStatusLine();
+            if (statusLine.getStatusCode() != 200) {
+                throw new RuntimeException("Error while uploading attachment " + statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
+            }
+        });
+    }
+
+    private HttpEntity multipartEntity(File file) {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
+        FileBody fileBody = new FileBody(file);
+        multipartEntityBuilder.addPart("file", fileBody);
+
+        return multipartEntityBuilder.build();
     }
 
     private JsonNode toJsonNode(CloseableHttpResponse response) {

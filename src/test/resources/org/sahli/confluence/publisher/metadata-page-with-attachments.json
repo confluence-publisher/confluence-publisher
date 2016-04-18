@@ -1,0 +1,14 @@
+{
+  "spaceKey": "~personalSpace",
+  "pages": [
+    {
+      "title": "Some Confluence Content",
+      "contentFilePath": "some-confluence-content.html",
+      "sha256ContentHash": "e83c661e9dc28773432ba324c7ca1551b9f5b859dcd23771de1b14272eedda06",
+      "attachments": [
+        "attachmentOne.txt",
+        "attachmentTwo.txt"
+      ]
+    }
+  ]
+}

@@ -16,7 +16,8 @@ public class ConfluencePage {
     private String title;
     private String contentFilePath;
     private String sha256ContentHash;
-    private List<ConfluencePage> children = new ArrayList<>();
+    private List<ConfluencePage> children;
+    private List<String> attachments;
 
     public String getTitle() {
         return this.title;
@@ -56,5 +57,18 @@ public class ConfluencePage {
     @RuntimeUse
     public void setChildren(List<ConfluencePage> children) {
         this.children = children;
+    }
+
+    public List<String> getAttachments() {
+        if (this.attachments == null) {
+            return emptyList();
+        } else {
+            return this.attachments;
+        }
+    }
+
+    @RuntimeUse
+    public void setAttachments(List<String> attachments) {
+        this.attachments = attachments;
     }
 }

@@ -1,0 +1,18 @@
+{
+  "type": "page",
+  "title": "Some Child Content",
+  "ancestors": [
+    {
+      "id": "123"
+    }
+  ],
+  "space": {
+    "key": "~personalSpace"
+  },
+  "body": {
+    "storage": {
+      "value": "<h1>Some Child Content</h1>",
+      "representation": "storage"
+    }
+  }
+}

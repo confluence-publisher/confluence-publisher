@@ -1,0 +1,17 @@
+{
+  "spaceKey": "~personalSpace",
+  "pages": [
+    {
+      "title": "Some Confluence Content",
+      "contentFilePath": "some-confluence-content.html",
+      "sha256ContentHash": "e83c661e9dc28773432ba324c7ca1551b9f5b859dcd23771de1b14272eedda06",
+      "children": [
+        {
+          "title": "Some Child Content",
+          "contentFilePath": "some-child-content.html",
+          "sha256ContentHash": "8be266b590425def14410871043262fead118798c35b702f076a7bc9284471ab"
+        }
+      ]
+    }
+  ]
+}

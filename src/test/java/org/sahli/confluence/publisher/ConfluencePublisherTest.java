@@ -2,23 +2,27 @@ package org.sahli.confluence.publisher;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.sahli.confluence.publisher.metadata.ConfluencePage;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 
 import java.io.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.sahli.confluence.publisher.ConfluencePublisherTest.SameJsonAsMatcher.isSameJsonAs;
 
 public class ConfluencePublisherTest {
@@ -60,7 +64,7 @@ public class ConfluencePublisherTest {
     public void publish_oneNewPageWithSpaceKey_callsHttpClientToCreateNewPageUnderSpaceKey() throws Exception {
         // arrange
         ArgumentCaptor<HttpPost> httpPostArgumentCaptor = ArgumentCaptor.forClass(HttpPost.class);
-        CloseableHttpClient httpClientMock = mock(CloseableHttpClient.class);
+        CloseableHttpClient httpClientMock = recordHttpClientForSuccess();
         ConfluencePublisher confluencePublisher = confluencePublisher("one-page-space-key", httpClientMock);
 
         // act
@@ -80,7 +84,7 @@ public class ConfluencePublisherTest {
     public void publish_oneNewPageWithParentContentId_callsHttpClientToCreateNewPageUnderParentContentId() throws Exception {
         // arrange
         ArgumentCaptor<HttpPost> httpPostArgumentCaptor = ArgumentCaptor.forClass(HttpPost.class);
-        CloseableHttpClient httpClientMock = mock(CloseableHttpClient.class);
+        CloseableHttpClient httpClientMock = recordHttpClientForSuccess();
         ConfluencePublisher confluencePublisher = confluencePublisher("one-page-parent-content-id", httpClientMock);
 
         // act
@@ -96,13 +100,48 @@ public class ConfluencePublisherTest {
         assertThat(inputStreamAsString(httpPost.getEntity().getContent()), isSameJsonAs(expectedJson));
     }
 
-    private static ConfluencePublisher confluencePublisher(final String qualifier, CloseableHttpClient httpClient) {
+    @Test
+    public void publish_multiplePagesInHierarchyWithSpaceKey_callsHttpClientMultipleTimesAndCreatePagesFromTopToBottom() throws Exception {
+        // arrange
+        ArgumentCaptor<HttpPost> httpPostArgumentCaptor = ArgumentCaptor.forClass(HttpPost.class);
+        CloseableHttpClient httpClientMock = recordHttpClientForSuccess();
+        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-pages-space-key", httpClientMock);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(httpClientMock, times(2)).execute(httpPostArgumentCaptor.capture());
+        List<HttpPost> httpPostRequests = httpPostArgumentCaptor.getAllValues();
+        assertThat(httpPostRequests, hasSize(2));
+        HttpPost childHttpPost = httpPostRequests.get(1);
+        assertThat(childHttpPost.getMethod(), is("POST"));
+        assertThat(childHttpPost.getFirstHeader("Content-Type").getValue(), is("application/json"));
+        assertThat(childHttpPost.getURI().toString(), is(API_ENDPOINT + "/content"));
+        String expectedJson = fileContent(TEST_RESOURCES + "/some-child-content-parent-content-id.json");
+        assertThat(inputStreamAsString(childHttpPost.getEntity().getContent()), isSameJsonAs(expectedJson));
+    }
+
+    private static ConfluencePublisher confluencePublisher(final String qualifier, CloseableHttpClient httpClient) throws IOException {
         if (httpClient == null) {
-            CloseableHttpClient httpClientMock = mock(CloseableHttpClient.class);
+            CloseableHttpClient httpClientMock = recordHttpClientForSuccess();
             return new ConfluencePublisher(API_ENDPOINT, TEST_RESOURCES + "/metadata-" + qualifier + ".json", httpClientMock);
         } else {
             return new ConfluencePublisher(API_ENDPOINT, TEST_RESOURCES + "/metadata-" + qualifier + ".json", httpClient);
         }
+    }
+
+    private static CloseableHttpClient recordHttpClientForSuccess() throws IOException {
+        HttpEntity httpEntityMock = mock(HttpEntity.class);
+        when(httpEntityMock.getContent()).thenAnswer(i -> new ByteArrayInputStream("{\"id\": \"123\"}".getBytes()));
+
+        CloseableHttpResponse closeableHttpResponseMock = mock(CloseableHttpResponse.class);
+        when(closeableHttpResponseMock.getEntity()).thenReturn(httpEntityMock);
+
+        CloseableHttpClient httpClientMock = mock(CloseableHttpClient.class);
+        when(httpClientMock.execute(Mockito.any(HttpRequestBase.class))).thenReturn(closeableHttpResponseMock);
+
+        return httpClientMock;
     }
 
     private static String inputStreamAsString(InputStream is) throws IOException {

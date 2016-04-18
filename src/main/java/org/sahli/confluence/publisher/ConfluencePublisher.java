@@ -2,7 +2,9 @@ package org.sahli.confluence.publisher;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BasicHttpEntity;
@@ -12,6 +14,7 @@ import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 import org.sahli.confluence.publisher.payloads.*;
 
 import java.io.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -50,15 +53,30 @@ public class ConfluencePublisher {
     }
 
     public void publish() {
-        this.metadata.getPages().forEach(page -> {
-            HttpPost postRequest = newPageRequest(page);
-            sendRequest(postRequest);
+        this.publishPageTree(this.metadata.getPages(), this.metadata.getParentContentId());
+    }
+
+    private void publishPageTree(List<ConfluencePage> pages, String parentContentId) {
+        pages.forEach(page -> {
+            HttpPost postRequest = newPageRequest(page, parentContentId);
+            CloseableHttpResponse response = sendRequest(postRequest);
+            JsonNode jsonNode = toJsonNode(response);
+            JsonNode id = jsonNode.get("id");
+            this.publishPageTree(page.getChildren(), id.textValue());
         });
     }
 
-    private HttpPost newPageRequest(ConfluencePage page) {
+    private JsonNode toJsonNode(CloseableHttpResponse response) {
+        try {
+            return this.objectMapper.readTree(response.getEntity().getContent());
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read JSON response", e);
+        }
+    }
+
+    private HttpPost newPageRequest(ConfluencePage page, String parentContentId) {
         String pageContent = fileContent(new File(this.contentRoot, page.getContentFilePath()));
-        NewPage newPage = newPage(page, pageContent, this.metadata.getSpaceKey(), this.metadata.getParentContentId());
+        NewPage newPage = newPage(page, pageContent, this.metadata.getSpaceKey(), parentContentId);
 
         String jsonPayload = toJsonString(newPage);
         BasicHttpEntity entity = new BasicHttpEntity();
@@ -71,9 +89,9 @@ public class ConfluencePublisher {
         return postRequest;
     }
 
-    private void sendRequest(HttpRequestBase httpRequest) {
+    private CloseableHttpResponse sendRequest(HttpRequestBase httpRequest) {
         try {
-            this.httpClient.execute(httpRequest);
+            return this.httpClient.execute(httpRequest);
         } catch (IOException e) {
             throw new RuntimeException("Request could not be sent" + httpRequest, e);
         }

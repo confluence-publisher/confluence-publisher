@@ -2,8 +2,6 @@ package org.sahli.confluence.publisher.metadata;
 
 import java.util.List;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 /**
  * @author Alain Sahli
  * @since 1.0
@@ -14,14 +12,8 @@ public class ConfluencePublisherMetadata {
     private String parentContentId;
     private List<ConfluencePage> pages;
 
-    public void validate() {
-        if (isNotBlank(this.spaceKey) && isNotBlank(this.parentContentId)) {
-            throw new IllegalStateException("spaceKey and parentContentId cannot both be set");
-        }
-    }
-
     public String getSpaceKey() {
-        return spaceKey;
+        return this.spaceKey;
     }
 
     public void setSpaceKey(String spaceKey) {
@@ -29,7 +21,7 @@ public class ConfluencePublisherMetadata {
     }
 
     public String getParentContentId() {
-        return parentContentId;
+        return this.parentContentId;
     }
 
     public void setParentContentId(String parentContentId) {
@@ -37,7 +29,7 @@ public class ConfluencePublisherMetadata {
     }
 
     public List<ConfluencePage> getPages() {
-        return pages;
+        return this.pages;
     }
 
     public void setPages(List<ConfluencePage> pages) {

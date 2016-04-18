@@ -1,0 +1,13 @@
+{
+  "type": "page",
+  "title": "Some Confluence Content",
+  "space": {
+    "key": "~personalSpace"
+  },
+  "body": {
+    "storage": {
+      "value": "<h1>Some Confluence Content</h1>",
+      "representation": "storage"
+    }
+  }
+}

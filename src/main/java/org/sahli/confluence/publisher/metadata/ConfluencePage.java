@@ -11,7 +11,7 @@ public class ConfluencePage {
     private String sha256ContentHash;
 
     public String getTitle() {
-        return title;
+        return this.title;
     }
 
     public void setTitle(String title) {
@@ -19,7 +19,7 @@ public class ConfluencePage {
     }
 
     public String getContentFilePath() {
-        return contentFilePath;
+        return this.contentFilePath;
     }
 
     public void setContentFilePath(String contentFilePath) {
@@ -27,7 +27,7 @@ public class ConfluencePage {
     }
 
     public String getSha256ContentHash() {
-        return sha256ContentHash;
+        return this.sha256ContentHash;
     }
 
     public void setSha256ContentHash(String sha256ContentHash) {

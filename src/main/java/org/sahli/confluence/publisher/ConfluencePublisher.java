@@ -4,17 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.sahli.confluence.publisher.metadata.ConfluencePage;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 import org.sahli.confluence.publisher.payloads.*;
 
 import java.io.*;
+import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -27,12 +31,16 @@ public class ConfluencePublisher {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String confluenceRestApiEndpoint;
+    private final String username;
+    private final String password;
     private final CloseableHttpClient httpClient;
     private final File contentRoot;
     private final ConfluencePublisherMetadata metadata;
 
-    public ConfluencePublisher(String confluenceRestApiEndpoint, String metadataFilePath, CloseableHttpClient httpClient) {
+    public ConfluencePublisher(String confluenceRestApiEndpoint, String username, String password, CloseableHttpClient httpClient, String metadataFilePath) {
         this.confluenceRestApiEndpoint = confluenceRestApiEndpoint;
+        this.username = username;
+        this.password = password;
         this.httpClient = httpClient;
         this.metadata = readConfig(metadataFilePath);
         this.contentRoot = new File(metadataFilePath).getParentFile();
@@ -91,9 +99,21 @@ public class ConfluencePublisher {
 
     private CloseableHttpResponse sendRequest(HttpRequestBase httpRequest) {
         try {
+            Optional<Header> authenticationHeader = authenticationHeaderIfAvailable();
+            authenticationHeader.ifPresent(httpRequest::addHeader);
+
             return this.httpClient.execute(httpRequest);
         } catch (IOException e) {
             throw new RuntimeException("Request could not be sent" + httpRequest, e);
+        }
+    }
+
+    private Optional<Header> authenticationHeaderIfAvailable() {
+        if (isNotBlank(this.username) && isNotBlank(this.password)) {
+            String base64EncodedUsernameAndPassword = encodeAuthenticationHeader(this.username, this.password);
+            return Optional.of(new BasicHeader("Authorization", "Basic " + base64EncodedUsernameAndPassword));
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -107,6 +127,17 @@ public class ConfluencePublisher {
 
     public ConfluencePublisherMetadata getMetadata() {
         return this.metadata;
+    }
+
+    private static String encodeAuthenticationHeader(String username, String password) {
+        String usernameAndPassword = username + ":" + password;
+        String base64EncodedUsernameAndPassword;
+        try {
+            base64EncodedUsernameAndPassword = new String(Base64.getEncoder().encode(usernameAndPassword.getBytes()), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Could not encode authentication header in base64", e);
+        }
+        return base64EncodedUsernameAndPassword;
     }
 
     private static String fileContent(File file) {

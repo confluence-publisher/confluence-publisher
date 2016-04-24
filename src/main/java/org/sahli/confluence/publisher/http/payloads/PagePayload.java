@@ -1,4 +1,4 @@
-package org.sahli.confluence.publisher.payloads;
+package org.sahli.confluence.publisher.http.payloads;
 
 import org.sahli.confluence.publisher.support.RuntimeUse;
 
@@ -10,13 +10,13 @@ import java.util.List;
  * @since 1.0
  */
 
-public class NewPage {
+public class PagePayload {
 
-    private String type;
     private String title;
     private Space space;
     private Body body;
-    private List<Ancestor> ancestors = new ArrayList<>();
+    private final List<Ancestor> ancestors = new ArrayList<>();
+    private Version version;
 
     public void addAncestor(Ancestor ancestor) {
         this.ancestors.add(ancestor);
@@ -24,11 +24,7 @@ public class NewPage {
 
     @RuntimeUse
     public String getType() {
-        return this.type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+        return "page";
     }
 
     @RuntimeUse
@@ -63,4 +59,12 @@ public class NewPage {
         return this.ancestors;
     }
 
+    @RuntimeUse
+    public Version getVersion() {
+        return this.version;
+    }
+
+    public void setVersion(Version version) {
+        this.version = version;
+    }
 }

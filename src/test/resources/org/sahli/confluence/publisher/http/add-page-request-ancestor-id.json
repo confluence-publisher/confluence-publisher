@@ -1,0 +1,15 @@
+{
+  "type": "page",
+  "title": "title",
+  "ancestors": [
+    {
+      "id": "1234"
+    }
+  ],
+  "body": {
+    "storage": {
+      "value": "content",
+      "representation": "storage"
+    }
+  }
+}

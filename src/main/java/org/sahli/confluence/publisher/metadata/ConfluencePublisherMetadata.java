@@ -12,7 +12,7 @@ import java.util.List;
 public class ConfluencePublisherMetadata {
 
     private String spaceKey;
-    private String parentContentId;
+    private String ancestorId;
     private List<ConfluencePage> pages = new ArrayList<>();
 
     public String getSpaceKey() {
@@ -24,13 +24,13 @@ public class ConfluencePublisherMetadata {
         this.spaceKey = spaceKey;
     }
 
-    public String getParentContentId() {
-        return this.parentContentId;
+    public String getAncestorId() {
+        return this.ancestorId;
     }
 
     @RuntimeUse
-    public void setParentContentId(String parentContentId) {
-        this.parentContentId = parentContentId;
+    public void setAncestorId(String ancestorId) {
+        this.ancestorId = ancestorId;
     }
 
     public List<ConfluencePage> getPages() {

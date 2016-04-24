@@ -1,4 +1,4 @@
-package org.sahli.confluence.publisher.payloads;
+package org.sahli.confluence.publisher.http.payloads;
 
 import org.sahli.confluence.publisher.support.RuntimeUse;
 
@@ -9,15 +9,10 @@ import org.sahli.confluence.publisher.support.RuntimeUse;
 public class Storage {
 
     private String value;
-    private String representation;
 
     @RuntimeUse
     public String getRepresentation() {
-        return this.representation;
-    }
-
-    public void setRepresentation(String representation) {
-        this.representation = representation;
+        return "storage";
     }
 
     @RuntimeUse

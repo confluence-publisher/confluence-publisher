@@ -1,4 +1,4 @@
-package org.sahli.confluence.publisher.payloads;
+package org.sahli.confluence.publisher.http.payloads;
 
 import org.sahli.confluence.publisher.support.RuntimeUse;
 

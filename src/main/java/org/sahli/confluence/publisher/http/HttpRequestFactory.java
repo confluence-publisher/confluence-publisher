@@ -90,11 +90,13 @@ class HttpRequestFactory {
         return addPageHttpPost;
     }
 
-    HttpPost addPageUnderAncestorRequest(String ancestorId, String title, String content) {
+    HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content) {
+        assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
         assertMandatoryParameter(isNotBlank(ancestorId), "ancestorId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
         PagePayload pagePayload = pagePayloadBuilder()
+                .spaceKey(spaceKey)
                 .ancestorId(ancestorId)
                 .title(title)
                 .content(content)
@@ -191,7 +193,7 @@ class HttpRequestFactory {
             throw new RuntimeException("Could not encode title", e);
         }
 
-        String searchQuery = this.confluenceRestApiEndpoint + "/content/search?cql=title=%22" + encodedTitle + "%22&cqlcontent=%7B%22spaceKey%22:%22" + spaceKey + "%22%7D";
+        String searchQuery = this.confluenceRestApiEndpoint + "/content/search?cql=title=%22" + encodedTitle + "%22&cqlcontext=%7B%22spaceKey%22:%22" + spaceKey + "%22%7D";
 
         HttpGet getPageByTitleRequest = new HttpGet(searchQuery);
 
@@ -209,6 +211,11 @@ class HttpRequestFactory {
         this.authenticationHeaderIfAvailable().ifPresent(getAttachmentByFileNameRequest::addHeader);
 
         return getAttachmentByFileNameRequest;
+    }
+
+    HttpGet getPageByIdRequest(String contentId, final String expandOptions) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
     }
 
     private Optional<Header> authenticationHeaderIfAvailable() {

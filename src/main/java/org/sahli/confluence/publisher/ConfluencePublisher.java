@@ -19,7 +19,7 @@ package org.sahli.confluence.publisher;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sahli.confluence.publisher.http.ConfluenceRestClient;
-import org.sahli.confluence.publisher.metadata.ConfluencePage;
+import org.sahli.confluence.publisher.metadata.ConfluencePageMetadata;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 
 import java.io.File;
@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.confluence.publisher.utils.InputStreamUtils.fileContent;
 
 /**
@@ -53,32 +54,32 @@ public class ConfluencePublisher {
     }
 
     public void publish() {
-        if (isNotBlank(this.metadata.getSpaceKey())) {
-            startPublishingUnderSpace(this.metadata.getPages(), this.metadata.getSpaceKey());
-        } else if (isNotBlank(this.metadata.getAncestorId())) {
-            startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getAncestorId());
+        assertMandatoryParameter(isNotBlank(this.getMetadata().getSpaceKey()), "spaceKey");
+
+        if (isNotBlank(this.metadata.getAncestorId())) {
+            startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
         } else {
-            throw new RuntimeException("Either spaceKey or ancestorId must be set in metadata");
+            startPublishingUnderSpace(this.metadata.getPages(), this.metadata.getSpaceKey());
         }
     }
 
-    private void startPublishingUnderSpace(List<ConfluencePage> pages, String spaceKey) {
+    private void startPublishingUnderSpace(List<ConfluencePageMetadata> pages, String spaceKey) {
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
             String contentId = this.confluenceRestClient.addPageUnderSpace(spaceKey, page.getTitle(), content);
 
             addAttachments(contentId, page.getAttachments());
-            startPublishingUnderAncestorId(page.getChildren(), contentId);
+            startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
     }
 
-    private void startPublishingUnderAncestorId(List<ConfluencePage> pages, String ancestorId) {
+    private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = this.confluenceRestClient.addPageUnderAncestor(ancestorId, page.getTitle(), content);
+            String contentId = this.confluenceRestClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
 
             addAttachments(contentId, page.getAttachments());
-            startPublishingUnderAncestorId(page.getChildren(), contentId);
+            startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
     }
 

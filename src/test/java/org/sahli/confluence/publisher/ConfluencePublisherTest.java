@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.sahli.confluence.publisher.http.ConfluenceRestClient;
-import org.sahli.confluence.publisher.metadata.ConfluencePage;
+import org.sahli.confluence.publisher.metadata.ConfluencePageMetadata;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 
 import java.io.InputStream;
@@ -56,9 +56,9 @@ public class ConfluencePublisherTest {
         ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
         assertThat(metadata.getAncestorId(), is("72189173"));
         assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePage confluencePage = metadata.getPages().get(0);
-        assertThat(confluencePage.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePage.getContentFilePath(), is("some-confluence-content.html"));
+        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
+        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
+        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
     }
 
     @Test
@@ -71,9 +71,21 @@ public class ConfluencePublisherTest {
         ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
         assertThat(metadata.getSpaceKey(), is("~personalSpace"));
         assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePage confluencePage = metadata.getPages().get(0);
-        assertThat(confluencePage.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePage.getContentFilePath(), is("some-confluence-content.html"));
+        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
+        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
+        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
+    }
+
+    @Test
+    public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() throws Exception {
+        // assert
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("spaceKey must be set");
+
+        // arrange + act
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        ConfluencePublisher confluencePublisher = confluencePublisher("without-space-key", confluenceRestClientMock);
+        confluencePublisher.publish();
     }
 
     @Test
@@ -99,7 +111,7 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
     }
 
     @Test
@@ -114,22 +126,30 @@ public class ConfluencePublisherTest {
 
         // assert
         verify(confluenceRestClientMock, times(1)).addPageUnderSpace(eq("~personalSpace"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("1234"), eq("Some Child Content"), eq("<h1>Some Child Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Some Child Content"), eq("<h1>Some Child Content</h1>"));
     }
 
     @Test
     public void publish_multiplePagesInHierarchyWithAncestorIdAsRoot_delegatesToConfluenceRestClient() throws Exception {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString())).thenReturn("1234");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("1234");
         ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-multiple-pages", confluenceRestClientMock);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("1234"), eq("Some Child Content"), eq("<h1>Some Child Content</h1>"));
+        ArgumentCaptor<String> spaceKeyArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> ancestorIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> titleArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> contentArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(confluenceRestClientMock, times(2)).addPageUnderAncestor(spaceKeyArgumentCaptor.capture(),
+                ancestorIdArgumentCaptor.capture(), titleArgumentCaptor.capture(), contentArgumentCaptor.capture());
+        assertThat(spaceKeyArgumentCaptor.getAllValues(), contains("~personalSpace", "~personalSpace"));
+        assertThat(ancestorIdArgumentCaptor.getAllValues(), contains("72189173", "1234"));
+        assertThat(titleArgumentCaptor.getAllValues(), contains("Some Confluence Content", "Some Child Content"));
+        assertThat(contentArgumentCaptor.getAllValues(), contains("<h1>Some Confluence Content</h1>", "<h1>Some Child Content</h1>"));
     }
 
     @Test
@@ -160,7 +180,7 @@ public class ConfluencePublisherTest {
     public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() throws Exception {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString())).thenReturn("4321");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
 
         ArgumentCaptor<String> contentId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> attachmentFileName = ArgumentCaptor.forClass(String.class);
@@ -172,7 +192,7 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
         verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
         assertThat(contentId.getAllValues(), contains("4321", "4321"));
         assertThat(attachmentFileName.getAllValues(), contains("attachmentOne.txt", "attachmentTwo.txt"));

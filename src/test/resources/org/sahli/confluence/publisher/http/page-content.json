@@ -1,0 +1,60 @@
+{
+  "id": "1234",
+  "type": "page",
+  "status": "current",
+  "title": "Some title",
+  "version": {
+    "by": {
+      "type": "known",
+      "profilePicture": {
+        "path": "/s/en_GB/5781/06be774e49836f55365352484cdb0bdbe01e119b.15/_/download/attachments/26379913/img.jpg?version=1&modificationDate=1318258714000&api=v2",
+        "width": 48,
+        "height": 48,
+        "isDefault": false
+      },
+      "username": "peme",
+      "displayName": "Pedro Meno",
+      "userKey": "4028829641f8c8c50141f8c8f70700c6"
+    },
+    "when": "2016-04-27T17:24:00.183+02:00",
+    "message": "",
+    "number": 1,
+    "minorEdit": false
+  },
+  "body": {
+    "storage": {
+      "value": "Some content",
+      "representation": "storage",
+      "_expandable": {
+        "content": "/rest/api/content/1234"
+      }
+    },
+    "_expandable": {
+      "editor": "",
+      "view": "",
+      "export_view": "",
+      "anonymous_export_view": ""
+    }
+  },
+  "extensions": {
+    "position": "none"
+  },
+  "_links": {
+    "webui": "/display/~personalSpace/Some+title",
+    "tinyui": "/x/zgFfB",
+    "collection": "/rest/api/content",
+    "base": "https://confluence.com",
+    "context": "",
+    "self": "https://confluence.com/rest/api/content/1234"
+  },
+  "_expandable": {
+    "container": "",
+    "metadata": "",
+    "children": "/rest/api/content/1234/child",
+    "history": "/rest/api/content/1234/history",
+    "ancestors": "",
+    "version": "",
+    "descendants": "/rest/api/content/1234/descendant",
+    "space": "/rest/api/space/~personalSpace"
+  }
+}

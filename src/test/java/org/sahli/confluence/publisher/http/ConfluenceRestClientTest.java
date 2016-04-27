@@ -40,6 +40,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.sahli.confluence.publisher.utils.InputStreamUtils.fileContent;
 
 public class ConfluenceRestClientTest {
 
@@ -75,7 +76,7 @@ public class ConfluenceRestClientTest {
         ArgumentCaptor<HttpPost> httpPostArgumentCaptor = ArgumentCaptor.forClass(HttpPost.class);
 
         // act
-        confluenceRestClient.addPageUnderAncestor("1234", "title", "content");
+        confluenceRestClient.addPageUnderAncestor("~personalSpace", "1234", "title", "content");
 
         // assert
         verify(httpClientMock, times(1)).execute(httpPostArgumentCaptor.capture());
@@ -104,7 +105,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
-        String contentId = confluenceRestClient.addPageUnderAncestor("123", "Hello", "Content");
+        String contentId = confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
 
         // assert
         assertThat(contentId, is(expectedContentId));
@@ -140,7 +141,7 @@ public class ConfluenceRestClientTest {
     public void getPageByTitle_withValidParameters_sendsGetRequestAndReturnsFirstResultId() throws Exception {
         // arrange
         String expectedContentId = "1234";
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedContentId + "\"}]}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedContentId + "\"}], \"size\": 1}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
@@ -153,7 +154,7 @@ public class ConfluenceRestClientTest {
     @Test(expected = NotFoundException.class)
     public void getPageByTitle_withEmptyResult_throwsPageNotFoundException() throws Exception {
         // arrange
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": []}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act + assert
@@ -163,7 +164,7 @@ public class ConfluenceRestClientTest {
     @Test(expected = MultipleResultsException.class)
     public void getPageByTitle_withMultipleResults_throwsMultipleResultsException() throws Exception {
         // arrange
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"1\"},{\"id\":\"2\"}]}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 2}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act + assert
@@ -213,7 +214,7 @@ public class ConfluenceRestClientTest {
     public void getAttachmentByFileName_withValidParameters_sendsHttpGetRequest() throws Exception {
         // arrange
         String expectedAttachmentId = "att12";
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedAttachmentId + "\"}]}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedAttachmentId + "\"}], \"size\": 1}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
@@ -226,7 +227,7 @@ public class ConfluenceRestClientTest {
     @Test(expected = NotFoundException.class)
     public void getAttachmentByFileName_withEmptyResult_throwsNotFoundException() throws Exception {
         // arrange
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": []}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
@@ -236,11 +237,96 @@ public class ConfluenceRestClientTest {
     @Test(expected = MultipleResultsException.class)
     public void getAttachmentByFileName_withMultipleResults_throwsMultipleResultsException() throws Exception {
         // arrange
-        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"1\"},{\"id\":\"2\"}]}", 200);
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 2}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
         confluenceRestClient.getAttachmentByFileName("4321", "another-file.txt");
+    }
+
+    @Test
+    public void getPageById_withExistingContentId_returnsPageContent() throws Exception {
+        // arrange
+        String responseFilePath = "src/test/resources/org/sahli/confluence/publisher/http/page-content.json";
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse(fileContent(responseFilePath), 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        ConfluencePage confluencePage = confluenceRestClient.getPageWithContentAndVersionById("1234");
+
+        // assert
+        assertThat(confluencePage.getContentId(), is("1234"));
+        assertThat(confluencePage.getTitle(), is("Some title"));
+        assertThat(confluencePage.getContent(), is("Some content"));
+        assertThat(confluencePage.getVersion(), is(1));
+    }
+
+
+    @Test
+    public void pageExistsByTitle_withExistingPageTitleParameter_returnsTrue() throws Exception {
+        // arrange
+        String title = "Some title";
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 1}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
+
+        // assert
+        assertThat(pageExistsByTitle, is(true));
+    }
+
+    @Test
+    public void pageExistsByTitle_withNonExistingPageTitleParameter_returnsTrue() throws Exception {
+        // arrange
+        String title = "Some title";
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
+
+        // assert
+        assertThat(pageExistsByTitle, is(false));
+    }
+
+    @Test
+    public void attachmentExistsByFileName_withExistingAttachment_returnsTrue() throws Exception {
+        // arrange
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 1}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
+
+        // assert
+        assertThat(attachmentExistsByFileName, is(true));
+    }
+
+    @Test
+    public void attachmentExistsByFileName_withNonExistingAttachment_returnsTrue() throws Exception {
+        // arrange
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
+
+        // assert
+        assertThat(attachmentExistsByFileName, is(false));
+    }
+
+    @Test
+    public void attachmentExistsByFileName_withNonExistingContentId_returnsFalse() throws Exception {
+        // arrange
+        HttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 404);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("abc", "file.txt");
+
+        // assert
+        assertThat(attachmentExistsByFileName, is(false));
     }
 
     private static HttpClient recordHttpClientForSingleJsonAndStatusCodeResponse(String jsonResponse, int statusCode) throws IOException {

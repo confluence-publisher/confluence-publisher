@@ -1,6 +1,9 @@
 {
   "type": "page",
   "title": "title",
+  "space": {
+    "key": "~personalSpace"
+  },
   "ancestors": [
     {
       "id": "1234"

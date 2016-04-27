@@ -74,7 +74,7 @@ public class HttpRequestFactoryTest {
         HttpPost addPageUnderSpaceRequest = httpRequestFactory.addPageUnderSpaceRequest("~personaleSpace", "title", "content");
         assertAuthenticationHeader(addPageUnderSpaceRequest);
 
-        HttpPost addPageUnderAncestorRequest = httpRequestFactory.addPageUnderAncestorRequest("123", "title", "content");
+        HttpPost addPageUnderAncestorRequest = httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "123", "title", "content");
         assertAuthenticationHeader(addPageUnderAncestorRequest);
 
         HttpPut updatePageRequest = httpRequestFactory.updatePageRequest("23", "title", "content", 2);
@@ -146,12 +146,13 @@ public class HttpRequestFactoryTest {
     @Test
     public void addPageUnderAncestorRequest_withAncestorId_returnsValidHttpPostWithAncestorIdWithoutSpaceKey() throws Exception {
         // arrange
+        String spaceKey = "~personalSpace";
         String ancestorId = "1234";
         String title = "title";
         String content = "content";
 
         // act
-        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(ancestorId, title, content);
+        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
 
         // assert
         assertThat(addPageUnderAncestorRequest.getMethod(), is("POST"));
@@ -170,7 +171,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("title must be set");
 
         // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("1234", "", "content");
+        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content");
     }
 
     @Test
@@ -180,7 +181,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("ancestorId must be set");
 
         // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("", "title", "content");
+        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "", "title", "content");
     }
 
     @Test
@@ -375,8 +376,8 @@ public class HttpRequestFactoryTest {
 
         // assert
         assertThat(getPageByTitleRequest.getMethod(), is("GET"));
-        assertThat(getPageByTitleRequest.getURI().toString(), containsString("%22Some+page%22"));
-        assertThat(getPageByTitleRequest.getURI().toString(), containsString("%22~personalSpace%22"));
+        assertThat(getPageByTitleRequest.getURI().toString(), containsString("title=%22Some+page%22"));
+        assertThat(getPageByTitleRequest.getURI().toString(), containsString("%22&cqlcontext=%7B%22spaceKey%22:%22~personalSpace%22%7D"));
     }
 
     @Test
@@ -430,6 +431,18 @@ public class HttpRequestFactoryTest {
 
         // act
         this.httpRequestFactory.getAttachmentByFileNameRequest("1234", "");
+    }
+
+    @Test
+    public void getPageByIdRequest_withValidParameter_returnsValidHttpGet() throws Exception {
+        // arrange
+        String contentId = "1234";
+
+        // act
+        HttpGet getPageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version");
+
+        // assert
+        assertThat(getPageByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "?expand=body.storage,version"));
     }
 
 }

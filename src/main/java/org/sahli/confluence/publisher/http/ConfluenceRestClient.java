@@ -67,8 +67,8 @@ public class ConfluenceRestClient {
         return extractIdFromJsonNode(parseJsonResponse(response));
     }
 
-    public String addPageUnderAncestor(String ancestorId, String title, String content) {
-        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(ancestorId, title, content);
+    public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content) {
+        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
         HttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
 
         return extractIdFromJsonNode(parseJsonResponse(response));
@@ -89,8 +89,7 @@ public class ConfluenceRestClient {
         HttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
         JsonNode jsonNode = parseJsonResponse(response);
 
-        JsonNode result = jsonNode.withArray("results");
-        int numberOfResults = result.size();
+        int numberOfResults = jsonNode.get("size").asInt();
         if (numberOfResults == 0) {
             throw new NotFoundException();
         }
@@ -99,7 +98,7 @@ public class ConfluenceRestClient {
             throw new MultipleResultsException();
         }
 
-        return extractIdFromJsonNode(result.elements().next());
+        return extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
     }
 
     public void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
@@ -123,8 +122,7 @@ public class ConfluenceRestClient {
 
         JsonNode jsonNode = parseJsonResponse(response);
 
-        JsonNode result = jsonNode.withArray("results");
-        int numberOfResults = result.size();
+        int numberOfResults = jsonNode.get("size").asInt();
         if (numberOfResults == 0) {
             throw new NotFoundException();
         }
@@ -133,11 +131,43 @@ public class ConfluenceRestClient {
             throw new MultipleResultsException();
         }
 
-        return extractIdFromJsonNode(result.elements().next());
+        return extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
     }
 
-    private static String extractIdFromJsonNode(JsonNode jsonNode) {
-        return jsonNode.get("id").asText();
+    public ConfluencePage getPageWithContentAndVersionById(String contentId) {
+        HttpGet pageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version");
+        HttpResponse response = sendRequestAndFailIfNot20x(pageByIdRequest);
+
+        return extractConfluencePageWithContent(parseJsonResponse(response));
+    }
+
+    public boolean pageExistsByTitle(String spaceKey, String title) {
+        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
+        HttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
+        JsonNode jsonNode = parseJsonResponse(response);
+
+        return jsonNode.get("size").asInt() == 1;
+    }
+
+    public boolean attachmentExistsByFileName(String contentId, String attachmentFileName) {
+        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
+
+        HttpResponse response = sendRequest(attachmentByFileNameRequest);
+        StatusLine statusLine = response.getStatusLine();
+
+        int statusCode = statusLine.getStatusCode();
+        if (statusCode == 404) {
+            return false;
+        }
+
+        if (statusCode != 200) {
+            throw new RuntimeException("Response had not expected status code (200 or 404) -> "
+                    + statusCode + " " + statusLine.getReasonPhrase());
+        }
+
+        JsonNode jsonNode = parseJsonResponse(response);
+
+        return jsonNode.get("size").asInt() == 1;
     }
 
     private JsonNode parseJsonResponse(HttpResponse response) {
@@ -149,12 +179,7 @@ public class ConfluenceRestClient {
     }
 
     private HttpResponse sendRequestAndFailIfNot20x(HttpRequestBase httpRequest) {
-        HttpResponse response;
-        try {
-            response = this.httpClient.execute(httpRequest);
-        } catch (IOException e) {
-            throw new RuntimeException("Request could not be sent" + httpRequest, e);
-        }
+        HttpResponse response = sendRequest(httpRequest);
 
         StatusLine statusLine = response.getStatusLine();
         if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
@@ -163,6 +188,30 @@ public class ConfluenceRestClient {
         }
 
         return response;
+    }
+
+    private HttpResponse sendRequest(HttpRequestBase httpRequest) {
+        HttpResponse response;
+        try {
+            response = this.httpClient.execute(httpRequest);
+        } catch (IOException e) {
+            throw new RuntimeException("Request could not be sent" + httpRequest, e);
+        }
+
+        return response;
+    }
+
+    private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {
+        String id = jsonNode.get("id").asText();
+        String title = jsonNode.get("title").asText();
+        String content = jsonNode.path("body").path("storage").get("value").asText();
+        int version = jsonNode.path("version").get("number").asInt();
+
+        return new ConfluencePage(id, title, content, version);
+    }
+
+    private static String extractIdFromJsonNode(JsonNode jsonNode) {
+        return jsonNode.get("id").asText();
     }
 
 }

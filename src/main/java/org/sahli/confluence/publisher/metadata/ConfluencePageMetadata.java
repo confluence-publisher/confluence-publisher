@@ -26,11 +26,11 @@ import static java.util.Collections.emptyList;
  * @author Alain Sahli
  * @since 1.0
  */
-public class ConfluencePage {
+public class ConfluencePageMetadata {
 
     private String title;
     private String contentFilePath;
-    private List<ConfluencePage> children;
+    private List<ConfluencePageMetadata> children;
     private List<String> attachments;
 
     public String getTitle() {
@@ -51,7 +51,7 @@ public class ConfluencePage {
         this.contentFilePath = contentFilePath;
     }
 
-    public List<ConfluencePage> getChildren() {
+    public List<ConfluencePageMetadata> getChildren() {
         if (this.children == null) {
             return emptyList();
         } else {
@@ -60,7 +60,7 @@ public class ConfluencePage {
     }
 
     @RuntimeUse
-    public void setChildren(List<ConfluencePage> children) {
+    public void setChildren(List<ConfluencePageMetadata> children) {
         this.children = children;
     }
 

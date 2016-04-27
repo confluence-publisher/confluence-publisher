@@ -29,7 +29,7 @@ public class ConfluencePublisherMetadata {
 
     private String spaceKey;
     private String ancestorId;
-    private List<ConfluencePage> pages = new ArrayList<>();
+    private List<ConfluencePageMetadata> pages = new ArrayList<>();
 
     public String getSpaceKey() {
         return this.spaceKey;
@@ -49,12 +49,12 @@ public class ConfluencePublisherMetadata {
         this.ancestorId = ancestorId;
     }
 
-    public List<ConfluencePage> getPages() {
+    public List<ConfluencePageMetadata> getPages() {
         return this.pages;
     }
 
     @RuntimeUse
-    public void setPages(List<ConfluencePage> pages) {
+    public void setPages(List<ConfluencePageMetadata> pages) {
         this.pages = pages;
     }
 

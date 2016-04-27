@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/alainsahli/confluence-publisher.svg?branch=master)](https://travis-ci.org/alainsahli/confluence-publisher)
-
+[![Coverage Status](https://coveralls.io/repos/github/alainsahli/confluence-publisher/badge.svg?branch=master)](https://coveralls.io/github/alainsahli/confluence-publisher?branch=master)
 # Confluence Publisher
 
 ## Open points:

@@ -514,7 +514,7 @@ public class HttpRequestFactoryTest {
         String contentId = "1234";
 
         // act
-        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, null);
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, null, null);
 
         // assert
         assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment"));
@@ -527,7 +527,7 @@ public class HttpRequestFactoryTest {
         int limit = 5;
 
         // act
-        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, null);
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, null, null);
 
         // assert
         assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment?limit=" + limit));
@@ -540,25 +540,27 @@ public class HttpRequestFactoryTest {
         int start = 1;
 
         // act
-        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, start);
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, start, null);
 
         // assert
         assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment?start=" + start));
     }
 
     @Test
-    public void getAttachmentsRequest_withLimitAndPageNumber_returnsHttpGetWithLimitAndPage() throws Exception {
+    public void getAttachmentsRequest_withLimitAndPageNumberAndExpandOptions_returnsHttpGetWithLimitAndPage() throws Exception {
         // arrange
         String contentId = "1234";
         int limit = 5;
         int start = 1;
+        String expandOptions = "version";
 
         // act
-        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, start);
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, start, expandOptions);
 
         // assert
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("limit=" + limit));
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("start=" + start));
+        assertThat(getAttachmentsRequest.getURI().toString(), containsString("expand=" + expandOptions));
     }
 
 }

@@ -239,7 +239,7 @@ class HttpRequestFactory {
         }
     }
 
-    public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start) {
+    public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start, String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
@@ -249,6 +249,9 @@ class HttpRequestFactory {
         }
         if (start != null) {
             uriBuilder.addParameter("start", start.toString());
+        }
+        if (isNotBlank(expandOptions)) {
+            uriBuilder.addParameter("expand", expandOptions);
         }
 
         try {

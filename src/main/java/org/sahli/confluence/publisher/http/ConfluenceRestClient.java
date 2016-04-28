@@ -246,16 +246,45 @@ public class ConfluenceRestClient {
         return childPages;
     }
 
+    public List<ConfluenceAttachment> getAttachments(String contentId) {
+        int start = 0;
+        int limit = 25;
+
+        ArrayList<ConfluenceAttachment> attachments = new ArrayList<>();
+        boolean fetchMore = true;
+        while (fetchMore) {
+            List<ConfluenceAttachment> nextAttachments = getNextAttachments(contentId, limit, start);
+            attachments.addAll(nextAttachments);
+
+            start++;
+            fetchMore = nextAttachments.size() == limit;
+        }
+
+        return attachments;
+    }
+
     private List<ConfluencePage> getNextChildPages(String contentId, int limit, int start) {
         List<ConfluencePage> pages = new ArrayList<>(limit);
-        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start);
-        CloseableHttpResponse response = sendRequestAndFailIfNot20x(childPagesByIdRequest);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(getChildPagesByIdRequest);
 
         JsonNode jsonNode = parseJsonResponse(response);
         jsonNode.withArray("results").forEach((page) -> pages.add(extractConfluencePageWithoutContent(page)));
         closeResponse(response);
 
         return pages;
+    }
+
+    private List<ConfluenceAttachment> getNextAttachments(String contentId, int limit, int start) {
+        List<ConfluenceAttachment> attachments = new ArrayList<>(limit);
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, start, "version");
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(getAttachmentsRequest);
+
+        JsonNode jsonNode = parseJsonResponse(response);
+        jsonNode.withArray("results").forEach(attachment -> attachments.add(extractConfluenceAttachment(attachment)));
+        closeResponse(response);
+
+        return attachments;
     }
 
     private static void closeResponse(CloseableHttpResponse response) {
@@ -267,24 +296,41 @@ public class ConfluenceRestClient {
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {
-        String id = jsonNode.get("id").asText();
-        String title = jsonNode.get("title").asText();
+        String id = extractIdFromJsonNode(jsonNode);
+        String title = extractTitleFromJsonNode(jsonNode);
         String content = jsonNode.path("body").path("storage").get("value").asText();
-        int version = jsonNode.path("version").get("number").asInt();
+        int version = extractVersionFromJsonNode(jsonNode);
 
         return new ConfluencePage(id, title, content, version);
     }
 
     private static ConfluencePage extractConfluencePageWithoutContent(JsonNode jsonNode) {
-        String id = jsonNode.get("id").asText();
-        String title = jsonNode.get("title").asText();
-        int version = jsonNode.path("version").get("number").asInt();
+        String id = extractIdFromJsonNode(jsonNode);
+        String title = extractTitleFromJsonNode(jsonNode);
+        int version = extractVersionFromJsonNode(jsonNode);
 
         return new ConfluencePage(id, title, version);
     }
 
+    private static ConfluenceAttachment extractConfluenceAttachment(JsonNode jsonNode) {
+        String id = extractIdFromJsonNode(jsonNode);
+        String title = extractTitleFromJsonNode(jsonNode);
+        int version = extractVersionFromJsonNode(jsonNode);
+        String relativeDownloadLink = jsonNode.path("_links").get("download").asText();
+
+        return new ConfluenceAttachment(id, title, relativeDownloadLink, version);
+    }
+
     private static String extractIdFromJsonNode(JsonNode jsonNode) {
         return jsonNode.get("id").asText();
+    }
+
+    private static String extractTitleFromJsonNode(JsonNode jsonNode) {
+        return jsonNode.get("title").asText();
+    }
+
+    private static int extractVersionFromJsonNode(JsonNode jsonNode) {
+        return jsonNode.path("version").get("number").asInt();
     }
 
 }

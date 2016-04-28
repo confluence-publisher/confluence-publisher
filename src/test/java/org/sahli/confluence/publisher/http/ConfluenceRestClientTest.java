@@ -341,8 +341,8 @@ public class ConfluenceRestClientTest {
     @Test
     public void getChildPages_withValidParametersAndFirstResultSizeSmallerThanLimit_returnsListOfChildPagesWithTitleContentVersionAndId() throws Exception {
         // arrange
-        String pages = generateJsonPages(2);
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + pages + "], \"size\": 2}", 200);
+        String resultSet = generateJsonPageResults(2);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + resultSet + "], \"size\": 2}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
         String contentId = "1234";
 
@@ -358,8 +358,9 @@ public class ConfluenceRestClientTest {
     @Test
     public void getChildPages_withValidParametersAndFirstResultSizeHasSameSizeAsLimit_sendsASecondRequestToFetchNextChildPages() throws Exception {
         // arrange
-        String pages = generateJsonPages(25);
-        List<String> jsonResponses = asList("{\"results\": [" + pages + "], \"size\": 25}", "{\"results\": [], \"size\": 0}");
+        String firstResultSet = "{\"results\": [" + generateJsonPageResults(25) + "], \"size\": 25}";
+        String secondResultSet = "{\"results\": [], \"size\": 0}";
+        List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
@@ -379,9 +380,9 @@ public class ConfluenceRestClientTest {
     @Test
     public void getChildPages_withValidParametersAndFirstResultSizeIsHigherThanLimit_sendsASecondRequestToFetchNextChildPages() throws Exception {
         // arrange
-        String firstResultSet = generateJsonPages(25);
-        String secondResultSet = generateJsonPages(24);
-        List<String> jsonResponses = asList("{\"results\": [" + firstResultSet + "], \"size\": 25}", "{\"results\": [" + secondResultSet + "], \"size\": 24}");
+        String firstResultSet = "{\"results\": [" + generateJsonPageResults(25) + "], \"size\": 25}";
+        String secondResultSet = "{\"results\": [" + generateJsonPageResults(24) + "], \"size\": 24}";
+        List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
@@ -396,6 +397,76 @@ public class ConfluenceRestClientTest {
         verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+    }
+
+    @Test
+    public void getAttachments_withValidParametersAndFirstResultIsSmallerThanLimit_returnsAttachments() throws Exception {
+        // arrange
+        String resultSet = generateJsonAttachmentResults(2);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + resultSet + "], \"size\": 2}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        String contentId = "1234";
+
+        // act
+        List<ConfluenceAttachment> confluenceAttachments = confluenceRestClient.getAttachments(contentId);
+
+        // assert
+        ConfluenceAttachment attachmentOne = new ConfluenceAttachment("1", "Attachment-1.txt", "/download/Attachment-1.txt", 1);
+        ConfluenceAttachment attachmentTwo = new ConfluenceAttachment("2", "Attachment-2.txt", "/download/Attachment-2.txt", 1);
+        assertThat(confluenceAttachments, contains(attachmentOne, attachmentTwo));
+    }
+
+    @Test
+    public void getAttachments_withValidParametersAndFirstResultSizeHasSameSizeAsLimit_sendsASecondRequestToFetchNextAttachments() throws Exception {
+        // arrange
+        String firstResultSet = "{\"results\": [" + generateJsonAttachmentResults(25) + "], \"size\": 25}";
+        String secondResultSet = "{\"results\": [], \"size\": 0}";
+        List<String> jsonResponses = asList(firstResultSet, secondResultSet);
+        List<Integer> statusCodes = asList(200, 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        String contentId = "1234";
+        ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
+
+        // act
+        List<ConfluenceAttachment> confluenceAttachments = confluenceRestClient.getAttachments(contentId);
+
+        // assert
+        assertThat(confluenceAttachments.size(), is(25));
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
+        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+    }
+
+    @Test
+    public void getAttachments_withValidParametersAndFirstResultIsSmallerThanLimit_sendsASecondRequestToFetchNextAttachments() throws Exception {
+        // arrange
+        String firstResultSet = "{\"results\": [" + generateJsonAttachmentResults(25) + "], \"size\": 25}";
+        String secondResultSet = "{\"results\": [" + generateJsonAttachmentResults(24) + "], \"size\": 0}";
+        List<String> jsonResponses = asList(firstResultSet, secondResultSet);
+        List<Integer> statusCodes = asList(200, 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        String contentId = "1234";
+        ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
+
+        // act
+        List<ConfluenceAttachment> confluenceAttachments = confluenceRestClient.getAttachments(contentId);
+
+        // assert
+        assertThat(confluenceAttachments.size(), is(49));
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
+        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+    }
+
+    private String generateJsonAttachmentResults(int numberOfAttachment) {
+        return IntStream.range(1, numberOfAttachment + 1)
+                .boxed()
+                .map(attachmentNumber -> "{\"id\": \"" + attachmentNumber + "\", \"title\": \"Attachment-" + attachmentNumber +
+                        ".txt\", \"_links\": {\"download\": \"/download/Attachment-" + attachmentNumber +
+                        ".txt\"}, \"version\": {\"number\": 1}}")
+                .collect(Collectors.joining(",\n"));
     }
 
     private static CloseableHttpClient recordHttpClientForSingleJsonAndStatusCodeResponse(String jsonResponse, int statusCode) throws IOException {
@@ -452,10 +523,10 @@ public class ConfluenceRestClientTest {
         return statusLineMock;
     }
 
-    private static String generateJsonPages(int numberOfPages) {
+    private static String generateJsonPageResults(int numberOfPages) {
         return IntStream.range(1, numberOfPages + 1)
                 .boxed()
-                .map(pageNumber -> "{\"id\": \"" + pageNumber + "\", \"title\": \"Page " + pageNumber + "\", \"version\": {\"number\": \"1\"}}")
+                .map(pageNumber -> "{\"id\": \"" + pageNumber + "\", \"title\": \"Page " + pageNumber + "\", \"version\": {\"number\": 1}}")
                 .collect(Collectors.joining(",\n"));
     }
 

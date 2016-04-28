@@ -21,12 +21,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,15 +40,15 @@ import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryPa
  */
 public class ConfluenceRestClient {
 
-    private final HttpClient httpClient;
+    private final CloseableHttpClient httpClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, HttpClient httpClient) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient) {
         this(rootConfluenceUrl, httpClient, null, null);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, HttpClient httpClient, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl, username, password);
@@ -62,31 +63,39 @@ public class ConfluenceRestClient {
 
     public String addPageUnderSpace(String spaceKey, String title, String content) {
         HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderSpaceRequest(spaceKey, title, content);
-        HttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
 
-        return extractIdFromJsonNode(parseJsonResponse(response));
+        String contentId = extractIdFromJsonNode(parseJsonResponse(response));
+        closeResponse(response);
+
+        return contentId;
     }
 
     public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content) {
         HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
-        HttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
 
-        return extractIdFromJsonNode(parseJsonResponse(response));
+        String contentId = extractIdFromJsonNode(parseJsonResponse(response));
+        closeResponse(response);
+
+        return contentId;
     }
 
     public void updatePage(String contentId, String title, String content, int newVersion) {
         HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, title, content, newVersion);
-        sendRequestAndFailIfNot20x(updatePageRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(updatePageRequest);
+        closeResponse(response);
     }
 
     public void deletePage(String contentId) {
         HttpDelete deletePageRequest = this.httpRequestFactory.deletePageRequest(contentId);
-        sendRequestAndFailIfNot20x(deletePageRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(deletePageRequest);
+        closeResponse(response);
     }
 
     public String getPageByTitle(String spaceKey, String title) throws NotFoundException, MultipleResultsException {
         HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
-        HttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
         JsonNode jsonNode = parseJsonResponse(response);
 
         int numberOfResults = jsonNode.get("size").asInt();
@@ -98,27 +107,33 @@ public class ConfluenceRestClient {
             throw new MultipleResultsException();
         }
 
-        return extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+        String contentId = extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+        closeResponse(response);
+
+        return contentId;
     }
 
     public void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
-        sendRequestAndFailIfNot20x(addAttachmentRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(addAttachmentRequest);
+        closeResponse(response);
     }
 
     public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent) {
         HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
-        sendRequestAndFailIfNot20x(updateAttachmentContentRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(updateAttachmentContentRequest);
+        closeResponse(response);
     }
 
     public void deleteAttachment(String attachmentId) {
         HttpDelete deleteAttachmentRequest = this.httpRequestFactory.deleteAttachmentRequest(attachmentId);
-        sendRequestAndFailIfNot20x(deleteAttachmentRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(deleteAttachmentRequest);
+        closeResponse(response);
     }
 
     public String getAttachmentByFileName(String contentId, String attachmentFileName) throws NotFoundException, MultipleResultsException {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
-        HttpResponse response = sendRequestAndFailIfNot20x(attachmentByFileNameRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(attachmentByFileNameRequest);
 
         JsonNode jsonNode = parseJsonResponse(response);
 
@@ -131,28 +146,37 @@ public class ConfluenceRestClient {
             throw new MultipleResultsException();
         }
 
-        return extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+        String attachmentId = extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+        closeResponse(response);
+
+        return attachmentId;
     }
 
     public ConfluencePage getPageWithContentAndVersionById(String contentId) {
         HttpGet pageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version");
-        HttpResponse response = sendRequestAndFailIfNot20x(pageByIdRequest);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByIdRequest);
 
-        return extractConfluencePageWithContent(parseJsonResponse(response));
+        ConfluencePage confluencePage = extractConfluencePageWithContent(parseJsonResponse(response));
+        closeResponse(response);
+
+        return confluencePage;
     }
 
     public boolean pageExistsByTitle(String spaceKey, String title) {
         HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
-        HttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
-        JsonNode jsonNode = parseJsonResponse(response);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
 
-        return jsonNode.get("size").asInt() == 1;
+        JsonNode jsonNode = parseJsonResponse(response);
+        boolean pageExists = jsonNode.get("size").asInt() == 1;
+        closeResponse(response);
+
+        return pageExists;
     }
 
     public boolean attachmentExistsByFileName(String contentId, String attachmentFileName) {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
 
-        HttpResponse response = sendRequest(attachmentByFileNameRequest);
+        CloseableHttpResponse response = sendRequest(attachmentByFileNameRequest);
         StatusLine statusLine = response.getStatusLine();
 
         int statusCode = statusLine.getStatusCode();
@@ -166,8 +190,10 @@ public class ConfluenceRestClient {
         }
 
         JsonNode jsonNode = parseJsonResponse(response);
+        boolean attachmentExists = jsonNode.get("size").asInt() == 1;
+        closeResponse(response);
 
-        return jsonNode.get("size").asInt() == 1;
+        return attachmentExists;
     }
 
     private JsonNode parseJsonResponse(HttpResponse response) {
@@ -178,8 +204,8 @@ public class ConfluenceRestClient {
         }
     }
 
-    private HttpResponse sendRequestAndFailIfNot20x(HttpRequestBase httpRequest) {
-        HttpResponse response = sendRequest(httpRequest);
+    private CloseableHttpResponse sendRequestAndFailIfNot20x(HttpRequestBase httpRequest) {
+        CloseableHttpResponse response = sendRequest(httpRequest);
 
         StatusLine statusLine = response.getStatusLine();
         if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
@@ -190,8 +216,8 @@ public class ConfluenceRestClient {
         return response;
     }
 
-    private HttpResponse sendRequest(HttpRequestBase httpRequest) {
-        HttpResponse response;
+    private CloseableHttpResponse sendRequest(HttpRequestBase httpRequest) {
+        CloseableHttpResponse response;
         try {
             response = this.httpClient.execute(httpRequest);
         } catch (IOException e) {
@@ -199,6 +225,14 @@ public class ConfluenceRestClient {
         }
 
         return response;
+    }
+
+    private static void closeResponse(CloseableHttpResponse response) {
+        try {
+            response.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not close response", e);
+        }
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {

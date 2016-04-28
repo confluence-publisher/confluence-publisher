@@ -31,6 +31,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryParameter;
 
@@ -227,6 +229,35 @@ public class ConfluenceRestClient {
         return response;
     }
 
+    public List<ConfluencePage> getChildPages(String contentId) {
+        int start = 0;
+        int limit = 25;
+
+        ArrayList<ConfluencePage> childPages = new ArrayList<>();
+        boolean fetchMore = true;
+        while (fetchMore) {
+            List<ConfluencePage> nextChildPages = getNextChildPages(contentId, limit, start);
+            childPages.addAll(nextChildPages);
+
+            start++;
+            fetchMore = nextChildPages.size() == limit;
+        }
+
+        return childPages;
+    }
+
+    private List<ConfluencePage> getNextChildPages(String contentId, int limit, int start) {
+        List<ConfluencePage> pages = new ArrayList<>(limit);
+        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(childPagesByIdRequest);
+
+        JsonNode jsonNode = parseJsonResponse(response);
+        jsonNode.withArray("results").forEach((page) -> pages.add(extractConfluencePageWithoutContent(page)));
+        closeResponse(response);
+
+        return pages;
+    }
+
     private static void closeResponse(CloseableHttpResponse response) {
         try {
             response.close();
@@ -242,6 +273,14 @@ public class ConfluenceRestClient {
         int version = jsonNode.path("version").get("number").asInt();
 
         return new ConfluencePage(id, title, content, version);
+    }
+
+    private static ConfluencePage extractConfluencePageWithoutContent(JsonNode jsonNode) {
+        String id = jsonNode.get("id").asText();
+        String title = jsonNode.get("title").asText();
+        int version = jsonNode.path("version").get("number").asInt();
+
+        return new ConfluencePage(id, title, version);
     }
 
     private static String extractIdFromJsonNode(JsonNode jsonNode) {

@@ -446,15 +446,15 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withValidParameter_returnsValidHttpGet() throws Exception {
+    public void getChildPagesByIdRequest_withMinimalParameters_returnsValidHttpGet() throws Exception {
         // arrange
         String parentContentId = "1234";
 
         // act
-        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null);
 
         // assert
-        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page"));
+        assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page"));
     }
 
     @Test
@@ -474,10 +474,10 @@ public class HttpRequestFactoryTest {
         int limit = 5;
 
         // act
-        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, null);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, null);
 
         // assert
-        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?limit=" + limit));
+        assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?limit=" + limit));
     }
 
     @Test
@@ -487,10 +487,10 @@ public class HttpRequestFactoryTest {
         int pageNumber = 5;
 
         // act
-        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, pageNumber);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, pageNumber);
 
         // assert
-        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?page=" + pageNumber));
+        assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?page=" + pageNumber));
     }
 
     @Test
@@ -501,10 +501,64 @@ public class HttpRequestFactoryTest {
         int pageNumber = 5;
 
         // act
-        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, pageNumber);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, pageNumber);
 
         // assert
-        assertThat(childPagesByIdRequest.getURI().toString(), containsString("limit=" + limit));
-        assertThat(childPagesByIdRequest.getURI().toString(), containsString("page=" + pageNumber));
+        assertThat(getChildPagesByIdRequest.getURI().toString(), containsString("limit=" + limit));
+        assertThat(getChildPagesByIdRequest.getURI().toString(), containsString("page=" + pageNumber));
     }
+
+    @Test
+    public void getAttachmentsRequest_withMinimalParameters_returnsValidHttpGetRequest() throws Exception {
+        // arrange
+        String contentId = "1234";
+
+        // act
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, null);
+
+        // assert
+        assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment"));
+    }
+
+    @Test
+    public void getAttachmentsRequest_withLimit_returnsHttpGetWithLimit() throws Exception {
+        // arrange
+        String contentId = "1234";
+        int limit = 5;
+
+        // act
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, null);
+
+        // assert
+        assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment?limit=" + limit));
+    }
+
+    @Test
+    public void getAttachmentsRequest_withPageNumber_returnsHttpGetWithPage() throws Exception {
+        // arrange
+        String contentId = "1234";
+        int pageNumber = 1;
+
+        // act
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, null, pageNumber);
+
+        // assert
+        assertThat(getAttachmentsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment?page=" + pageNumber));
+    }
+
+    @Test
+    public void getAttachmentsRequest_withLimitAndPageNumber_returnsHttpGetWithLimitAndPage() throws Exception {
+        // arrange
+        String contentId = "1234";
+        int limit = 5;
+        int pageNumber = 1;
+
+        // act
+        HttpGet getAttachmentsRequest = this.httpRequestFactory.getAttachmentsRequest(contentId, limit, pageNumber);
+
+        // assert
+        assertThat(getAttachmentsRequest.getURI().toString(), containsString("limit=" + limit));
+        assertThat(getAttachmentsRequest.getURI().toString(), containsString("page=" + pageNumber));
+    }
+
 }

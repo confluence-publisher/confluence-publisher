@@ -239,6 +239,25 @@ class HttpRequestFactory {
         }
     }
 
+    public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer pageNumber) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+
+        if (limit != null) {
+            uriBuilder.addParameter("limit", limit.toString());
+        }
+        if (pageNumber != null) {
+            uriBuilder.addParameter("page", pageNumber.toString());
+        }
+
+        try {
+            return new HttpGet(uriBuilder.build().toString());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URL", e);
+        }
+    }
+
     private Optional<Header> authenticationHeaderIfAvailable() {
         if (isNotBlank(this.username) && isNotBlank(this.password)) {
             String base64EncodedUsernameAndPassword = encodeAuthenticationHeader(this.username, this.password);

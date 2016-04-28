@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -40,6 +41,7 @@ import org.sahli.confluence.publisher.http.payloads.Version;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -216,6 +218,25 @@ class HttpRequestFactory {
     HttpGet getPageByIdRequest(String contentId, final String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
+    }
+
+    HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer pageNumber) {
+        assertMandatoryParameter(isNotBlank(parentContentId), "parentContentId");
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + parentContentId + "/child/page");
+
+        if (limit != null) {
+            uriBuilder.addParameter("limit", limit.toString());
+        }
+        if (pageNumber != null) {
+            uriBuilder.addParameter("page", pageNumber.toString());
+        }
+
+        try {
+            return new HttpGet(uriBuilder.build().toString());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URL", e);
+        }
     }
 
     private Optional<Header> authenticationHeaderIfAvailable() {

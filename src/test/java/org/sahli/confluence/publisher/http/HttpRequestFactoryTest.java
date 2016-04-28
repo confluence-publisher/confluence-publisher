@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -444,4 +445,66 @@ public class HttpRequestFactoryTest {
         assertThat(getPageByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "?expand=body.storage,version"));
     }
 
+    @Test
+    public void getChildPagesByIdRequest_withValidParameter_returnsValidHttpGet() throws Exception {
+        // arrange
+        String parentContentId = "1234";
+
+        // act
+        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null);
+
+        // assert
+        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page"));
+    }
+
+    @Test
+    public void getChildPagesByIdRequest_withBlankParentContentId_throwsIllegalArgumentException() throws Exception {
+        // assert
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("parentContentId must be set");
+
+        // arrange + act
+        this.httpRequestFactory.getChildPagesByIdRequest("", null, null);
+    }
+
+    @Test
+    public void getChildPagesByIdRequest_withLimit_returnsHttpGetWithLimit() throws Exception {
+        // arrange
+        String parentContentId = "1234";
+        int limit = 5;
+
+        // act
+        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, null);
+
+        // assert
+        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?limit=" + limit));
+    }
+
+    @Test
+    public void getChildPagesByIdRequest_withPageNumber_returnsHttpGetWithLimit() throws Exception {
+        // arrange
+        String parentContentId = "1234";
+        int pageNumber = 5;
+
+        // act
+        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, pageNumber);
+
+        // assert
+        assertThat(childPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?page=" + pageNumber));
+    }
+
+    @Test
+    public void getChildPagesByIdRequest_withLimitAndPageNumber_returnsHttpGetWithPageNumberAndLimit() throws Exception {
+        // arrange
+        String parentContentId = "1234";
+        int limit = 10;
+        int pageNumber = 5;
+
+        // act
+        HttpGet childPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, pageNumber);
+
+        // assert
+        assertThat(childPagesByIdRequest.getURI().toString(), containsString("limit=" + limit));
+        assertThat(childPagesByIdRequest.getURI().toString(), containsString("page=" + pageNumber));
+    }
 }

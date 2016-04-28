@@ -220,7 +220,7 @@ class HttpRequestFactory {
         return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
     }
 
-    HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer pageNumber) {
+    HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer start) {
         assertMandatoryParameter(isNotBlank(parentContentId), "parentContentId");
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + parentContentId + "/child/page");
@@ -228,8 +228,8 @@ class HttpRequestFactory {
         if (limit != null) {
             uriBuilder.addParameter("limit", limit.toString());
         }
-        if (pageNumber != null) {
-            uriBuilder.addParameter("page", pageNumber.toString());
+        if (start != null) {
+            uriBuilder.addParameter("start", start.toString());
         }
 
         try {
@@ -239,7 +239,7 @@ class HttpRequestFactory {
         }
     }
 
-    public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer pageNumber) {
+    public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
@@ -247,8 +247,8 @@ class HttpRequestFactory {
         if (limit != null) {
             uriBuilder.addParameter("limit", limit.toString());
         }
-        if (pageNumber != null) {
-            uriBuilder.addParameter("page", pageNumber.toString());
+        if (start != null) {
+            uriBuilder.addParameter("start", start.toString());
         }
 
         try {

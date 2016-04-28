@@ -31,7 +31,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -376,8 +375,8 @@ public class HttpRequestFactoryTest {
 
         // assert
         assertThat(getPageByTitleRequest.getMethod(), is("GET"));
-        assertThat(getPageByTitleRequest.getURI().toString(), containsString("title=%22Some+page%22"));
-        assertThat(getPageByTitleRequest.getURI().toString(), containsString("%22&cqlcontext=%7B%22spaceKey%22:%22~personalSpace%22%7D"));
+        assertThat(getPageByTitleRequest.getURI().toString(),
+                is(CONFLUENCE_REST_API_ENDPOINT + "/content?spaceKey=" + spaceKey + "&title=" + "Some+page"));
     }
 
     @Test

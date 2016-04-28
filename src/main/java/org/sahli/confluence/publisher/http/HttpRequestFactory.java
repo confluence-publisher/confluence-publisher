@@ -193,7 +193,7 @@ class HttpRequestFactory {
             throw new RuntimeException("Could not encode title", e);
         }
 
-        String searchQuery = this.confluenceRestApiEndpoint + "/content/search?cql=title=%22" + encodedTitle + "%22&cqlcontext=%7B%22spaceKey%22:%22" + spaceKey + "%22%7D";
+        String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + encodedTitle;
 
         HttpGet getPageByTitleRequest = new HttpGet(searchQuery);
 

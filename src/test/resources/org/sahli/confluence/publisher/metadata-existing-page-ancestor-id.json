@@ -1,0 +1,10 @@
+{
+  "spaceKey": "~personalSpace",
+  "ancestorId": "1234",
+  "pages": [
+    {
+      "title": "Existing Page",
+      "contentFilePath": "some-confluence-content.html"
+    }
+  ]
+}

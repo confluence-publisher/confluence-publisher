@@ -18,7 +18,9 @@ package org.sahli.confluence.publisher;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.sahli.confluence.publisher.http.ConfluencePage;
 import org.sahli.confluence.publisher.http.ConfluenceRestClient;
+import org.sahli.confluence.publisher.http.NotFoundException;
 import org.sahli.confluence.publisher.metadata.ConfluencePageMetadata;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 
@@ -28,7 +30,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Supplier;
 
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.confluence.publisher.utils.InputStreamUtils.fileContent;
@@ -66,7 +70,8 @@ public class ConfluencePublisher {
     private void startPublishingUnderSpace(List<ConfluencePageMetadata> pages, String spaceKey) {
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = this.confluenceRestClient.addPageUnderSpace(spaceKey, page.getTitle(), content);
+            String contentId = addOrUpdatePage(spaceKey, page, content,
+                    () -> this.confluenceRestClient.addPageUnderSpace(spaceKey, page.getTitle(), content));
 
             addAttachments(contentId, page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
@@ -76,11 +81,31 @@ public class ConfluencePublisher {
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = this.confluenceRestClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
+            String contentId = addOrUpdatePage(spaceKey, page, content,
+                    () -> this.confluenceRestClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content));
 
             addAttachments(contentId, page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
+    }
+
+    private String addOrUpdatePage(String spaceKey, ConfluencePageMetadata page, String content, Supplier<String> addPage) {
+        String contentId;
+        try {
+            contentId = this.confluenceRestClient.getPageByTitle(spaceKey, page.getTitle());
+            ConfluencePage existingPage = this.confluenceRestClient.getPageWithContentAndVersionById(contentId);
+
+            String newPageContentHash = sha256Hex(content);
+            String existingPageContentHash = sha256Hex(existingPage.getContent());
+
+            if (!newPageContentHash.equals(existingPageContentHash)) {
+                this.confluenceRestClient.updatePage(contentId, page.getTitle(), content, existingPage.getVersion() + 1);
+            }
+        } catch (NotFoundException e) {
+            contentId = addPage.get();
+        }
+
+        return contentId;
     }
 
     private void addAttachments(String contentId, List<String> attachments) {

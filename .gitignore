@@ -1,3 +1,5 @@
 *.iml
+*IntegrationTest.java
 target/
 /.idea
+/src/test/resources/org/sahli/confluence/publisher/integration

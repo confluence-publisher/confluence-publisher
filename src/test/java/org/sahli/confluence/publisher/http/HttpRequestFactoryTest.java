@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 
@@ -97,10 +97,6 @@ public class HttpRequestFactoryTest {
 
         HttpGet getAttachmentByFileNameRequest = httpRequestFactory.getAttachmentByFileNameRequest("234", "file.txt");
         assertAuthenticationHeader(getAttachmentByFileNameRequest);
-    }
-
-    private static void assertAuthenticationHeader(HttpRequestBase httpRequest) {
-        assertThat(httpRequest.getFirstHeader("Authorization").getValue(), is("Basic dXNlcm5hbWU6cGFzc3dvcmQ="));
     }
 
     @Test
@@ -253,7 +249,7 @@ public class HttpRequestFactoryTest {
         // arrange
         String contentId = "1234";
         String attachmentFileName = "attachment.txt";
-        InputStream attachmentContent = new FileInputStream(Paths.get(CLASS_LOCATION, "attachment.txt").toString());
+        InputStream attachmentContent = new ByteArrayInputStream("Some text".getBytes());
 
         // act
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
@@ -262,7 +258,12 @@ public class HttpRequestFactoryTest {
         assertThat(addAttachmentRequest.getMethod(), is("POST"));
         assertThat(addAttachmentRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment"));
         assertThat(addAttachmentRequest.getFirstHeader("X-Atlassian-Token").getValue(), is("no-check"));
-        // TODO find a way to assert entity content
+
+        ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
+        addAttachmentRequest.getEntity().writeTo(entityContent);
+        String multiPartPayload = entityContent.toString("UTF-8");
+        assertThat(multiPartPayload, containsString("attachment.txt"));
+        assertThat(multiPartPayload, containsString("Some text"));
     }
 
     @Test
@@ -309,7 +310,11 @@ public class HttpRequestFactoryTest {
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
         assertThat(updateAttachmentContentRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data"));
         assertThat(updateAttachmentContentRequest.getFirstHeader("X-Atlassian-Token").getValue(), is("no-check"));
-        // TODO find a way to assert entity content
+
+        ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
+        updateAttachmentContentRequest.getEntity().writeTo(entityContent);
+        String multiPartPayload = entityContent.toString("UTF-8");
+        assertThat(multiPartPayload, containsString("hello"));
     }
 
     @Test
@@ -561,6 +566,10 @@ public class HttpRequestFactoryTest {
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("limit=" + limit));
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("start=" + start));
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("expand=" + expandOptions));
+    }
+
+    private static void assertAuthenticationHeader(HttpRequestBase httpRequest) {
+        assertThat(httpRequest.getFirstHeader("Authorization").getValue(), is("Basic dXNlcm5hbWU6cGFzc3dvcmQ="));
     }
 
 }

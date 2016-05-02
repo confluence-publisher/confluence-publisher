@@ -18,6 +18,7 @@ package org.sahli.confluence.publisher;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.sahli.confluence.publisher.http.ConfluenceAttachment;
 import org.sahli.confluence.publisher.http.ConfluencePage;
 import org.sahli.confluence.publisher.http.ConfluenceRestClient;
 import org.sahli.confluence.publisher.http.NotFoundException;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Supplier;
@@ -109,10 +111,36 @@ public class ConfluencePublisher {
     }
 
     private void addAttachments(String contentId, List<String> attachments) {
-        attachments.forEach(attachment -> {
-            FileInputStream inputStream = fileInputStream(Paths.get(this.contentRoot, attachment).toString());
-            this.confluenceRestClient.addAttachment(contentId, attachment, inputStream);
-        });
+        attachments.forEach(attachment -> addOrUpdateAttachment(contentId, attachment));
+    }
+
+    private void addOrUpdateAttachment(String contentId, String attachment) {
+        try {
+            ConfluenceAttachment existingAttachment = this.confluenceRestClient.getAttachmentByFileName(contentId, attachment);
+            InputStream existingAttachmentContent = this.confluenceRestClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
+
+            if (!isSameContent(existingAttachmentContent, fileInputStream(Paths.get(this.contentRoot, attachment).toString()))) {
+                this.confluenceRestClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+            }
+
+        } catch (NotFoundException e) {
+            this.confluenceRestClient.addAttachment(contentId, attachment, fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+        }
+    }
+
+    private static boolean isSameContent(InputStream left, InputStream right) {
+        String leftHash = sha256Hash(left);
+        String rightHash = sha256Hash(right);
+
+        return leftHash.equals(rightHash);
+    }
+
+    private static String sha256Hash(InputStream existingAttachmentContent) {
+        try {
+            return sha256Hex(existingAttachmentContent);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not compute hash from input stream", e);
+        }
     }
 
     private static ConfluencePublisherMetadata readConfig(String configPath) {

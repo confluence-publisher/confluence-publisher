@@ -198,6 +198,17 @@ public class ConfluenceRestClient {
         return attachmentExists;
     }
 
+    public InputStream getAttachmentContent(String relativeDownloadLink) {
+        HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(getAttachmentContentRequest);
+
+        try {
+            return response.getEntity().getContent();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read attachment content", e);
+        }
+    }
+
     private JsonNode parseJsonResponse(HttpResponse response) {
         try {
             return this.objectMapper.readTree(response.getEntity().getContent());

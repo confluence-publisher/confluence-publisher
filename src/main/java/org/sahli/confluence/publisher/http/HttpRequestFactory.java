@@ -60,6 +60,7 @@ class HttpRequestFactory {
 
     private final static Header APPLICATION_JSON_UTF8_HEADER = new BasicHeader("Content-Type", "application/json;charset=utf-8");
     private static final String REST_API_CONTEXT = "/rest/api";
+    private final String rootConfluenceUrl;
     private final String confluenceRestApiEndpoint;
     private final String username;
     private final String password;
@@ -71,6 +72,7 @@ class HttpRequestFactory {
     HttpRequestFactory(String rootConfluenceUrl, String username, String password) {
         assertMandatoryParameter(isNotBlank(rootConfluenceUrl), "rootConfluenceUrl");
 
+        this.rootConfluenceUrl = rootConfluenceUrl;
         this.confluenceRestApiEndpoint = rootConfluenceUrl + REST_API_CONTEXT;
         this.username = username;
         this.password = password;
@@ -268,6 +270,10 @@ class HttpRequestFactory {
         } else {
             return Optional.empty();
         }
+    }
+
+    public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
+        return new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
     }
 
     private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {

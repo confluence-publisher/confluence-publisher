@@ -5,6 +5,7 @@
 ## Open points:
 * Encode URL correctly (%20 and co)
 * Add some reporting service to print out result
+* Delegate authentication to http client instead of request factory
 
 ## Limitations
 * Page titles must be unique within a given space (space key)

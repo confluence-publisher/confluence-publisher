@@ -93,20 +93,6 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void addPageUnderSpace_withValidParameters_returnsCreatedPageContentId() throws Exception {
-        // arrange
-        String expectedContentId = "1234";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\":\"" + expectedContentId + "\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
-
-        // act
-        String contentId = confluenceRestClient.addPageUnderSpace("~personalSpace", "Hello", "Content");
-
-        // assert
-        assertThat(contentId, is(expectedContentId));
-    }
-
-    @Test
     public void addPageUnderAncestor_withValidParameters_returnsCreatedPageContentId() throws Exception {
         // arrange
         String expectedContentId = "1234";
@@ -461,6 +447,19 @@ public class ConfluenceRestClientTest {
         verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+    }
+
+    @Test
+    public void getSpaceContentId_withValidParameter_sendsHttpGetRequest() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\": \"12\"}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        String contentId = confluenceRestClient.getSpaceContentId("~personalSpace");
+
+        // assert
+        assertThat(contentId, is("12"));
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {

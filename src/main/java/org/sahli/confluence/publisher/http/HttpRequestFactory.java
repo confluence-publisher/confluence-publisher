@@ -78,22 +78,6 @@ class HttpRequestFactory {
         this.password = password;
     }
 
-    HttpPost addPageUnderSpaceRequest(String spaceKey, String title, String content) {
-        assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
-        assertMandatoryParameter(isNotBlank(title), "title");
-
-        PagePayload pagePayload = pagePayloadBuilder()
-                .spaceKey(spaceKey)
-                .title(title)
-                .content(content)
-                .build();
-
-        HttpPost addPageHttpPost = addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
-        this.authenticationHeaderIfAvailable().ifPresent(addPageHttpPost::addHeader);
-
-        return addPageHttpPost;
-    }
-
     HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content) {
         assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
         assertMandatoryParameter(isNotBlank(ancestorId), "ancestorId");
@@ -232,10 +216,14 @@ class HttpRequestFactory {
 
     HttpGet getPageByIdRequest(String contentId, final String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
-        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
+        HttpGet getPageByIdRequest = new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
+
+        this.authenticationHeaderIfAvailable().ifPresent(getPageByIdRequest::addHeader);
+
+        return getPageByIdRequest;
     }
 
-    HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer start) {
+    HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer start, String expandOptions) {
         assertMandatoryParameter(isNotBlank(parentContentId), "parentContentId");
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + parentContentId + "/child/page");
@@ -246,12 +234,20 @@ class HttpRequestFactory {
         if (start != null) {
             uriBuilder.addParameter("start", start.toString());
         }
+        if (isNotBlank(expandOptions)) {
+            uriBuilder.addParameter("expand", expandOptions);
+        }
 
+        HttpGet getChildPagesByIdRequest;
         try {
-            return new HttpGet(uriBuilder.build().toString());
+            getChildPagesByIdRequest = new HttpGet(uriBuilder.build().toString());
         } catch (URISyntaxException e) {
             throw new RuntimeException("Invalid URL", e);
         }
+
+        this.authenticationHeaderIfAvailable().ifPresent(getChildPagesByIdRequest::addHeader);
+
+        return getChildPagesByIdRequest;
     }
 
     public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start, String expandOptions) {
@@ -269,11 +265,32 @@ class HttpRequestFactory {
             uriBuilder.addParameter("expand", expandOptions);
         }
 
+        HttpGet getAttachmentsRequest;
         try {
-            return new HttpGet(uriBuilder.build().toString());
+            getAttachmentsRequest = new HttpGet(uriBuilder.build().toString());
         } catch (URISyntaxException e) {
             throw new RuntimeException("Invalid URL", e);
         }
+
+        this.authenticationHeaderIfAvailable().ifPresent(getAttachmentsRequest::addHeader);
+
+        return getAttachmentsRequest;
+    }
+
+    public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
+        assertMandatoryParameter(isNotBlank(relativeDownloadLink), "relativeDownloadLink");
+        HttpGet getAttachmentContentRequest = new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
+        this.authenticationHeaderIfAvailable().ifPresent(getAttachmentContentRequest::addHeader);
+
+        return getAttachmentContentRequest;
+    }
+
+    public HttpGet getSpaceContentIdRequest(String spaceKey) {
+        assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
+        HttpGet getSpaceContentIdRequest = new HttpGet(this.confluenceRestApiEndpoint + "/space/" + spaceKey);
+        this.authenticationHeaderIfAvailable().ifPresent(getSpaceContentIdRequest::addHeader);
+
+        return getSpaceContentIdRequest;
     }
 
     private Optional<Header> authenticationHeaderIfAvailable() {
@@ -283,10 +300,6 @@ class HttpRequestFactory {
         } else {
             return Optional.empty();
         }
-    }
-
-    public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
-        return new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
     }
 
     private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {

@@ -63,16 +63,6 @@ public class ConfluenceRestClient {
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
-    public String addPageUnderSpace(String spaceKey, String title, String content) {
-        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderSpaceRequest(spaceKey, title, content);
-        CloseableHttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
-
-        String contentId = extractIdFromJsonNode(parseJsonResponse(response));
-        closeResponse(response);
-
-        return contentId;
-    }
-
     public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content) {
         HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
@@ -276,7 +266,7 @@ public class ConfluenceRestClient {
 
     private List<ConfluencePage> getNextChildPages(String contentId, int limit, int start) {
         List<ConfluencePage> pages = new ArrayList<>(limit);
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start, "version");
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(getChildPagesByIdRequest);
 
         JsonNode jsonNode = parseJsonResponse(response);
@@ -296,6 +286,16 @@ public class ConfluenceRestClient {
         closeResponse(response);
 
         return attachments;
+    }
+
+    public String getSpaceContentId(String spaceKey) {
+        HttpGet getSpaceContentIdRequest = this.httpRequestFactory.getSpaceContentIdRequest(spaceKey);
+        CloseableHttpResponse response = sendRequestAndFailIfNot20x(getSpaceContentIdRequest);
+
+        String spaceContentId = extractIdFromJsonNode(parseJsonResponse(response));
+        closeResponse(response);
+
+        return spaceContentId;
     }
 
     private static void closeResponse(CloseableHttpResponse response) {

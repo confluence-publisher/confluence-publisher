@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.jsoup.Jsoup.parse;
@@ -65,25 +66,19 @@ public class ConfluencePublisher {
     public void publish() {
         assertMandatoryParameter(isNotBlank(this.getMetadata().getSpaceKey()), "spaceKey");
 
+        String ancestorId;
         if (isNotBlank(this.metadata.getAncestorId())) {
-            startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+            ancestorId = this.getMetadata().getAncestorId();
         } else {
-            startPublishingUnderSpace(this.metadata.getPages(), this.metadata.getSpaceKey());
+            ancestorId = this.confluenceRestClient.getSpaceContentId(this.metadata.getSpaceKey());
         }
-    }
 
-    private void startPublishingUnderSpace(List<ConfluencePageMetadata> pages, String spaceKey) {
-        pages.forEach(page -> {
-            String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = addOrUpdatePage(spaceKey, page, content,
-                    () -> this.confluenceRestClient.addPageUnderSpace(spaceKey, page.getTitle(), content));
-
-            addAttachments(contentId, page.getAttachments());
-            startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
-        });
+        startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), ancestorId);
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
+        deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
+
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
             String contentId = addOrUpdatePage(spaceKey, page, content,
@@ -92,6 +87,17 @@ public class ConfluencePublisher {
             addAttachments(contentId, page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
+    }
+
+    private void deleteConfluencePagesNotPresentUnderAncestor(List<ConfluencePageMetadata> pages, String ancestorId) {
+        List<ConfluencePage> childPagesOnConfluence = this.confluenceRestClient.getChildPages(ancestorId);
+
+        List<String> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
+                .filter(childPageOnConfluence -> !pages.stream().anyMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
+                .map(ConfluencePage::getContentId)
+                .collect(toList());
+
+        childPagesOnConfluenceToDelete.forEach(this.confluenceRestClient::deletePage);
     }
 
     private String addOrUpdatePage(String spaceKey, ConfluencePageMetadata page, String content, Supplier<String> addPage) {

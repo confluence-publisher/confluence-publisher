@@ -29,6 +29,7 @@ import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -95,21 +96,6 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_oneNewPageWithSpaceKey_delegatesToConfluenceRestClient() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-space-key", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderSpace(eq("~personalSpace"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-    }
-
-    @Test
     public void publish_oneNewPageWithAncestorId_delegatesToConfluenceRestClient() throws Exception {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
@@ -122,23 +108,6 @@ public class ConfluencePublisherTest {
 
         // assert
         verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-    }
-
-    @Test
-    public void publish_multiplePagesInHierarchyWithSpaceKeyAsRoot_delegatesToConfluenceRestClient() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderSpace(anyString(), anyString(), anyString())).thenReturn("1234");
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-space-key-multiple-pages", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderSpace(eq("~personalSpace"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Some Child Content"), eq("<h1>Some Child Content</h1>"));
     }
 
     @Test
@@ -167,32 +136,6 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataOnePageWithAttachmentsAndSpaceKeyAsRoot_attachesAttachmentToContent() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderSpace(anyString(), anyString(), anyString())).thenReturn("1234");
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.getAttachmentByFileName(anyString(), anyString())).thenThrow(new NotFoundException());
-
-        ArgumentCaptor<String> contentId = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> attachmentFileName = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<InputStream> attachmentContent = ArgumentCaptor.forClass(InputStream.class);
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-space-key-page-with-attachments", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderSpace(eq("~personalSpace"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
-        assertThat(contentId.getAllValues(), contains("1234", "1234"));
-        assertThat(attachmentFileName.getAllValues(), contains("attachmentOne.txt", "attachmentTwo.txt"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(0)), is("attachment1"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(1)), is("attachment2"));
-    }
-
-    @Test
     public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() throws Exception {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
@@ -216,40 +159,6 @@ public class ConfluencePublisherTest {
         assertThat(attachmentFileName.getAllValues(), contains("attachmentOne.txt", "attachmentTwo.txt"));
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(0)), is("attachment1"));
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(1)), is("attachment2"));
-    }
-
-    @Test
-    public void publish_metadataWithExistingPageWithDifferentContentUnderRootSpace_sendsUpdateRequest() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("3456")).thenReturn(new ConfluencePage("3456", "Existing Page", "<h1>Some Other Confluence Content</h1>", 1));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-space-key", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, never()).addPageUnderSpace(eq("~personalSpace"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).updatePage(eq("3456"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2));
-    }
-
-    @Test
-    public void publish_metadataWithExistingPageWithSameContentButDifferentFormattingUnderRootSpace_sendsNoAddOrUpdateRequest() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("3456")).thenReturn(new ConfluencePage("3456", "Existing Page", "<h1>Some Confluence Content</h1>  ", 1));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-space-key", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, never()).addPageUnderSpace(eq("~personalSpace"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, never()).updatePage(eq("3456"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2));
     }
 
     @Test
@@ -336,7 +245,26 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock, never()).updateAttachmentContent(anyString(), anyString(), any(InputStream.class));
     }
 
+    @Test
+    public void publish_metadataWithTreeContainingDeletedPageUnderRootSpace_deletesPagesThatDoNotExistAnymore() throws Exception {
+        // arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
+        ConfluencePage existingPage = new ConfluencePage("1", "Existing Page", "<h1>Existing Page</1>", 1);
+        ConfluencePage deletedPage = new ConfluencePage("2", "Deleted Page", 1);
+        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(Arrays.asList(existingPage, deletedPage));
+        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("1");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("1")).thenReturn(existingPage);
 
+        ConfluencePublisher confluencePublisher = confluencePublisher("deleted-page-space-key", confluenceRestClientMock);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, times(1)).deletePage("2");
+        verify(confluenceRestClientMock, times(1)).updatePage("1", "Existing Page", "<h1>Some Confluence Content</h1>", 2);
+    }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {
         return new ConfluencePublisher(TEST_RESOURCES + "/metadata-" + qualifier + ".json", confluenceRestClient);

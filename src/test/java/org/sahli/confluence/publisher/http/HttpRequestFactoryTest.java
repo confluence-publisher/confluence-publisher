@@ -71,9 +71,6 @@ public class HttpRequestFactoryTest {
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(CONFLUENCE_REST_API_ENDPOINT, "username", "password");
 
         // act + assert
-        HttpPost addPageUnderSpaceRequest = httpRequestFactory.addPageUnderSpaceRequest("~personaleSpace", "title", "content");
-        assertAuthenticationHeader(addPageUnderSpaceRequest);
-
         HttpPost addPageUnderAncestorRequest = httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "123", "title", "content");
         assertAuthenticationHeader(addPageUnderAncestorRequest);
 
@@ -97,46 +94,21 @@ public class HttpRequestFactoryTest {
 
         HttpGet getAttachmentByFileNameRequest = httpRequestFactory.getAttachmentByFileNameRequest("234", "file.txt", null);
         assertAuthenticationHeader(getAttachmentByFileNameRequest);
-    }
 
-    @Test
-    public void addPageUnderSpaceRequest_withValidParameters_returnsValidHttpPostWithSpaceKeyWithoutAncestorId() throws Exception {
-        // arrange
-        String spaceKey = "~personalSpace";
-        String title = "title";
-        String content = "content";
+        HttpGet getPageByIdRequest = httpRequestFactory.getPageByIdRequest("1", null);
+        assertAuthenticationHeader(getPageByIdRequest);
 
-        // act
-        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderSpaceRequest(spaceKey, title, content);
+        HttpGet getChildPagesByIdRequest = httpRequestFactory.getChildPagesByIdRequest("1", 1, 1, null);
+        assertAuthenticationHeader(getChildPagesByIdRequest);
 
-        // assert
-        assertThat(addPageUnderSpaceRequest.getMethod(), is("POST"));
-        assertThat(addPageUnderSpaceRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content"));
-        assertThat(addPageUnderSpaceRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
+        HttpGet getAttachmentsRequest = httpRequestFactory.getAttachmentsRequest("1", 1, 1, null);
+        assertAuthenticationHeader(getAttachmentsRequest);
 
-        String jsonPayload = inputStreamAsString(addPageUnderSpaceRequest.getEntity().getContent());
-        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-space-key.json").toString());
-        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
-    }
+        HttpGet getAttachmentContentRequest = httpRequestFactory.getAttachmentContentRequest("http://download");
+        assertAuthenticationHeader(getAttachmentContentRequest);
 
-    @Test
-    public void addPageUnderSpaceRequest_withBlankTitle_throwsIllegalArgumentException() throws Exception {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("title must be set");
-
-        // arrange + act
-        this.httpRequestFactory.addPageUnderSpaceRequest("~personalSpace", "", "content");
-    }
-
-    @Test
-    public void addPageUnderSpaceRequest_withoutSpaceKey_throwsIllegalArgumentException() throws Exception {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("spaceKey must be set");
-
-        // arrange + act
-        this.httpRequestFactory.addPageUnderSpaceRequest("", "title", "content");
+        HttpGet getSpaceContentIdRequest = httpRequestFactory.getSpaceContentIdRequest("~personalSpace");
+        assertAuthenticationHeader(getSpaceContentIdRequest);
     }
 
     @Test
@@ -471,7 +443,7 @@ public class HttpRequestFactoryTest {
         String parentContentId = "1234";
 
         // act
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null, null);
 
         // assert
         assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page"));
@@ -484,7 +456,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("parentContentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.getChildPagesByIdRequest("", null, null);
+        this.httpRequestFactory.getChildPagesByIdRequest("", null, null, null);
     }
 
     @Test
@@ -494,7 +466,7 @@ public class HttpRequestFactoryTest {
         int limit = 5;
 
         // act
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, null);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, null, null);
 
         // assert
         assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?limit=" + limit));
@@ -507,10 +479,23 @@ public class HttpRequestFactoryTest {
         int start = 5;
 
         // act
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, start);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, start, null);
 
         // assert
         assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?start=" + start));
+    }
+
+    @Test
+    public void getChildPagesByIdRequest_withExpandOptions_returnsHttpGetWithExpandOption() throws Exception {
+        // arrange
+        String parentContentId = "1234";
+        String expandOptions = "version";
+
+        // act
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, null, null, expandOptions);
+
+        // assert
+        assertThat(getChildPagesByIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + parentContentId + "/child/page?expand=" + expandOptions));
     }
 
     @Test
@@ -521,7 +506,7 @@ public class HttpRequestFactoryTest {
         int start = 5;
 
         // act
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, start);
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(parentContentId, limit, start, null);
 
         // assert
         assertThat(getChildPagesByIdRequest.getURI().toString(), containsString("limit=" + limit));
@@ -581,6 +566,50 @@ public class HttpRequestFactoryTest {
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("limit=" + limit));
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("start=" + start));
         assertThat(getAttachmentsRequest.getURI().toString(), containsString("expand=" + expandOptions));
+    }
+
+    @Test
+    public void getSpaceContentIdRequest_withValidSpaceKey_returnsHttpGetRequest() throws Exception {
+        // arrange
+        String spaceKey = "~alsa";
+
+        // act
+        HttpGet getSpaceContentIdRequest = this.httpRequestFactory.getSpaceContentIdRequest(spaceKey);
+
+        // assert
+        assertThat(getSpaceContentIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/space/" + spaceKey));
+    }
+
+    @Test
+    public void getSpaceContentIdRequest_withBlankSpaceKey_throwsIllegalArgumentException() throws Exception {
+        // assert
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("spaceKey must be set");
+
+        // arrange + act
+        this.httpRequestFactory.getSpaceContentIdRequest("");
+    }
+
+    @Test
+    public void getAttachmentContentRequest_withValidParameters_returnsHttpGetRequest() throws Exception {
+        // arrange
+        String relativeDownloadLink = "/download/attachment.txt";
+
+        // act
+        HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
+
+        // assert
+        assertThat(getAttachmentContentRequest.getURI().toString(), is(ROOT_CONFLUENCE_URL + relativeDownloadLink));
+    }
+
+    @Test
+    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() throws Exception {
+        // assert
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("relativeDownloadLink must be set");
+
+        // arrange + act
+        this.httpRequestFactory.getAttachmentContentRequest("");
     }
 
     private static void assertAuthenticationHeader(HttpRequestBase httpRequest) {

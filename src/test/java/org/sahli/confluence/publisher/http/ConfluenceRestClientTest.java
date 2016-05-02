@@ -220,17 +220,20 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void getAttachmentByFileName_withValidParameters_sendsHttpGetRequest() throws Exception {
+    public void getAttachmentByFileName_withValidParameters_sendsHttpGetRequestAndReturnsConfluenceAttachment() throws Exception {
         // arrange
-        String expectedAttachmentId = "att12";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedAttachmentId + "\"}], \"size\": 1}", 200);
+        String jsonAttachment = "{\"id\": \"att12\", \"title\": \"Attachment.txt\", \"_links\": {\"download\": \"/download/Attachment.txt\"}, \"version\": {\"number\": 1}}";
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + jsonAttachment + "], \"size\": 1}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
 
         // act
-        String attachmentId = confluenceRestClient.getAttachmentByFileName("1234", "file.txt");
+        ConfluenceAttachment confluenceAttachment = confluenceRestClient.getAttachmentByFileName("1234", "file.txt");
 
         // assert
-        assertThat(attachmentId, is(expectedAttachmentId));
+        assertThat(confluenceAttachment.getId(), is("att12"));
+        assertThat(confluenceAttachment.getTitle(), is("Attachment.txt"));
+        assertThat(confluenceAttachment.getRelativeDownloadLink(), is("/download/Attachment.txt"));
+        assertThat(confluenceAttachment.getVersion(), is(1));
     }
 
     @Test(expected = NotFoundException.class)

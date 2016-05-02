@@ -133,7 +133,7 @@ public class ConfluenceRestClient {
         closeResponse(response);
     }
 
-    public String getAttachmentByFileName(String contentId, String attachmentFileName) throws NotFoundException, MultipleResultsException {
+    public ConfluenceAttachment getAttachmentByFileName(String contentId, String attachmentFileName) throws NotFoundException, MultipleResultsException {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(attachmentByFileNameRequest);
 
@@ -148,7 +148,7 @@ public class ConfluenceRestClient {
             throw new MultipleResultsException();
         }
 
-        String attachmentId = extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+        ConfluenceAttachment attachmentId = extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
         closeResponse(response);
 
         return attachmentId;

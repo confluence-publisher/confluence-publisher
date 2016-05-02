@@ -18,6 +18,7 @@ package org.sahli.confluence.publisher;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jsoup.nodes.Document;
 import org.sahli.confluence.publisher.http.ConfluenceAttachment;
 import org.sahli.confluence.publisher.http.ConfluencePage;
 import org.sahli.confluence.publisher.http.ConfluenceRestClient;
@@ -36,6 +37,8 @@ import java.util.function.Supplier;
 
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jsoup.Jsoup.parse;
+import static org.jsoup.parser.Parser.xmlParser;
 import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.confluence.publisher.utils.InputStreamUtils.fileContent;
 
@@ -97,10 +100,7 @@ public class ConfluencePublisher {
             contentId = this.confluenceRestClient.getPageByTitle(spaceKey, page.getTitle());
             ConfluencePage existingPage = this.confluenceRestClient.getPageWithContentAndVersionById(contentId);
 
-            String newPageContentHash = sha256Hex(content);
-            String existingPageContentHash = sha256Hex(existingPage.getContent());
-
-            if (!newPageContentHash.equals(existingPageContentHash)) {
+            if (notSameHtmlContent(content, existingPage.getContent())) {
                 this.confluenceRestClient.updatePage(contentId, page.getTitle(), content, existingPage.getVersion() + 1);
             }
         } catch (NotFoundException e) {
@@ -126,6 +126,13 @@ public class ConfluencePublisher {
         } catch (NotFoundException e) {
             this.confluenceRestClient.addAttachment(contentId, attachment, fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
         }
+    }
+
+    private static boolean notSameHtmlContent(String htmlContent1, String htmlContent2) {
+        Document document1 = parse(htmlContent1.trim(), "UTF-8", xmlParser());
+        Document document2 = parse(htmlContent2.trim(), "UTF-8", xmlParser());
+
+        return !document1.hasSameValue(document2);
     }
 
     private static boolean isSameContent(InputStream left, InputStream right) {

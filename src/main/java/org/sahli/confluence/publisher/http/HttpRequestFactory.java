@@ -206,11 +206,24 @@ class HttpRequestFactory {
         return getPageByTitleRequest;
     }
 
-    HttpGet getAttachmentByFileNameRequest(String contentId, String attachmentFileName) {
+    HttpGet getAttachmentByFileNameRequest(String contentId, String attachmentFileName, String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentFileName), "attachmentFileName");
 
-        HttpGet getAttachmentByFileNameRequest = new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment?filename=" + attachmentFileName);
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+        uriBuilder.addParameter("filename", attachmentFileName);
+
+        if (isNotBlank(expandOptions)) {
+            uriBuilder.addParameter("expand", expandOptions);
+        }
+
+        HttpGet getAttachmentByFileNameRequest;
+        try {
+            getAttachmentByFileNameRequest = new HttpGet(uriBuilder.build().toString());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URL", e);
+        }
 
         this.authenticationHeaderIfAvailable().ifPresent(getAttachmentByFileNameRequest::addHeader);
 

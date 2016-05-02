@@ -95,7 +95,7 @@ public class HttpRequestFactoryTest {
         HttpGet getPageByTitleRequest = httpRequestFactory.getPageByTitleRequest("~personalSpace", "title");
         assertAuthenticationHeader(getPageByTitleRequest);
 
-        HttpGet getAttachmentByFileNameRequest = httpRequestFactory.getAttachmentByFileNameRequest("234", "file.txt");
+        HttpGet getAttachmentByFileNameRequest = httpRequestFactory.getAttachmentByFileNameRequest("234", "file.txt", null);
         assertAuthenticationHeader(getAttachmentByFileNameRequest);
     }
 
@@ -406,16 +406,31 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentByFileNameRequest_withValidParameters_returnsValidHttpGet() throws Exception {
+    public void getAttachmentByFileNameRequest_withMinimalParameters_returnsValidHttpGet() throws Exception {
         // arrange
         String contentId = "1234";
         String attachmentFileName = "file.txt";
 
         // act
-        HttpGet getAttachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
+        HttpGet getAttachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, null);
 
         // assert
         assertThat(getAttachmentByFileNameRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment?filename=" + attachmentFileName));
+    }
+
+    @Test
+    public void getAttachmentByFileNameRequest_withExpandOptions_returnsValidHttpGetWithExpandOptions() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String attachmentFileName = "file.txt";
+        String expandOptions = "version";
+
+        // act
+        HttpGet getAttachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, expandOptions);
+
+        // assert
+        assertThat(getAttachmentByFileNameRequest.getURI().toString(), containsString("filename=" + attachmentFileName));
+        assertThat(getAttachmentByFileNameRequest.getURI().toString(), containsString("expand=" + expandOptions));
     }
 
     @Test
@@ -425,7 +440,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // act
-        this.httpRequestFactory.getAttachmentByFileNameRequest("", "file.txt");
+        this.httpRequestFactory.getAttachmentByFileNameRequest("", "file.txt", null);
     }
 
     @Test
@@ -435,7 +450,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentFileName must be set");
 
         // act
-        this.httpRequestFactory.getAttachmentByFileNameRequest("1234", "");
+        this.httpRequestFactory.getAttachmentByFileNameRequest("1234", "", null);
     }
 
     @Test

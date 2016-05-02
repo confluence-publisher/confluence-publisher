@@ -134,7 +134,7 @@ public class ConfluenceRestClient {
     }
 
     public ConfluenceAttachment getAttachmentByFileName(String contentId, String attachmentFileName) throws NotFoundException, MultipleResultsException {
-        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
+        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, "version");
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(attachmentByFileNameRequest);
 
         JsonNode jsonNode = parseJsonResponse(response);
@@ -176,7 +176,7 @@ public class ConfluenceRestClient {
     }
 
     public boolean attachmentExistsByFileName(String contentId, String attachmentFileName) {
-        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName);
+        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, null);
 
         CloseableHttpResponse response = sendRequest(attachmentByFileNameRequest);
         StatusLine statusLine = response.getStatusLine();

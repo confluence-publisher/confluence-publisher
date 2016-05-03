@@ -109,12 +109,14 @@ public class ConfluenceRestClient {
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(addAttachmentRequest);
         closeResponse(response);
+        closeInputStream(attachmentContent);
     }
 
     public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent) {
         HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(updateAttachmentContentRequest);
         closeResponse(response);
+        closeInputStream(attachmentContent);
     }
 
     public void deleteAttachment(String attachmentId) {
@@ -342,6 +344,14 @@ public class ConfluenceRestClient {
 
     private static int extractVersionFromJsonNode(JsonNode jsonNode) {
         return jsonNode.path("version").get("number").asInt();
+    }
+
+    private static void closeInputStream(InputStream inputStream) {
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Exception while closing input stream", e);
+        }
     }
 
 }

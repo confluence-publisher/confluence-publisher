@@ -161,11 +161,16 @@ public class ConfluencePublisher {
         return leftHash.equals(rightHash);
     }
 
-    private static String sha256Hash(InputStream existingAttachmentContent) {
+    private static String sha256Hash(InputStream content) {
         try {
-            return sha256Hex(existingAttachmentContent);
+            return sha256Hex(content);
         } catch (IOException e) {
             throw new RuntimeException("Could not compute hash from input stream", e);
+        } finally {
+            try {
+                content.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 

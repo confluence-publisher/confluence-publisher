@@ -19,7 +19,6 @@ package org.sahli.confluence.publisher.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,9 +39,9 @@ public final class InputStreamUtils {
     }
 
     public static String fileContent(String filePath) {
-        try {
-            return inputStreamAsString(new FileInputStream(new File(filePath)));
-        } catch (FileNotFoundException e) {
+        try (FileInputStream fileInputStream = new FileInputStream(new File(filePath))) {
+            return inputStreamAsString(fileInputStream);
+        } catch (IOException e) {
             throw new RuntimeException("Could not read file", e);
         }
     }

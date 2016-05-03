@@ -84,6 +84,7 @@ public class ConfluencePublisher {
             String contentId = addOrUpdatePage(spaceKey, page, content,
                     () -> this.confluenceRestClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content));
 
+            deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
@@ -99,6 +100,18 @@ public class ConfluencePublisher {
 
         childPagesOnConfluenceToDelete.forEach(this.confluenceRestClient::deletePage);
     }
+
+    private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, List<String> attachments) {
+        List<ConfluenceAttachment> confluenceAttachments = this.confluenceRestClient.getAttachments(contentId);
+
+        List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
+                .filter(confluenceAttachment -> !attachments.stream().anyMatch(attachment -> attachment.equals(confluenceAttachment.getTitle())))
+                .map(ConfluenceAttachment::getId)
+                .collect(toList());
+
+        confluenceAttachmentsToDelete.forEach(this.confluenceRestClient::deleteAttachment);
+    }
+
 
     private String addOrUpdatePage(String spaceKey, ConfluencePageMetadata page, String content, Supplier<String> addPage) {
         String contentId;

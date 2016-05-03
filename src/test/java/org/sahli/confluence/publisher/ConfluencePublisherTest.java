@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -264,6 +265,30 @@ public class ConfluencePublisherTest {
         // assert
         verify(confluenceRestClientMock, times(1)).deletePage("2");
         verify(confluenceRestClientMock, times(1)).updatePage("1", "Existing Page", "<h1>Some Confluence Content</h1>", 2);
+    }
+
+    @Test
+    public void publish_metadataWithTreeContainingDeletedAttachmentsUnderRootSpace_deletesAttachmentsThatDoNotExistAnymore() throws Exception {
+        // arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
+        ConfluencePage existingPage = new ConfluencePage("12", "Existing Page", "<h1>Some Confluence Content</1>", 1);
+        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingPage));
+        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("12");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("12")).thenReturn(existingPage);
+        ConfluenceAttachment existingAttachment = new ConfluenceAttachment("1", "attachmentOne.txt", "/download/attachmentOne.txt", 1);
+        ConfluenceAttachment deletedAttachment = new ConfluenceAttachment("2", "deleteAttachment.txt", "/download/deletedAttachment.txt", 1);
+        when(confluenceRestClientMock.getAttachments("12")).thenReturn(Arrays.asList(existingAttachment, deletedAttachment));
+        when(confluenceRestClientMock.getAttachmentByFileName("12", "attachmentOne.txt")).thenReturn(existingAttachment);
+        when(confluenceRestClientMock.getAttachmentContent("/download/attachmentOne.txt")).thenReturn(new ByteArrayInputStream("attachment1".getBytes()));
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("deleted-attachment-space-key", confluenceRestClientMock);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, times(1)).deleteAttachment("2");
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {

@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.nodes.Document;
 import org.sahli.confluence.publisher.http.ConfluenceAttachment;
+import org.sahli.confluence.publisher.http.ConfluenceClient;
 import org.sahli.confluence.publisher.http.ConfluencePage;
-import org.sahli.confluence.publisher.http.ConfluenceRestClient;
 import org.sahli.confluence.publisher.http.NotFoundException;
 import org.sahli.confluence.publisher.metadata.ConfluencePageMetadata;
 import org.sahli.confluence.publisher.metadata.ConfluencePublisherMetadata;
@@ -50,13 +50,13 @@ import static org.sahli.confluence.publisher.utils.InputStreamUtils.fileContent;
 public class ConfluencePublisher {
 
     private final ConfluencePublisherMetadata metadata;
-    private final ConfluenceRestClient confluenceRestClient;
+    private final ConfluenceClient confluenceClient;
     private final String contentRoot;
 
-    public ConfluencePublisher(String metadataFilePath, ConfluenceRestClient confluenceRestClient) {
+    public ConfluencePublisher(String metadataFilePath, ConfluenceClient confluenceClient) {
         this.metadata = readConfig(metadataFilePath);
         this.contentRoot = new File(metadataFilePath).getParentFile().getAbsoluteFile().toString();
-        this.confluenceRestClient = confluenceRestClient;
+        this.confluenceClient = confluenceClient;
     }
 
     public ConfluencePublisherMetadata getMetadata() {
@@ -70,7 +70,7 @@ public class ConfluencePublisher {
         if (isNotBlank(this.metadata.getAncestorId())) {
             ancestorId = this.getMetadata().getAncestorId();
         } else {
-            ancestorId = this.confluenceRestClient.getSpaceContentId(this.metadata.getSpaceKey());
+            ancestorId = this.confluenceClient.getSpaceContentId(this.metadata.getSpaceKey());
         }
 
         startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), ancestorId);
@@ -82,7 +82,7 @@ public class ConfluencePublisher {
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
             String contentId = addOrUpdatePage(spaceKey, page, content,
-                    () -> this.confluenceRestClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content));
+                    () -> this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content));
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
@@ -91,36 +91,36 @@ public class ConfluencePublisher {
     }
 
     private void deleteConfluencePagesNotPresentUnderAncestor(List<ConfluencePageMetadata> pages, String ancestorId) {
-        List<ConfluencePage> childPagesOnConfluence = this.confluenceRestClient.getChildPages(ancestorId);
+        List<ConfluencePage> childPagesOnConfluence = this.confluenceClient.getChildPages(ancestorId);
 
         List<String> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
                 .filter(childPageOnConfluence -> !pages.stream().anyMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
                 .map(ConfluencePage::getContentId)
                 .collect(toList());
 
-        childPagesOnConfluenceToDelete.forEach(this.confluenceRestClient::deletePage);
+        childPagesOnConfluenceToDelete.forEach(this.confluenceClient::deletePage);
     }
 
     private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, List<String> attachments) {
-        List<ConfluenceAttachment> confluenceAttachments = this.confluenceRestClient.getAttachments(contentId);
+        List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
         List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
                 .filter(confluenceAttachment -> !attachments.stream().anyMatch(attachment -> attachment.equals(confluenceAttachment.getTitle())))
                 .map(ConfluenceAttachment::getId)
                 .collect(toList());
 
-        confluenceAttachmentsToDelete.forEach(this.confluenceRestClient::deleteAttachment);
+        confluenceAttachmentsToDelete.forEach(this.confluenceClient::deleteAttachment);
     }
 
 
     private String addOrUpdatePage(String spaceKey, ConfluencePageMetadata page, String content, Supplier<String> addPage) {
         String contentId;
         try {
-            contentId = this.confluenceRestClient.getPageByTitle(spaceKey, page.getTitle());
-            ConfluencePage existingPage = this.confluenceRestClient.getPageWithContentAndVersionById(contentId);
+            contentId = this.confluenceClient.getPageByTitle(spaceKey, page.getTitle());
+            ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
 
             if (notSameHtmlContent(content, existingPage.getContent())) {
-                this.confluenceRestClient.updatePage(contentId, page.getTitle(), content, existingPage.getVersion() + 1);
+                this.confluenceClient.updatePage(contentId, page.getTitle(), content, existingPage.getVersion() + 1);
             }
         } catch (NotFoundException e) {
             contentId = addPage.get();
@@ -135,15 +135,15 @@ public class ConfluencePublisher {
 
     private void addOrUpdateAttachment(String contentId, String attachment) {
         try {
-            ConfluenceAttachment existingAttachment = this.confluenceRestClient.getAttachmentByFileName(contentId, attachment);
-            InputStream existingAttachmentContent = this.confluenceRestClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
+            ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachment);
+            InputStream existingAttachmentContent = this.confluenceClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
 
             if (!isSameContent(existingAttachmentContent, fileInputStream(Paths.get(this.contentRoot, attachment).toString()))) {
-                this.confluenceRestClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
             }
 
         } catch (NotFoundException e) {
-            this.confluenceRestClient.addAttachment(contentId, attachment, fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+            this.confluenceClient.addAttachment(contentId, attachment, fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
         }
     }
 

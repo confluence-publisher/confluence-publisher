@@ -40,7 +40,7 @@ import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryPa
  * @author Alain Sahli
  * @since 1.0
  */
-public class ConfluenceRestClient {
+public class ConfluenceRestClient implements ConfluenceClient {
 
     private final CloseableHttpClient httpClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -63,6 +63,7 @@ public class ConfluenceRestClient {
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
+    @Override
     public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content) {
         HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(addPageUnderSpaceRequest);
@@ -73,18 +74,21 @@ public class ConfluenceRestClient {
         return contentId;
     }
 
+    @Override
     public void updatePage(String contentId, String title, String content, int newVersion) {
         HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, title, content, newVersion);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(updatePageRequest);
         closeResponse(response);
     }
 
+    @Override
     public void deletePage(String contentId) {
         HttpDelete deletePageRequest = this.httpRequestFactory.deletePageRequest(contentId);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(deletePageRequest);
         closeResponse(response);
     }
 
+    @Override
     public String getPageByTitle(String spaceKey, String title) throws NotFoundException, MultipleResultsException {
         HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
@@ -105,6 +109,7 @@ public class ConfluenceRestClient {
         return contentId;
     }
 
+    @Override
     public void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(addAttachmentRequest);
@@ -112,6 +117,7 @@ public class ConfluenceRestClient {
         closeInputStream(attachmentContent);
     }
 
+    @Override
     public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent) {
         HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(updateAttachmentContentRequest);
@@ -119,12 +125,14 @@ public class ConfluenceRestClient {
         closeInputStream(attachmentContent);
     }
 
+    @Override
     public void deleteAttachment(String attachmentId) {
         HttpDelete deleteAttachmentRequest = this.httpRequestFactory.deleteAttachmentRequest(attachmentId);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(deleteAttachmentRequest);
         closeResponse(response);
     }
 
+    @Override
     public ConfluenceAttachment getAttachmentByFileName(String contentId, String attachmentFileName) throws NotFoundException, MultipleResultsException {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, "version");
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(attachmentByFileNameRequest);
@@ -146,6 +154,7 @@ public class ConfluenceRestClient {
         return attachmentId;
     }
 
+    @Override
     public ConfluencePage getPageWithContentAndVersionById(String contentId) {
         HttpGet pageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version");
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByIdRequest);
@@ -156,6 +165,7 @@ public class ConfluenceRestClient {
         return confluencePage;
     }
 
+    @Override
     public boolean pageExistsByTitle(String spaceKey, String title) {
         HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(pageByTitleRequest);
@@ -167,6 +177,7 @@ public class ConfluenceRestClient {
         return pageExists;
     }
 
+    @Override
     public boolean attachmentExistsByFileName(String contentId, String attachmentFileName) {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, null);
 
@@ -190,6 +201,7 @@ public class ConfluenceRestClient {
         return attachmentExists;
     }
 
+    @Override
     public InputStream getAttachmentContent(String relativeDownloadLink) {
         HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(getAttachmentContentRequest);
@@ -232,6 +244,7 @@ public class ConfluenceRestClient {
         return response;
     }
 
+    @Override
     public List<ConfluencePage> getChildPages(String contentId) {
         int start = 0;
         int limit = 25;
@@ -249,6 +262,7 @@ public class ConfluenceRestClient {
         return childPages;
     }
 
+    @Override
     public List<ConfluenceAttachment> getAttachments(String contentId) {
         int start = 0;
         int limit = 25;
@@ -290,6 +304,7 @@ public class ConfluenceRestClient {
         return attachments;
     }
 
+    @Override
     public String getSpaceContentId(String spaceKey) {
         HttpGet getSpaceContentIdRequest = this.httpRequestFactory.getSpaceContentIdRequest(spaceKey);
         CloseableHttpResponse response = sendRequestAndFailIfNot20x(getSpaceContentIdRequest);

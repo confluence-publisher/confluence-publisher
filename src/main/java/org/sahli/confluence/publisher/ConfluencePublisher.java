@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -90,15 +91,19 @@ public class ConfluencePublisher {
         });
     }
 
-    private void deleteConfluencePagesNotPresentUnderAncestor(List<ConfluencePageMetadata> pages, String ancestorId) {
+    private void deleteConfluencePagesNotPresentUnderAncestor(List<ConfluencePageMetadata> pagesToKeep, String ancestorId) {
         List<ConfluencePage> childPagesOnConfluence = this.confluenceClient.getChildPages(ancestorId);
 
         List<String> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
-                .filter(childPageOnConfluence -> !pages.stream().anyMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
+                .filter(childPageOnConfluence -> !pagesToKeep.stream().anyMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
                 .map(ConfluencePage::getContentId)
                 .collect(toList());
 
-        childPagesOnConfluenceToDelete.forEach(this.confluenceClient::deletePage);
+        childPagesOnConfluenceToDelete.forEach(pageToDelete -> {
+            List<ConfluencePage> pageScheduledForDeletionChildPagesOnConfluence = this.confluenceClient.getChildPages(pageToDelete);
+            pageScheduledForDeletionChildPagesOnConfluence.forEach(parentPageToDelete -> this.deleteConfluencePagesNotPresentUnderAncestor(emptyList(), pageToDelete));
+            this.confluenceClient.deletePage(pageToDelete);
+        });
     }
 
     private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, List<String> attachments) {

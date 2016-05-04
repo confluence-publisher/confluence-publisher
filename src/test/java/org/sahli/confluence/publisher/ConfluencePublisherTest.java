@@ -247,15 +247,14 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithTreeContainingDeletedPageUnderRootSpace_deletesPagesThatDoNotExistAnymore() throws Exception {
+    public void publish_metadataWithTreeHierarchyContainingDeletedPageUnderRootSpace_deletesPagesWithDepthFirstThatDoNotExistAnymore() throws Exception {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
-        ConfluencePage existingPage = new ConfluencePage("1", "Existing Page", "<h1>Existing Page</1>", 1);
-        ConfluencePage deletedPage = new ConfluencePage("2", "Deleted Page", 1);
-        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(Arrays.asList(existingPage, deletedPage));
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("1");
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("1")).thenReturn(existingPage);
+        ConfluencePage parentDeletedPage = new ConfluencePage("1", "Existing Page", "<h1>Existing Page</1>", 1);
+        ConfluencePage childDeletedPage = new ConfluencePage("2", "Deleted Page", 1);
+        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(parentDeletedPage));
+        when(confluenceRestClientMock.getChildPages("1")).thenReturn(singletonList(childDeletedPage));
 
         ConfluencePublisher confluencePublisher = confluencePublisher("deleted-page-space-key", confluenceRestClientMock);
 
@@ -263,8 +262,9 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).deletePage("2");
-        verify(confluenceRestClientMock, times(1)).updatePage("1", "Existing Page", "<h1>Some Confluence Content</h1>", 2);
+        ArgumentCaptor<String> deletePageContentIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(confluenceRestClientMock, times(2)).deletePage(deletePageContentIdArgumentCaptor.capture());
+        assertThat(deletePageContentIdArgumentCaptor.getAllValues(), contains("2", "1"));
     }
 
     @Test

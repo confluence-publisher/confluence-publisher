@@ -44,8 +44,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.Optional;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.http.entity.ContentType.APPLICATION_OCTET_STREAM;
@@ -62,20 +60,12 @@ class HttpRequestFactory {
     private static final String REST_API_CONTEXT = "/rest/api";
     private final String rootConfluenceUrl;
     private final String confluenceRestApiEndpoint;
-    private final String username;
-    private final String password;
 
-    HttpRequestFactory(String confluenceRestApiEndpoint) {
-        this(confluenceRestApiEndpoint, null, null);
-    }
-
-    HttpRequestFactory(String rootConfluenceUrl, String username, String password) {
+    HttpRequestFactory(String rootConfluenceUrl) {
         assertMandatoryParameter(isNotBlank(rootConfluenceUrl), "rootConfluenceUrl");
 
         this.rootConfluenceUrl = rootConfluenceUrl;
         this.confluenceRestApiEndpoint = rootConfluenceUrl + REST_API_CONTEXT;
-        this.username = username;
-        this.password = password;
     }
 
     HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content) {
@@ -90,10 +80,7 @@ class HttpRequestFactory {
                 .content(content)
                 .build();
 
-        HttpPost addPageHttpPost = addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
-        this.authenticationHeaderIfAvailable().ifPresent(addPageHttpPost::addHeader);
-
-        return addPageHttpPost;
+        return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
     }
 
     HttpPut updatePageRequest(String contentId, String title, String content, int newVersion) {
@@ -114,18 +101,13 @@ class HttpRequestFactory {
         updatePageRequest.setEntity(entity);
         updatePageRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
 
-        this.authenticationHeaderIfAvailable().ifPresent(updatePageRequest::addHeader);
-
         return updatePageRequest;
     }
 
     HttpDelete deletePageRequest(String contentId) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
 
-        HttpDelete deletePageRequest = new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId);
-        this.authenticationHeaderIfAvailable().ifPresent(deletePageRequest::addHeader);
-
-        return deletePageRequest;
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId);
     }
 
     HttpPost addAttachmentRequest(String contentId, String attachmentFileName, InputStream attachmentContent) {
@@ -138,8 +120,6 @@ class HttpRequestFactory {
 
         HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent);
         attachmentPostRequest.setEntity(multipartEntity);
-
-        this.authenticationHeaderIfAvailable().ifPresent(attachmentPostRequest::addHeader);
 
         return attachmentPostRequest;
     }
@@ -155,19 +135,13 @@ class HttpRequestFactory {
         HttpEntity multipartEntity = multipartEntity(null, attachmentContent);
         attachmentPostRequest.setEntity(multipartEntity);
 
-        this.authenticationHeaderIfAvailable().ifPresent(attachmentPostRequest::addHeader);
-
         return attachmentPostRequest;
     }
 
     HttpDelete deleteAttachmentRequest(String attachmentId) {
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
 
-        HttpDelete deleteAttachmentRequest = new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + attachmentId);
-
-        this.authenticationHeaderIfAvailable().ifPresent(deleteAttachmentRequest::addHeader);
-
-        return deleteAttachmentRequest;
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + attachmentId);
     }
 
     HttpGet getPageByTitleRequest(String spaceKey, String title) {
@@ -183,11 +157,7 @@ class HttpRequestFactory {
 
         String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + encodedTitle;
 
-        HttpGet getPageByTitleRequest = new HttpGet(searchQuery);
-
-        this.authenticationHeaderIfAvailable().ifPresent(getPageByTitleRequest::addHeader);
-
-        return getPageByTitleRequest;
+        return new HttpGet(searchQuery);
     }
 
     HttpGet getAttachmentByFileNameRequest(String contentId, String attachmentFileName, String expandOptions) {
@@ -209,18 +179,13 @@ class HttpRequestFactory {
             throw new RuntimeException("Invalid URL", e);
         }
 
-        this.authenticationHeaderIfAvailable().ifPresent(getAttachmentByFileNameRequest::addHeader);
-
         return getAttachmentByFileNameRequest;
     }
 
     HttpGet getPageByIdRequest(String contentId, final String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
-        HttpGet getPageByIdRequest = new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
 
-        this.authenticationHeaderIfAvailable().ifPresent(getPageByIdRequest::addHeader);
-
-        return getPageByIdRequest;
+        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "?expand=" + expandOptions);
     }
 
     HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer start, String expandOptions) {
@@ -244,8 +209,6 @@ class HttpRequestFactory {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Invalid URL", e);
         }
-
-        this.authenticationHeaderIfAvailable().ifPresent(getChildPagesByIdRequest::addHeader);
 
         return getChildPagesByIdRequest;
     }
@@ -272,34 +235,19 @@ class HttpRequestFactory {
             throw new RuntimeException("Invalid URL", e);
         }
 
-        this.authenticationHeaderIfAvailable().ifPresent(getAttachmentsRequest::addHeader);
-
         return getAttachmentsRequest;
     }
 
     public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
         assertMandatoryParameter(isNotBlank(relativeDownloadLink), "relativeDownloadLink");
-        HttpGet getAttachmentContentRequest = new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
-        this.authenticationHeaderIfAvailable().ifPresent(getAttachmentContentRequest::addHeader);
 
-        return getAttachmentContentRequest;
+        return new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
     }
 
     public HttpGet getSpaceContentIdRequest(String spaceKey) {
         assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
-        HttpGet getSpaceContentIdRequest = new HttpGet(this.confluenceRestApiEndpoint + "/space/" + spaceKey);
-        this.authenticationHeaderIfAvailable().ifPresent(getSpaceContentIdRequest::addHeader);
 
-        return getSpaceContentIdRequest;
-    }
-
-    private Optional<Header> authenticationHeaderIfAvailable() {
-        if (isNotBlank(this.username) && isNotBlank(this.password)) {
-            String base64EncodedUsernameAndPassword = encodeAuthenticationHeader(this.username, this.password);
-            return Optional.of(new BasicHeader("Authorization", "Basic " + base64EncodedUsernameAndPassword));
-        } else {
-            return Optional.empty();
-        }
+        return new HttpGet(this.confluenceRestApiEndpoint + "/space/" + spaceKey);
     }
 
     private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {
@@ -340,17 +288,6 @@ class HttpRequestFactory {
         multipartEntityBuilder.addPart("file", inputStreamBody);
 
         return multipartEntityBuilder.build();
-    }
-
-    private static String encodeAuthenticationHeader(String username, String password) {
-        String usernameAndPassword = username + ":" + password;
-        String base64EncodedUsernameAndPassword;
-        try {
-            base64EncodedUsernameAndPassword = new String(Base64.getEncoder().encode(usernameAndPassword.getBytes()), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Could not encode authentication header in base64", e);
-        }
-        return base64EncodedUsernameAndPassword;
     }
 
 

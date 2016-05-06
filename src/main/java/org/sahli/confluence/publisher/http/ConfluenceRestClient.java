@@ -19,21 +19,30 @@ package org.sahli.confluence.publisher.http;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryParameter;
 
 /**
@@ -42,7 +51,10 @@ import static org.sahli.confluence.publisher.utils.AssertUtils.assertMandatoryPa
  */
 public class ConfluenceRestClient implements ConfluenceClient {
 
+    private final String rootConfluenceUrl;
     private final CloseableHttpClient httpClient;
+    private final String username;
+    private final String password;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
@@ -53,9 +65,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
-        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl, username, password);
+        this.rootConfluenceUrl = rootConfluenceUrl;
         this.httpClient = httpClient;
+        this.username = username;
+        this.password = password;
 
+        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
         configureObjectMapper();
     }
 
@@ -221,27 +236,49 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private CloseableHttpResponse sendRequestAndFailIfNot20x(HttpRequestBase httpRequest) {
+    CloseableHttpResponse sendRequestAndFailIfNot20x(HttpRequestBase httpRequest) {
         CloseableHttpResponse response = sendRequest(httpRequest);
 
         StatusLine statusLine = response.getStatusLine();
         if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
             throw new RuntimeException("Response had not expected status code (between 200 and 206) -> "
-                    + statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
+                    + statusLine.getStatusCode() + " " + statusLine.getReasonPhrase() + " "
+                    + httpRequest.getMethod() + " " + httpRequest.getURI().toString());
         }
 
         return response;
     }
 
-    private CloseableHttpResponse sendRequest(HttpRequestBase httpRequest) {
+    CloseableHttpResponse sendRequest(HttpRequestBase httpRequest) {
         CloseableHttpResponse response;
         try {
-            response = this.httpClient.execute(httpRequest);
+            response = this.httpClient.execute(httpRequest, httpContext());
         } catch (IOException e) {
             throw new RuntimeException("Request could not be sent" + httpRequest, e);
         }
 
         return response;
+    }
+
+    private HttpContext httpContext() {
+        BasicCredentialsProvider basicCredentialsProvider = new BasicCredentialsProvider();
+        if (isNotBlank(this.username) && this.password != null) {
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(this.username, this.password);
+            HttpHost httpHost = HttpHost.create(this.rootConfluenceUrl);
+            AuthScope authScope = new AuthScope(httpHost);
+            basicCredentialsProvider.setCredentials(authScope, credentials);
+
+            BasicAuthCache basicAuthCache = new BasicAuthCache();
+            basicAuthCache.put(httpHost, new BasicScheme());
+
+            HttpClientContext httpClientContext = HttpClientContext.create();
+            httpClientContext.setCredentialsProvider(basicCredentialsProvider);
+            httpClientContext.setAuthCache(basicAuthCache);
+
+            return httpClientContext;
+        } else {
+            return null;
+        }
     }
 
     @Override

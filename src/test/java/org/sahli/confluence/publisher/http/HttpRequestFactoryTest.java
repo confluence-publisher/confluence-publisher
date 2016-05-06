@@ -20,7 +20,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,52 +62,6 @@ public class HttpRequestFactoryTest {
 
         // arrange + act
         new HttpRequestFactory("");
-    }
-
-    @Test
-    public void checkAuthenticationHeaderAlwaysSetWhenProvided() throws Exception {
-        // arrange
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(CONFLUENCE_REST_API_ENDPOINT, "username", "password");
-
-        // act + assert
-        HttpPost addPageUnderAncestorRequest = httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "123", "title", "content");
-        assertAuthenticationHeader(addPageUnderAncestorRequest);
-
-        HttpPut updatePageRequest = httpRequestFactory.updatePageRequest("23", "title", "content", 2);
-        assertAuthenticationHeader(updatePageRequest);
-
-        HttpDelete deletePageRequest = httpRequestFactory.deletePageRequest("34");
-        assertAuthenticationHeader(deletePageRequest);
-
-        HttpPost addAttachment = httpRequestFactory.addAttachmentRequest("234", "file.txt", new ByteArrayInputStream("hello".getBytes()));
-        assertAuthenticationHeader(addAttachment);
-
-        HttpPost updateAttachmentContent = httpRequestFactory.updateAttachmentContentRequest("234", "34", new ByteArrayInputStream("hello".getBytes()));
-        assertAuthenticationHeader(updateAttachmentContent);
-
-        HttpDelete deleteAttachment = httpRequestFactory.deleteAttachmentRequest("234");
-        assertAuthenticationHeader(deleteAttachment);
-
-        HttpGet getPageByTitleRequest = httpRequestFactory.getPageByTitleRequest("~personalSpace", "title");
-        assertAuthenticationHeader(getPageByTitleRequest);
-
-        HttpGet getAttachmentByFileNameRequest = httpRequestFactory.getAttachmentByFileNameRequest("234", "file.txt", null);
-        assertAuthenticationHeader(getAttachmentByFileNameRequest);
-
-        HttpGet getPageByIdRequest = httpRequestFactory.getPageByIdRequest("1", null);
-        assertAuthenticationHeader(getPageByIdRequest);
-
-        HttpGet getChildPagesByIdRequest = httpRequestFactory.getChildPagesByIdRequest("1", 1, 1, null);
-        assertAuthenticationHeader(getChildPagesByIdRequest);
-
-        HttpGet getAttachmentsRequest = httpRequestFactory.getAttachmentsRequest("1", 1, 1, null);
-        assertAuthenticationHeader(getAttachmentsRequest);
-
-        HttpGet getAttachmentContentRequest = httpRequestFactory.getAttachmentContentRequest("http://download");
-        assertAuthenticationHeader(getAttachmentContentRequest);
-
-        HttpGet getSpaceContentIdRequest = httpRequestFactory.getSpaceContentIdRequest("~personalSpace");
-        assertAuthenticationHeader(getSpaceContentIdRequest);
     }
 
     @Test
@@ -610,10 +563,6 @@ public class HttpRequestFactoryTest {
 
         // arrange + act
         this.httpRequestFactory.getAttachmentContentRequest("");
-    }
-
-    private static void assertAuthenticationHeader(HttpRequestBase httpRequest) {
-        assertThat(httpRequest.getFirstHeader("Authorization").getValue(), is("Basic dXNlcm5hbWU6cGFzc3dvcmQ="));
     }
 
 }

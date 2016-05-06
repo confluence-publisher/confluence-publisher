@@ -17,13 +17,18 @@
 package org.sahli.confluence.publisher.http;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,11 +45,13 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,21 +85,6 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void instantiation_withUsernameAndPassword_addsAuthenticationHeadersToRequest() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\":\"12345\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, "username", "password");
-        ArgumentCaptor<HttpPost> httpPostArgumentCaptor = ArgumentCaptor.forClass(HttpPost.class);
-
-        // act
-        confluenceRestClient.addPageUnderAncestor("~personalSpace", "1234", "title", "content");
-
-        // assert
-        verify(httpClientMock, times(1)).execute(httpPostArgumentCaptor.capture());
-        assertThat(httpPostArgumentCaptor.getValue().getFirstHeader("Authorization").getValue(), is(notNullValue()));
-    }
-
-    @Test
     public void addPageUnderAncestor_withValidParameters_returnsCreatedPageContentId() throws Exception {
         // arrange
         String expectedContentId = "1234";
@@ -116,7 +108,7 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.updatePage("123", "Hello", "Content", 2);
 
         // assert
-        verify(httpClientMock, times(1)).execute(any(HttpPut.class));
+        verify(httpClientMock, times(1)).execute(any(HttpPut.class), any(HttpContext.class));
     }
 
     @Test
@@ -129,7 +121,7 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.deletePage("1234");
 
         // assert
-        verify(httpClientMock, times(1)).execute(any(HttpDelete.class));
+        verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));
     }
 
     @Test
@@ -176,7 +168,7 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.addAttachment("1234", "file.txt", new ByteArrayInputStream("file content".getBytes()));
 
         // assert
-        verify(httpClientMock, times(1)).execute(any(HttpPost.class));
+        verify(httpClientMock, times(1)).execute(any(HttpPost.class), any(HttpContext.class));
     }
 
     @Test
@@ -189,7 +181,7 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()));
 
         // assert
-        verify(httpClientMock, times(1)).execute(any(HttpPost.class));
+        verify(httpClientMock, times(1)).execute(any(HttpPost.class), any(HttpContext.class));
     }
 
     @Test
@@ -202,7 +194,7 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.deleteAttachment("att12");
 
         // assert
-        verify(httpClientMock, times(1)).execute(any(HttpDelete.class));
+        verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));
     }
 
     @Test
@@ -361,7 +353,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         assertThat(childPages.size(), is(25));
-        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture(), any(HttpContext.class));
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
     }
@@ -383,7 +375,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         assertThat(childPages.size(), is(49));
-        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture(), any(HttpContext.class));
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
     }
@@ -422,7 +414,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         assertThat(confluenceAttachments.size(), is(25));
-        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture(), any(HttpContext.class));
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
     }
@@ -444,7 +436,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         assertThat(confluenceAttachments.size(), is(49));
-        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
+        verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture(), any(HttpContext.class));
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
         assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
     }
@@ -460,6 +452,29 @@ public class ConfluenceRestClientTest {
 
         // assert
         assertThat(contentId, is("12"));
+    }
+
+    @Test
+    public void sendRequest_withProvidedUsernameAndPassword_setsCredentialsProvider() throws Exception {
+        // arrange
+        CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient("http://confluence.com", closeableHttpClient, "username", "password");
+        HttpGet httpRequest = new HttpGet("http://confluence.com");
+        ArgumentCaptor<HttpContext> httpContentArgumentCaptor = ArgumentCaptor.forClass(HttpContext.class);
+
+        // act
+        confluenceRestClient.sendRequest(httpRequest);
+
+        // assert
+        verify(closeableHttpClient, times(1)).execute(eq(httpRequest), httpContentArgumentCaptor.capture());
+        HttpContext httpContext = httpContentArgumentCaptor.getValue();
+        HttpClientContext httpClientContext = (HttpClientContext) httpContext;
+        HttpHost httpHost = HttpHost.create("http://confluence.com");
+        assertThat(httpClientContext.getAuthCache().get(httpHost), not(nullValue()));
+
+        Credentials credentials = httpClientContext.getCredentialsProvider().getCredentials(new AuthScope(httpHost));
+        assertThat(credentials.getPassword(), is("password"));
+        assertThat(credentials.getUserPrincipal().getName(), is("username"));
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {
@@ -481,7 +496,7 @@ public class ConfluenceRestClientTest {
         when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
 
         CloseableHttpClient httpClientMock = anyCloseableHttpClient();
-        when(httpClientMock.execute(any(HttpPost.class))).thenReturn(httpResponseMock);
+        when(httpClientMock.execute(any(HttpPost.class), any(HttpContext.class))).thenReturn(httpResponseMock);
 
         return httpClientMock;
     }
@@ -498,7 +513,7 @@ public class ConfluenceRestClientTest {
                 .thenReturn(statusLines.get(0), statusLines.subList(1, statusLines.size()).toArray(new StatusLine[statusLines.size() - 1]));
 
         CloseableHttpClient httpClientMock = anyCloseableHttpClient();
-        when(httpClientMock.execute(any(HttpPost.class))).thenReturn(httpResponseMock);
+        when(httpClientMock.execute(any(HttpPost.class), any(HttpContext.class))).thenReturn(httpResponseMock);
 
         return httpClientMock;
     }

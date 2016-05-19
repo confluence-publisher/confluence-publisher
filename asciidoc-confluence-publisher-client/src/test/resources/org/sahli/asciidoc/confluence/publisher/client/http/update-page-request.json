@@ -1,0 +1,18 @@
+{
+  "type": "page",
+  "title": "title",
+  "ancestors": [
+    {
+      "id": "1"
+    }
+  ],
+  "version": {
+    "number": 2
+  },
+  "body": {
+    "storage": {
+      "value": "content",
+      "representation": "storage"
+    }
+  }
+}

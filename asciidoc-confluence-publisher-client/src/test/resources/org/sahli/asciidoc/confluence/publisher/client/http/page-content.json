@@ -1,0 +1,12 @@
+{
+  "id": "1234",
+  "title": "Some title",
+  "version": {
+    "number": 1
+  },
+  "body": {
+    "storage": {
+      "value": "Some content"
+    }
+  }
+}

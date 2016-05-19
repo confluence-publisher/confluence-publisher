@@ -2,4 +2,4 @@
 *IntegrationTest.java
 target/
 /.idea
-/src/test/resources/org/sahli/confluence/publisher/integration
+/asciidoc-confluence-publisher-client/src/test/resources/org/sahli/asciidoc/confluence/publisher/client/integration

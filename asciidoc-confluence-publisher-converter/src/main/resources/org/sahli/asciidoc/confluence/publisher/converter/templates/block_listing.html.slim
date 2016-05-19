@@ -1,0 +1,10 @@
+- if style == 'source'
+  ac:structured-macro ac:name="code"
+    - if "#{source_lang}" != ""
+      ac:parameter ac:name="language" #{source_lang}
+    ac:plain-text-body
+      <![CDATA[#{content}]]>
+- else
+  ac:structured-macro ac:name="noformat"
+    ac:plain-text-body
+      <![CDATA[#{content}]]>

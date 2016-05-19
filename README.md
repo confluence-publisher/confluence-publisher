@@ -36,7 +36,7 @@ Paragraph 2
 import java.util.List;
 ----
 ```
-*Source listings
+* Source listings
 ```
 [source]
 ----
@@ -53,11 +53,11 @@ import java.util.List;
 image::sunset.jpg[]
 image::sunset.jpg[height="100",width="200",link="http://website.com"]
 ```
-*Bold text
+* Bold text
 ```
 *bold*
 ```
-*Italic text
+* Italic text
 ```
 _italic_
 ```

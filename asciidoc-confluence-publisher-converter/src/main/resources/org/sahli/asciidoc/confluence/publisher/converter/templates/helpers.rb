@@ -103,8 +103,6 @@ module Slim::Helpers
   def html_tag_if(condition, name, attributes = {}, &block)
     if condition
       html_tag name, attributes, &block
-    else
-      yield
     end
   end
 

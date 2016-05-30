@@ -18,11 +18,13 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
+import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Document;
 import org.asciidoctor.ast.StructuredDocument;
 import org.asciidoctor.ast.Title;
 import org.asciidoctor.internal.IOUtils;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -93,10 +95,20 @@ public class AsciidocConfluencePage {
     }
 
     private static Options options(String templateDir) {
-        Options options = new Options();
-        options.setTemplateDirs(templateDir);
+        File templateDirFolder = new File(templateDir);
 
-        return options;
+        if (!templateDirFolder.exists()) {
+            throw new RuntimeException("templateDir folder does not exist");
+        }
+
+        if (!templateDirFolder.isDirectory()) {
+            throw new RuntimeException("templateDir folder is not a folder");
+        }
+
+        return OptionsBuilder.options()
+                .backend("html")
+                .templateDirs(templateDirFolder)
+                .get();
     }
 
     private static String composeContent(String mainTitle, String content) {

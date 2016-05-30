@@ -110,7 +110,7 @@ public class AsciidocConfluencePageTest {
                 "=== Title level 2\n" +
                 "==== Title level 3\n" +
                 "===== Title level 4\n" +
-                "====== Title level 5\n";
+                "====== Title level 5";
         InputStream is = stringAsInputStream(adocContent);
 
         // act

@@ -8,6 +8,7 @@
 * Link between pages
 * Tables
 * Info/error/warning blocks
+* Bullet and numbered lists
 
 ## Supported Asciidoc Elements
 

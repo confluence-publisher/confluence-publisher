@@ -299,7 +299,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithNote_returnsConfluencePageContentWithInfoMacro() {
+    public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +
             "====\n" +
@@ -321,7 +321,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithNoteContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
         // arrange
         String adocContent = "[NOTE]\n" +
-            ".Some Title\n" +
+            ".Note Title\n" +
             "====\n" +
             "Some note.\n" +
             "====";
@@ -332,9 +332,169 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
-            "<ac:parameter ac:name=\"title\">Some Title</ac:parameter>" +
+            "<ac:parameter ac:name=\"title\">Note Title</ac:parameter>" +
             "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
             "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTipContent_returnsConfluencePageContentWithInfoMacroWithContent() {
+        // arrange
+        String adocContent = "[TIP]\n" +
+                "====\n" +
+                "Some tip.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+                "<ac:rich-text-body><p>Some tip.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTipContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
+        // arrange
+        String adocContent = "[TIP]\n" +
+                ".Tip Title\n" +
+                "====\n" +
+                "Some tip.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+                "<ac:parameter ac:name=\"title\">Tip Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Some tip.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCautionContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+        // arrange
+        String adocContent = "[CAUTION]\n" +
+                "====\n" +
+                "Some caution.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
+                "<ac:rich-text-body><p>Some caution.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCautionContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+        // arrange
+        String adocContent = "[CAUTION]\n" +
+                ".Caution Title\n" +
+                "====\n" +
+                "Some caution.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
+                "<ac:parameter ac:name=\"title\">Caution Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Some caution.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithWarningContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+        // arrange
+        String adocContent = "[WARNING]\n" +
+                "====\n" +
+                "Some warning.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
+                "<ac:rich-text-body><p>Some warning.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithWarningContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+        // arrange
+        String adocContent = "[WARNING]\n" +
+                ".Warning Title\n" +
+                "====\n" +
+                "Some warning.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
+                "<ac:parameter ac:name=\"title\">Warning Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Some warning.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithImportantContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+        // arrange
+        String adocContent = "[IMPORTANT]\n" +
+                "====\n" +
+                "Some important.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"warning\">" +
+                "<ac:rich-text-body><p>Some important.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithImportantContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+        // arrange
+        String adocContent = "[IMPORTANT]\n" +
+                ".Important Title\n" +
+                "====\n" +
+                "Some important.\n" +
+                "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"warning\">" +
+                "<ac:parameter ac:name=\"title\">Important Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Some important.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

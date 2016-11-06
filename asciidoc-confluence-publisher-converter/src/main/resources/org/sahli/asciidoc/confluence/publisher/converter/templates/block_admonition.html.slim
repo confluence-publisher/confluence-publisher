@@ -1,4 +1,16 @@
-ac:structured-macro ac:name="info"
+- case (attr :name)
+- when 'note'
+    - confluence_admonition = 'info'
+- when 'tip'
+    - confluence_admonition = 'info'
+- when 'caution'
+    - confluence_admonition = 'note'
+- when 'warning'
+    - confluence_admonition = 'note'
+- when 'important'
+    - confluence_admonition = 'warning'
+
+ac:structured-macro ac:name=confluence_admonition
   - if title?
     ac:parameter ac:name="title"
       =title

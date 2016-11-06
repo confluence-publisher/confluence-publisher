@@ -34,6 +34,7 @@ import org.apache.http.message.BasicHeader;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Ancestor;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Body;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.PagePayload;
+import org.sahli.asciidoc.confluence.publisher.client.http.payloads.PropertyPayload;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Space;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Storage;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Version;
@@ -95,12 +96,8 @@ class HttpRequestFactory {
                 .version(newVersion)
                 .build();
 
-        String jsonPayload = toJsonString(pagePayload);
-        BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes()));
-
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
-        updatePageRequest.setEntity(entity);
+        updatePageRequest.setEntity(httpEntityWithJsonPayload(pagePayload));
         updatePageRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
 
         return updatePageRequest;
@@ -252,16 +249,43 @@ class HttpRequestFactory {
         return new HttpGet(this.confluenceRestApiEndpoint + "/space/" + spaceKey);
     }
 
-    private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {
-        String jsonPayload = toJsonString(pagePayload);
-        BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes()));
+    public HttpGet getPropertyByKeyRequest(String contentId, String key) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(key), "key");
 
-        HttpPost postRequest = new HttpPost(confluenceRestApiEndpoint + "/content");
-        postRequest.setEntity(entity);
+        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + key + "?expand=value");
+    }
+
+    public HttpPost setPropertyByKeyRequest(String contentId, String key, String value) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(key), "key");
+        assertMandatoryParameter(isNotBlank(value), "value");
+
+        PropertyPayload propertyPayload = new PropertyPayload();
+        propertyPayload.setKey(key);
+        propertyPayload.setValue(value);
+
+        HttpPost postRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property");
+        postRequest.setEntity(httpEntityWithJsonPayload(propertyPayload));
         postRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
 
         return postRequest;
+    }
+
+    private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {
+        HttpPost postRequest = new HttpPost(confluenceRestApiEndpoint + "/content");
+        postRequest.setEntity(httpEntityWithJsonPayload(pagePayload));
+        postRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
+
+        return postRequest;
+    }
+
+    private static BasicHttpEntity httpEntityWithJsonPayload(Object payload) {
+        String jsonPayload = toJsonString(payload);
+        BasicHttpEntity entity = new BasicHttpEntity();
+        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes()));
+
+        return entity;
     }
 
     private static String toJsonString(Object objectToConvert) {

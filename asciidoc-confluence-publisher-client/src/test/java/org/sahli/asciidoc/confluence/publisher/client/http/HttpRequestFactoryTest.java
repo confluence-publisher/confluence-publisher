@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +36,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
+import static org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMatcher.isSameJsonAs;
 
 /**
  * @author Alain Sahli
@@ -85,7 +85,7 @@ public class HttpRequestFactoryTest {
 
         String jsonPayload = inputStreamAsString(addPageUnderAncestorRequest.getEntity().getContent());
         String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-ancestor-id.json").toString());
-        assertThat(jsonPayload, SameJsonAsMatcher.isSameJsonAs(expectedJsonPayload));
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class HttpRequestFactoryTest {
 
         String jsonPayload = inputStreamAsString(updatePageRequest.getEntity().getContent());
         String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request.json").toString());
-        assertThat(jsonPayload, SameJsonAsMatcher.isSameJsonAs(expectedJsonPayload));
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
     @Test
@@ -577,6 +577,38 @@ public class HttpRequestFactoryTest {
 
         // arrange + act
         this.httpRequestFactory.getAttachmentContentRequest("");
+    }
+
+    @Test
+    public void setPropertyByKeyRequest_withValidParameters_returnsHttpPostRequest() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String key = "content-hash";
+        String value = "38495fsj98wgh";
+
+        // act
+        HttpPost setPropertyByKeyRequest = this.httpRequestFactory.setPropertyByKeyRequest(contentId, key, value);
+
+        // assert
+        assertThat(setPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property"));
+        assertThat(setPropertyByKeyRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
+
+        String jsonPayload = inputStreamAsString(setPropertyByKeyRequest.getEntity().getContent());
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "set-property-by-key-request-payload.json").toString());
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
+    }
+
+    @Test
+    public void getPropertyByKeyRequest_withValidParameters_returnsHttpGetRequest() {
+        // arrange
+        String contentId = "1234";
+        String key = "content-hash";
+
+        // act
+        HttpGet getPropertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
+
+        // assert
+        assertThat(getPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/" + key + "?expand=value"));
     }
 
 }

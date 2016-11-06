@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -298,6 +299,46 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithNote_returnsConfluencePageContentWithInfoMacro() {
+        // arrange
+        String adocContent = "[NOTE]\n" +
+            "====\n" +
+            "Some note.\n" +
+            "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+            "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
+            "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithNoteContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
+        // arrange
+        String adocContent = "[NOTE]\n" +
+            ".Some Title\n" +
+            "====\n" +
+            "Some note.\n" +
+            "====";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+            "<ac:parameter ac:name=\"title\">Some Title</ac:parameter>" +
+            "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
+            "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void images_asciiDocwithImage_returnsFilePathToImage() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";
@@ -334,7 +375,7 @@ public class AsciidocConfluencePageTest {
     }
 
     private static InputStream stringAsInputStream(String content) {
-        return new ByteArrayInputStream(content.getBytes());
+        return new ByteArrayInputStream(content.getBytes(UTF_8));
     }
 
 }

@@ -24,6 +24,7 @@ import java.util.List;
 ----
 
 [NOTE]
+.Note Title
 ====
 Some note
 ====

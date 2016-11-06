@@ -14,16 +14,15 @@
 
 * Document title 
 ```
-:title: Document Title
+= Document Title
 ```
 * Section levels
 ```
-= Title level 0
-== Title level 1
-=== Title level 2
-==== Title level 3
-===== Title level 4
-====== Title level 5
+== Section level 1 (Heading 1 in Confluence)
+=== Section level 2 (Heading 2 in Confluence)
+==== Section level 3 (Heading 3 in Confluence)
+===== Section level 4 (Heading 4 in Confluence)
+====== Section level 5 (Heading 5 in Confluence)
 ```
 * Paragraphs
 ```

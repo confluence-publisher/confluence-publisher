@@ -56,7 +56,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() throws Exception {
         // arrange
-        String adoc = ":title: Page title";
+        String adoc = "= Page title";
 
         // act
         AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);

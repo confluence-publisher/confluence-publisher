@@ -1,5 +1,4 @@
 = Sub Sub Page
-:title: Sub Sub Page
 
 *Lorem* _ipsum_ dolor sit amet, consectetur adipiscing elit. Etiam molestie auctor eleifend. Cras euismod vehicula orci, sed
 tincidunt velit congue vitae. Donec quis magna lobortis massa faucibus consectetur. Cras congue sed mi ac mollis. Quisque

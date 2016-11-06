@@ -1,5 +1,4 @@
-= Main title
-:title: Test Document
+= Test Document
 
 *Lorem* _ipsum_ dolor sit amet, consectetur adipiscing elit. Etiam molestie auctor eleifend. Cras euismod vehicula orci, sed
 tincidunt velit congue vitae. Donec quis magna lobortis massa faucibus consectetur. Cras congue sed mi ac mollis. Quisque

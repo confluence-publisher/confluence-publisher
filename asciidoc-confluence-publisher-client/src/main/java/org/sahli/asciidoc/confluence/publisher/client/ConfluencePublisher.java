@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -88,8 +87,8 @@ public class ConfluencePublisher {
 
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content,
-                    () -> this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content));
+            String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content
+            );
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
@@ -124,8 +123,9 @@ public class ConfluencePublisher {
     }
 
 
-    private String addOrUpdatePage(String spaceKey, String ancestorId, ConfluencePageMetadata page, String content, Supplier<String> addPage) {
+    private String addOrUpdatePage(String spaceKey, String ancestorId, ConfluencePageMetadata page, String content) {
         String contentId;
+
         try {
             contentId = this.confluenceClient.getPageByTitle(spaceKey, page.getTitle());
             ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
@@ -134,7 +134,7 @@ public class ConfluencePublisher {
                 this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, existingPage.getVersion() + 1);
             }
         } catch (NotFoundException e) {
-            contentId = addPage.get();
+            contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
         }
 
         return contentId;

@@ -16,7 +16,9 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -24,25 +26,68 @@ import java.io.InputStream;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.rules.ExpectedException.none;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class AsciidocConfluencePageTest {
 
     private static final String TEMPLATES_DIR = "src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates";
 
+    @Rule
+    public ExpectedException expectedException = none();
+
     @Test
-    public void render_asciidocWithPageTitle_returnsConfluencePageWithPageTitle() throws Exception {
+    public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() throws Exception {
+        // arrange
+        String adoc = "= Page title";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title"));
+    }
+
+    @Test
+    public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() throws Exception {
         // arrange
         String adoc = ":title: Page title";
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(new ByteArrayInputStream(adoc.getBytes()), TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title"));
+    }
+
+    @Test
+    public void render_asciidocWithTopLevelHeaderAndMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() throws Exception {
+        // arrange
+        String adoc = ":title: Page title (meta)\n" +
+                "= Page Title (header)";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (meta)"));
+    }
+
+    @Test
+    public void render_asciidocWithNeitherTopLevelHeaderNorTitleMetaInformation_returnsConfluencePageWithPageTitleFromMetaInformation() throws Exception {
+        // arrange
+        String adoc = "Content";
+
+        // assert
+        this.expectedException.expect(RuntimeException.class);
+        this.expectedException.expectMessage("top-level heading or title meta information must be set");
+
+        // act
+        newAsciidocConfluencePage(new ByteArrayInputStream(adoc.getBytes()), TEMPLATES_DIR);
     }
 
     @Test
@@ -51,7 +96,8 @@ public class AsciidocConfluencePageTest {
         String adocContent = "----\n" +
                 "import java.util.List;\n" +
                 "----";
-        InputStream is = stringAsInputStream(adocContent);
+
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -70,7 +116,7 @@ public class AsciidocConfluencePageTest {
                 "----\n" +
                 "import java.util.List;\n" +
                 "----";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -89,7 +135,7 @@ public class AsciidocConfluencePageTest {
                 "----\n" +
                 "import java.util.List;\n" +
                 "----";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -111,18 +157,17 @@ public class AsciidocConfluencePageTest {
                 "==== Title level 3\n" +
                 "===== Title level 4\n" +
                 "====== Title level 5";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
 
         // assert
-        String expectedContent = "<h1>Title level 0</h1>" +
-                "<h2>Title level 1</h2>" +
-                "<h3>Title level 2</h3>" +
-                "<h4>Title level 3</h4>" +
-                "<h5>Title level 4</h5>" +
-                "<h6>Title level 5</h6>";
+        String expectedContent = "<h1>Title level 1</h1>" +
+                "<h2>Title level 2</h2>" +
+                "<h3>Title level 3</h3>" +
+                "<h4>Title level 4</h4>" +
+                "<h5>Title level 5</h5>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -130,7 +175,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithParagraph_returnsConfluencePageContentHavingCorrectParagraphMarkup() throws Exception {
         // arrange
         String adoc = "some paragraph";
-        InputStream is = stringAsInputStream(adoc);
+        InputStream is = stringAsInputStream(prependTitle(adoc));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -144,7 +189,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithBoldText_returnsConfluencePageContentWithBoldMarkup() throws Exception {
         // arrange
         String adocContent = "*Bold phrase.* bold le**t**ter.";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -158,7 +203,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithItalicText_returnsConfluencePageContentWithItalicMarkup() throws Exception {
         // arrange
         String adocContent = "_Italic phrase_ italic le__t__ter.";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -172,7 +217,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithImageWithHeightAttributeMacroWrappedInLink() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[Sunset, 300, 200, link=\"http://www.foo.ch\"]";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -186,7 +231,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithImage_returnsConfluencePageContentWithImage() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -200,7 +245,7 @@ public class AsciidocConfluencePageTest {
     public void images_asciiDocwithImage_returnsFilePathToImage() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -216,13 +261,20 @@ public class AsciidocConfluencePageTest {
                 "image::sunset.jpg[]\n" +
                 "== Title 2\n" +
                 "image::sunrise.jpg[]";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
 
         // assert
         assertThat(asciidocConfluencePage.images(), contains("sunset.jpg", "sunrise.jpg"));
+    }
+
+    private static String prependTitle(String content) {
+        if (!(content.startsWith("= "))) {
+            content = "= Default Page Title\n\n" + content;
+        }
+        return content;
     }
 
     private static InputStream stringAsInputStream(String content) {

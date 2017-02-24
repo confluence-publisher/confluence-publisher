@@ -1,0 +1,8 @@
+table
+  - [:head, :foot, :body].select {|tblsec| !@rows[tblsec].empty? }.each do |tblsec|
+    *{:tag=>"t#{tblsec}"}
+      - @rows[tblsec].each do |row|
+        tr
+          - row.each do |cell|
+            *{:tag=>(tblsec == :head ? 'th' : 'td')}
+              =cell.text

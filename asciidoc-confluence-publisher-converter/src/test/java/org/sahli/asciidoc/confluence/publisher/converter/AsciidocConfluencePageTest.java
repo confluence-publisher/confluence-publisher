@@ -197,6 +197,60 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithoutTableWithHeader_returnsConfluencePageContentWithTableWithoutHeader() throws Exception {
+        // arrange
+        String adocContent = "" +
+                "[cols=\"3*\"]\n" +
+                "|===\n" +
+                "| A\n" +
+                "| B\n" +
+                "| C\n" +
+                "\n" +
+                "| 10\n" +
+                "| 11\n" +
+                "| 12\n" +
+                "\n" +
+                "| 20\n" +
+                "| 21\n" +
+                "| 22";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent ="<table><tbody><tr><td>A</td><td>B</td><td>C</td></tr><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithHeader_returnsConfluencePageContentWithTableWithHeader() throws Exception {
+        // arrange
+        String adocContent = "" +
+                "[cols=\"3*\", options=\"header\"]\n" +
+                "|===\n" +
+                "| A\n" +
+                "| B\n" +
+                "| C\n" +
+                "\n" +
+                "| 10\n" +
+                "| 11\n" +
+                "| 12\n" +
+                "\n" +
+                "| 20\n" +
+                "| 21\n" +
+                "| 22";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+
+        // assert
+        String expectedContent ="<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void images_asciiDocwithImage_returnsFilePathToImage() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";

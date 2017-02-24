@@ -64,7 +64,7 @@ _italic_
 ```
 * Tables (with simple text content only)
 ```
-cols="3*", options="header"]
+[cols="3*", options="header"]
 |===
 | A
 | B

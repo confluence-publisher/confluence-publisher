@@ -6,7 +6,7 @@
 * Add some reporting service to print out result
 * Page content comparison is not working and therefore new versions are always created
 * Link between pages
-* Tables
+* Rich content in tables
 * Info/error/warning blocks
 * Bullet and numbered lists
 
@@ -61,4 +61,20 @@ image::sunset.jpg[height="100",width="200",link="http://website.com"]
 * Italic text
 ```
 _italic_
+```
+* Tables (with simple text content only)
+```
+cols="3*", options="header"]
+|===
+| A
+| B
+| C
+
+| 10
+| 20
+| 30
+
+| Green
+| Blue
+| Red
 ```

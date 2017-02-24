@@ -212,7 +212,8 @@ public class AsciidocConfluencePageTest {
                 "\n" +
                 "| 20\n" +
                 "| 21\n" +
-                "| 22";
+                "| 22\n" +
+                "|===";
         InputStream is = stringAsInputStream(adocContent);
 
         // act
@@ -239,7 +240,8 @@ public class AsciidocConfluencePageTest {
                 "\n" +
                 "| 20\n" +
                 "| 21\n" +
-                "| 22";
+                "| 22\n" +
+                "|===";
         InputStream is = stringAsInputStream(adocContent);
 
         // act

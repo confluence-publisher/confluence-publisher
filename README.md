@@ -77,4 +77,5 @@ cols="3*", options="header"]
 | Green
 | Blue
 | Red
+|===
 ```

@@ -37,6 +37,7 @@ import static org.asciidoctor.Asciidoctor.Factory.create;
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  * @since 1.0
  */
 public class AsciidocConfluencePage {
@@ -70,12 +71,9 @@ public class AsciidocConfluencePage {
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir) {
         String adocContent = IOUtils.readFull(adoc);
         StructuredDocument structuredDocument = structuredDocument(adocContent);
-        String convertedContent = convertedContent(adocContent, options(templatesDir));
+        String pageContent = convertedContent(adocContent, options(templatesDir));
 
-        Optional<Title> documentTitle = Optional.ofNullable(structuredDocument.getHeader().getDocumentTitle());
-        String mainTitle = documentTitle.map(Title::getMain).orElse(null);
-        String pageContent = composeContent(mainTitle, convertedContent);
-        String pageTitle = structuredDocument.getHeader().getPageTitle();
+        String pageTitle = pageTitle(structuredDocument);
 
         Document document = document(adocContent);
 
@@ -94,6 +92,12 @@ public class AsciidocConfluencePage {
         return asciidoctor.load(adocContent, emptyMap());
     }
 
+    private static String pageTitle(StructuredDocument structuredDocument) {
+        return Optional.ofNullable(structuredDocument.getHeader().getDocumentTitle())
+                .map(Title::getMain)
+                .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
+    }
+
     private static Options options(String templateDir) {
         File templateDirFolder = new File(templateDir);
 
@@ -109,10 +113,5 @@ public class AsciidocConfluencePage {
                 .backend("html")
                 .templateDirs(templateDirFolder)
                 .get();
-    }
-
-    private static String composeContent(String mainTitle, String content) {
-        String optionalTitle = Optional.ofNullable(mainTitle).map(t -> "<h1>" + t + "</h1>").orElse("");
-        return optionalTitle + content;
     }
 }

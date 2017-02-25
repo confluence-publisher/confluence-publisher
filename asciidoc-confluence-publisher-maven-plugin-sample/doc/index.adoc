@@ -26,3 +26,20 @@ import java.util.List;
 == Nice plane on carpet
 
 image::plane.jpg[width="300"]
+
+== Simple table
+
+[cols="3*", options="header"]
+|===
+| A
+| B
+| C
+
+| 10
+| 20
+| 30
+
+| Green
+| Blue
+| Red
+|===

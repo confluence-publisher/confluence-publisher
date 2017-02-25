@@ -611,4 +611,17 @@ public class HttpRequestFactoryTest {
         assertThat(getPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/" + key + "?expand=value"));
     }
 
+    @Test
+    public void deletePropertyByKeyRequest_withValidParameters_returnsHttpDeleteRequest() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String key = "content-hash";
+
+        // act
+        HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
+
+        // assert
+        assertThat(deletePropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/" + key));
+    }
+
 }

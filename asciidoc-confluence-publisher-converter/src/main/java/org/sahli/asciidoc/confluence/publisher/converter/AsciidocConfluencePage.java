@@ -77,7 +77,7 @@ public class AsciidocConfluencePage {
 
         Document document = document(adocContent);
 
-        return new AsciidocConfluencePage(pageTitle, convertedContent, document);
+        return new AsciidocConfluencePage(pageTitle, pageContent, document);
     }
 
     private static String convertedContent(String adocContent, Options options) {

@@ -359,9 +359,48 @@ public class ConfluenceRestClient implements ConfluenceClient {
         return spaceContentId;
     }
 
+    @Override
+    public void setPropertyByKey(String contentId, String key, String value) {
+        HttpPost setPropertyByKeyRequest = this.httpRequestFactory.setPropertyByKeyRequest(contentId, key, value);
+        CloseableHttpResponse response = null;
+
+        try {
+            response = sendRequestAndFailIfNot20x(setPropertyByKeyRequest);
+        } finally {
+            closeResponse(response);
+        }
+    }
+
+    @Override
+    public String getPropertyByKey(String contentId, String key) {
+        HttpGet propertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
+        CloseableHttpResponse response = null;
+
+        try {
+            response = sendRequestAndFailIfNot20x(propertyByKeyRequest);
+            return extractPropertyValueFromJsonNode(parseJsonResponse(response));
+        } finally {
+            closeResponse(response);
+        }
+    }
+
+    @Override
+    public void deletePropertyByKey(String contentId, String key) {
+        HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
+        CloseableHttpResponse response = null;
+
+        try {
+            response = sendRequestAndFailIfNot20x(deletePropertyByKeyRequest);
+        } finally {
+            closeResponse(response);
+        }
+    }
+
     private static void closeResponse(CloseableHttpResponse response) {
         try {
-            response.close();
+            if (response != null) {
+                response.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not close response", e);
         }
@@ -403,6 +442,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     private static int extractVersionFromJsonNode(JsonNode jsonNode) {
         return jsonNode.path("version").get("number").asInt();
+    }
+
+    private static String extractPropertyValueFromJsonNode(JsonNode jsonNode) {
+        return jsonNode.path("value").asText();
     }
 
     private static void closeInputStream(InputStream inputStream) {

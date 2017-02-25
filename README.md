@@ -4,10 +4,8 @@
 
 ## Open points:
 * Add some reporting service to print out result
-* Page content comparison is not working and therefore new versions are always created
 * Link between pages
 * Rich content in tables
-* Info/error/warning blocks
 * Bullet and numbered lists
 
 ## Supported Asciidoc Elements
@@ -77,4 +75,12 @@ _italic_
 | Blue
 | Red
 |===
+```
+* Admonitions (NOTE, TIP, CAUTION, WARNING and IMPORTANT) with and without title
+```
+[WARNING]
+.Warning Title
+====
+Some warning.
+====
 ```

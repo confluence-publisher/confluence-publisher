@@ -92,7 +92,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoformat() throws Exception {
+    public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoFormat() throws Exception {
         // arrange
         String adocContent = "----\n" +
                 "import java.util.List;\n" +
@@ -260,7 +260,7 @@ public class AsciidocConfluencePageTest {
                 "| 21\n" +
                 "| 22\n" +
                 "|===";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -288,7 +288,7 @@ public class AsciidocConfluencePageTest {
                 "| 21\n" +
                 "| 22\n" +
                 "|===";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -305,7 +305,7 @@ public class AsciidocConfluencePageTest {
             "====\n" +
             "Some note.\n" +
             "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -325,7 +325,7 @@ public class AsciidocConfluencePageTest {
             "====\n" +
             "Some note.\n" +
             "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -345,7 +345,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some tip.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -365,7 +365,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some tip.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -385,7 +385,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some caution.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -405,7 +405,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some caution.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -425,7 +425,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some warning.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -445,7 +445,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some warning.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -465,7 +465,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some important.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -485,7 +485,7 @@ public class AsciidocConfluencePageTest {
                 "====\n" +
                 "Some important.\n" +
                 "====";
-        InputStream is = stringAsInputStream(adocContent);
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
@@ -499,7 +499,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void images_asciiDocwithImage_returnsFilePathToImage() throws Exception {
+    public void images_asciiDocWithImage_returnsFilePathToImage() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";
         InputStream is = stringAsInputStream(prependTitle(adocContent));

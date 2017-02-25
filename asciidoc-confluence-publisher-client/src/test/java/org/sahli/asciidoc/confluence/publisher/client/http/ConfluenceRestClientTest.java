@@ -481,6 +481,46 @@ public class ConfluenceRestClientTest {
         assertThat(credentials.getUserPrincipal().getName(), is("username"));
     }
 
+    @Test
+    public void setPropertyByKey_withValidParameters_sendsPostRequestForPropertyCreation() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        confluenceRestClient.setPropertyByKey("1234", "content-hash", "hash-value");
+
+        // assert
+        verify(httpClientMock, times(1)).execute(any(HttpPost.class), any(HttpContext.class));
+    }
+
+    @Test
+    public void getPropertyByKey_withValidParameters_sendsGetRequestForPropertyRetrieval() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"value\": \"hash-value\"}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        String propertyValue = confluenceRestClient.getPropertyByKey("1234", "content-hash");
+
+        // assert
+        assertThat(propertyValue, is("hash-value"));
+        verify(httpClientMock, times(1)).execute(any(HttpGet.class), any(HttpContext.class));
+    }
+
+    @Test
+    public void deletePropertyByKey_withValidParameters_sendsDeleteRequestForPropertyKey() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // act
+        confluenceRestClient.deletePropertyByKey("1234", "content-hash");
+
+        // assert
+        verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));
+    }
+
     private String generateJsonAttachmentResults(int numberOfAttachment) {
         return IntStream.range(1, numberOfAttachment + 1)
                 .boxed()

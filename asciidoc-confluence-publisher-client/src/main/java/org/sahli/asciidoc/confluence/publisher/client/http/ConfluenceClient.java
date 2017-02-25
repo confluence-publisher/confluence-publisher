@@ -55,4 +55,10 @@ public interface ConfluenceClient {
 
     String getSpaceContentId(String spaceKey);
 
+    void setPropertyByKey(String contentId, String key, String value);
+
+    String getPropertyByKey(String contentId, String key);
+
+    void deletePropertyByKey(String contentId, String key);
+
 }

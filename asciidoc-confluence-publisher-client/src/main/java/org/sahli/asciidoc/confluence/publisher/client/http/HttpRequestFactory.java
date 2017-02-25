@@ -256,6 +256,13 @@ class HttpRequestFactory {
         return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + key + "?expand=value");
     }
 
+    public HttpDelete deletePropertyByKeyRequest(String contentId, String key) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(key), "key");
+
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + key);
+    }
+
     public HttpPost setPropertyByKeyRequest(String contentId, String key, String value) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(key), "key");

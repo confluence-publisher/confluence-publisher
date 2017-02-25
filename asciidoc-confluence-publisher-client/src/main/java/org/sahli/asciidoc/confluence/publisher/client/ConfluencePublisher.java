@@ -18,7 +18,6 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jsoup.nodes.Document;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
@@ -38,8 +37,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.jsoup.Jsoup.parse;
-import static org.jsoup.parser.Parser.xmlParser;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
 
@@ -49,6 +46,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
  */
 public class ConfluencePublisher {
 
+    static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
     private final ConfluencePublisherMetadata metadata;
     private final ConfluenceClient confluenceClient;
     private final String contentRoot;
@@ -100,7 +98,7 @@ public class ConfluencePublisher {
         List<ConfluencePage> childPagesOnConfluence = this.confluenceClient.getChildPages(ancestorId);
 
         List<String> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
-                .filter(childPageOnConfluence -> !pagesToKeep.stream().anyMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
+                .filter(childPageOnConfluence -> pagesToKeep.stream().noneMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
                 .map(ConfluencePage::getContentId)
                 .collect(toList());
 
@@ -115,7 +113,7 @@ public class ConfluencePublisher {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
         List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
-                .filter(confluenceAttachment -> !attachments.stream().anyMatch(attachment -> attachment.equals(confluenceAttachment.getTitle())))
+                .filter(confluenceAttachment -> attachments.stream().noneMatch(attachment -> attachment.equals(confluenceAttachment.getTitle())))
                 .map(ConfluenceAttachment::getId)
                 .collect(toList());
 
@@ -129,15 +127,24 @@ public class ConfluencePublisher {
         try {
             contentId = this.confluenceClient.getPageByTitle(spaceKey, page.getTitle());
             ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
+            String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
+            String newContentHash = contentHash(content);
 
-            if (notSameHtmlContent(content, existingPage.getContent())) {
+            if (notSameContentHash(existingContentHash, newContentHash)) {
+                this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
                 this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, existingPage.getVersion() + 1);
+                this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
             }
         } catch (NotFoundException e) {
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
+            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
         }
 
         return contentId;
+    }
+
+    private static String contentHash(String content) {
+        return sha256Hex(content);
     }
 
     private void addAttachments(String contentId, List<String> attachments) {
@@ -158,11 +165,8 @@ public class ConfluencePublisher {
         }
     }
 
-    private static boolean notSameHtmlContent(String htmlContent1, String htmlContent2) {
-        Document document1 = parse(htmlContent1, "UTF-8", xmlParser());
-        Document document2 = parse(htmlContent2, "UTF-8", xmlParser());
-
-        return !document1.hasSameValue(document2);
+    private static boolean notSameContentHash(String actualContentHash, String newContentHash) {
+        return !actualContentHash.equals(newContentHash);
     }
 
     private static boolean isSameContent(InputStream left, InputStream right) {

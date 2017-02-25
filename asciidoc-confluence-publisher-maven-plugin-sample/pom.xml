@@ -20,11 +20,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <rootConfluenceUrl>https://confluence-url.com</rootConfluenceUrl>
-        <spaceKey>~spaceKey</spaceKey>
-        <ancestorId>1</ancestorId>
-        <username>user</username>
-        <password>pass</password>
+        <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <spaceKey>CPI</spaceKey>
+        <ancestorId>327706</ancestorId>
+        <username>confluence-publisher-it</username>
+        <password>1234</password>
     </properties>
 
     <parent>
@@ -44,8 +44,8 @@
                 <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
                 <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
                 <configuration>
-                    <generatedDocOutputPath>${project.build.directory}/confluence-templates</generatedDocOutputPath>
                     <asciidocRootFolder>${basedir}/doc</asciidocRootFolder>
+                    <generatedDocOutputPath>${project.build.directory}/confluence-output</generatedDocOutputPath>
                     <rootConfluenceUrl>${rootConfluenceUrl}</rootConfluenceUrl>
                     <spaceKey>${spaceKey}</spaceKey>
                     <ancestorId>${ancestorId}</ancestorId>

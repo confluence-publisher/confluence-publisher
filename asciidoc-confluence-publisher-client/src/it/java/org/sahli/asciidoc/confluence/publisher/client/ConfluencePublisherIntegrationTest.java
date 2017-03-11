@@ -11,9 +11,10 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMet
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import static io.restassured.RestAssured.given;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 public class ConfluencePublisherIntegrationTest {
 
@@ -22,30 +23,76 @@ public class ConfluencePublisherIntegrationTest {
     @Test
     public void publish_singlePage_pageIsCreatedInConfluence() {
         // arrange
-        String title = "Single Page - " + randomUUID().toString();
+        String title = uniqueTitle("Single Page");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
-        ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
-        confluencePageMetadata.setTitle(title);
-        confluencePageMetadata.setContentFilePath("single-page.xhtml");
-
-        ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
-        confluencePublisherMetadata.setSpaceKey("CPI");
-        confluencePublisherMetadata.setAncestorId(ANCESTOR_ID);
-        confluencePublisherMetadata.setPages(singletonList(confluencePageMetadata));
-
-        ConfluencePublisher confluencePublisher = new ConfluencePublisher(
-                confluencePublisherMetadata,
-                confluenceRestClient(),
-                "src/it/resources/single-page"
-        );
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
 
         // act
         confluencePublisher.publish();
 
         // assert
         givenAuthenticatedAsPublisher()
-                .when().get("http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page")
+                .when().get(childPages())
                 .then().body("results.title", hasItem(title));
+    }
+
+    @Test
+    public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() throws Exception {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+
+        // act
+        confluencePublisher.publish();
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(pageVersionOf(pageIdBy(title)))
+                .then().body("version.number", is(1));
+    }
+
+    private static String uniqueTitle(String title) {
+        return title + " - " + randomUUID().toString();
+    }
+
+    private static ConfluencePageMetadata confluencePageMetadata(String title, String contentFilePath) {
+        ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
+        confluencePageMetadata.setTitle(title);
+        confluencePageMetadata.setContentFilePath(contentFilePath);
+
+        return confluencePageMetadata;
+    }
+
+    private static ConfluencePublisherMetadata confluencePublisherMetadata(ConfluencePageMetadata... pages) {
+        ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
+        confluencePublisherMetadata.setSpaceKey("CPI");
+        confluencePublisherMetadata.setAncestorId(ANCESTOR_ID);
+        confluencePublisherMetadata.setPages(asList(pages));
+
+        return confluencePublisherMetadata;
+    }
+
+    private static String childPages() {
+        return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page";
+    }
+
+    private static String pageVersionOf(String singlePageId) {
+        return "http://localhost:8090/rest/api/content/" + singlePageId + "?expand=version";
+    }
+
+    private static String pageIdBy(String title) {
+        return givenAuthenticatedAsPublisher()
+                .when().get(childPages())
+                .then().extract().jsonPath().getString("results.find({it.title == '" + title + "'}).id");
+    }
+
+    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, String contentRoot) {
+        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient(), "src/it/resources/" + contentRoot);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

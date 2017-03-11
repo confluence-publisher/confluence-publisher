@@ -9,4 +9,4 @@ script:
   - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
   - docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it alainsahli/confluence-publisher-it:6.0.5
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
-  - ./performConfluenceSmokeTest.sh http://localhost:8090
+  - mvn -Pintegration-tests failsafe:integration-test failsafe:verify

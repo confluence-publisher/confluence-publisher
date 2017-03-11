@@ -1,7 +1,6 @@
 #!/bin/bash
 
 containerName=$1
+timeoutInSeconds=$2
 
-while [ ! "$(docker logs ${containerName} | grep "org.apache.catalina.startup.Catalina.start Server startup in")" ]; do
-    sleep 1
-done
+timeout ${timeoutInSeconds} grep -q "org.apache.catalina.startup.Catalina.start Server startup in" <(docker logs -f ${containerName})

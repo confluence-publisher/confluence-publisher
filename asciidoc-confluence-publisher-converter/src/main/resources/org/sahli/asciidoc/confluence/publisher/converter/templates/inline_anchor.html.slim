@@ -1,0 +1,6 @@
+- case type
+- when :xref
+  ac:link
+    ri:page ri:content-title=target
+    ac:plain-text-link-body
+      <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>

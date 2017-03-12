@@ -52,3 +52,6 @@ image::plane.jpg[width="300"]
 | Blue
 | Red
 |===
+
+== Inter-Document Cross Reference
+<<index/sub-page.adoc#,Cross Reference>>

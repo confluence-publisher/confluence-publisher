@@ -22,13 +22,19 @@ import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Document;
 import org.asciidoctor.ast.StructuredDocument;
 import org.asciidoctor.ast.Title;
+import org.asciidoctor.extension.Postprocessor;
 import org.asciidoctor.internal.IOUtils;
+import org.jsoup.Jsoup;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Collections;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
@@ -68,16 +74,21 @@ public class AsciidocConfluencePage {
                 .collect(toList());
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir) {
-        String adocContent = IOUtils.readFull(adoc);
-        StructuredDocument structuredDocument = structuredDocument(adocContent);
-        String pageContent = convertedContent(adocContent, options(templatesDir));
+    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, Path pagePath) {
+        try {
+            asciidoctor.javaExtensionRegistry().postprocessor(new InterDocumentCrossReferencePostprocessor(pagePath));
 
-        String pageTitle = pageTitle(structuredDocument);
+            String adocContent = IOUtils.readFull(adoc);
+            StructuredDocument structuredDocument = structuredDocument(adocContent);
+            String pageContent = convertedContent(adocContent, options(templatesDir));
 
-        Document document = document(adocContent);
+            String pageTitle = pageTitle(structuredDocument);
 
-        return new AsciidocConfluencePage(pageTitle, pageContent, document);
+            Document document = document(adocContent);
+            return new AsciidocConfluencePage(pageTitle, pageContent, document);
+        } finally {
+            asciidoctor.unregisterAllExtensions();
+        }
     }
 
     private static String convertedContent(String adocContent, Options options) {
@@ -85,7 +96,7 @@ public class AsciidocConfluencePage {
     }
 
     private static StructuredDocument structuredDocument(String adocContent) {
-        return asciidoctor.readDocumentStructure(adocContent, Collections.emptyMap());
+        return asciidoctor.readDocumentStructure(adocContent, emptyMap());
     }
 
     private static Document document(String adocContent) {
@@ -114,4 +125,36 @@ public class AsciidocConfluencePage {
                 .templateDirs(templateDirFolder)
                 .get();
     }
+
+    private static class InterDocumentCrossReferencePostprocessor extends Postprocessor {
+        private Path contentPath;
+
+        InterDocumentCrossReferencePostprocessor(Path documentPath) {
+            this.contentPath = documentPath;
+        }
+
+        @Override
+        public String process(Document document, String output) {
+            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(output, "UTF-8");
+
+            return jsoupDocument.getElementsByTag("ri:page").stream().reduce(output, (accumulator, pageElement) -> {
+                String htmlTarget = pageElement.attr("ri:content-title");
+                Path referencedPagePath = this.contentPath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
+                try {
+                    String referencedPageContent = IOUtils.readFull(new FileInputStream(referencedPagePath.toFile()));
+                    String referencedPageTitle = pageTitle(structuredDocument(referencedPageContent));
+
+                    return accumulator.replace("<ri:page ri:content-title=\"" + htmlTarget + "\"", "<ri:page ri:content-title=\"" + referencedPageTitle + "\"");
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException("unable to find cross-referenced page '" + referencedPagePath + "'", e);
+                }
+            }, unusedCombiner());
+        }
+
+        private static BinaryOperator<String> unusedCombiner() {
+            return (a, b) -> a;
+        }
+
+    }
+
 }

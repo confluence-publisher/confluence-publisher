@@ -4,7 +4,9 @@
 
 ## Open points:
 * Add some reporting service to print out result
-* Link between pages
+* Circular inter-document cross references
+* External links
+* Links to attachments
 * Rich content in tables
 * Bullet and numbered lists
 
@@ -83,4 +85,8 @@ _italic_
 ====
 Some warning.
 ====
+```
+* Inter-Document Cross References
+```
+<<relative/path/to/target-page.adoc#,Label>>
 ```

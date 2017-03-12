@@ -1,5 +1,3 @@
 *.iml
-*IntegrationTest.java
 target/
 /.idea
-/asciidoc-confluence-publisher-client/src/test/resources/org/sahli/asciidoc/confluence/publisher/client/integration

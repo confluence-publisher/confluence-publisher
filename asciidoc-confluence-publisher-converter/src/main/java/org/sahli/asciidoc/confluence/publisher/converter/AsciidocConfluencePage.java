@@ -22,7 +22,6 @@ import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Document;
 import org.asciidoctor.ast.StructuredDocument;
 import org.asciidoctor.ast.Title;
-import org.asciidoctor.extension.Postprocessor;
 import org.asciidoctor.internal.IOUtils;
 import org.jsoup.Jsoup;
 
@@ -75,24 +74,22 @@ public class AsciidocConfluencePage {
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, Path pagePath) {
-        try {
-            asciidoctor.javaExtensionRegistry().postprocessor(new InterDocumentCrossReferencePostprocessor(pagePath));
+        String adocContent = IOUtils.readFull(adoc);
+        StructuredDocument structuredDocument = structuredDocument(adocContent);
+        String pageContent = convertedContent(adocContent, options(templatesDir), pagePath);
 
-            String adocContent = IOUtils.readFull(adoc);
-            StructuredDocument structuredDocument = structuredDocument(adocContent);
-            String pageContent = convertedContent(adocContent, options(templatesDir));
+        String pageTitle = pageTitle(structuredDocument);
 
-            String pageTitle = pageTitle(structuredDocument);
+        Document document = document(adocContent);
 
-            Document document = document(adocContent);
-            return new AsciidocConfluencePage(pageTitle, pageContent, document);
-        } finally {
-            asciidoctor.unregisterAllExtensions();
-        }
+        return new AsciidocConfluencePage(pageTitle, pageContent, document);
     }
 
-    private static String convertedContent(String adocContent, Options options) {
-        return asciidoctor.convert(adocContent, options);
+    private static String convertedContent(String adocContent, Options options, Path pagePath) {
+        String content = asciidoctor.convert(adocContent, options);
+        String replacedContent = replaceCrossReferenceTargets(content, pagePath);
+
+        return replacedContent;
     }
 
     private static StructuredDocument structuredDocument(String adocContent) {
@@ -126,35 +123,26 @@ public class AsciidocConfluencePage {
                 .get();
     }
 
-    private static class InterDocumentCrossReferencePostprocessor extends Postprocessor {
-        private Path contentPath;
+    private static String replaceCrossReferenceTargets(String output, Path pagePath) {
+        org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(output, "UTF-8");
 
-        InterDocumentCrossReferencePostprocessor(Path documentPath) {
-            this.contentPath = documentPath;
-        }
+        return jsoupDocument.getElementsByTag("ri:page").stream().reduce(output, (accumulator, pageElement) -> {
+            String htmlTarget = pageElement.attr("ri:content-title");
+            Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
+            try {
+                String referencedPageContent = IOUtils.readFull(new FileInputStream(referencedPagePath.toFile()));
+                StructuredDocument structuredDocument = structuredDocument(referencedPageContent);
+                String referencedPageTitle = pageTitle(structuredDocument);
 
-        @Override
-        public String process(Document document, String output) {
-            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(output, "UTF-8");
+                return accumulator.replace("<ri:page ri:content-title=\"" + htmlTarget + "\"", "<ri:page ri:content-title=\"" + referencedPageTitle + "\"");
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException("unable to find cross-referenced page '" + referencedPagePath + "'", e);
+            }
+        }, unusedCombiner());
+    }
 
-            return jsoupDocument.getElementsByTag("ri:page").stream().reduce(output, (accumulator, pageElement) -> {
-                String htmlTarget = pageElement.attr("ri:content-title");
-                Path referencedPagePath = this.contentPath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
-                try {
-                    String referencedPageContent = IOUtils.readFull(new FileInputStream(referencedPagePath.toFile()));
-                    String referencedPageTitle = pageTitle(structuredDocument(referencedPageContent));
-
-                    return accumulator.replace("<ri:page ri:content-title=\"" + htmlTarget + "\"", "<ri:page ri:content-title=\"" + referencedPageTitle + "\"");
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException("unable to find cross-referenced page '" + referencedPagePath + "'", e);
-                }
-            }, unusedCombiner());
-        }
-
-        private static BinaryOperator<String> unusedCombiner() {
-            return (a, b) -> a;
-        }
-
+    private static BinaryOperator<String> unusedCombiner() {
+        return (a, b) -> a;
     }
 
 }

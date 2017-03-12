@@ -27,3 +27,7 @@ import java.util.List;
 ====
 Some note
 ====
+
+== Attachment in Parent Folder
+
+link:../attachmentOne.txt[Attachment]

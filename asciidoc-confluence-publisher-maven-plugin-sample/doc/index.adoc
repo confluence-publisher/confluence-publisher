@@ -32,9 +32,10 @@ import java.util.List;
 import java.util.List;
 ----
 
-=== Nice plane on carpet
+=== Nice plane on carpet & Frisbee
 
-image::plane.jpg[width="300"]
+image::img/rc-model-plane.jpg[width="300"]
+image::frisbee.png[width="300"]
 
 == Simple table
 
@@ -52,3 +53,11 @@ image::plane.jpg[width="300"]
 | Blue
 | Red
 |===
+
+== Inter-Document Cross Reference
+
+<<index/sub-page.adoc#,Cross Reference>>
+
+== Attachment in Sub-Folder
+
+link:index/attachmentOne.txt[Attachment One]

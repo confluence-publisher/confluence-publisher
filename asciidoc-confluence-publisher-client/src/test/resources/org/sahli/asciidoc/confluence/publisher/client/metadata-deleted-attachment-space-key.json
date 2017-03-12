@@ -4,9 +4,9 @@
     {
       "title": "Existing Page",
       "contentFilePath": "some-confluence-content.html",
-      "attachments": [
-        "attachmentOne.txt"
-      ]
+      "attachments": {
+        "attachmentOne.txt": "attachmentOne.txt"
+      }
     }
   ]
 }

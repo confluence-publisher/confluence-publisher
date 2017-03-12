@@ -21,10 +21,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -47,7 +50,7 @@ public class AsciidocConfluencePageTest {
         String adoc = "= Page title";
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR, null);
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title"));
@@ -59,7 +62,7 @@ public class AsciidocConfluencePageTest {
         String adoc = "= Page title";
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR, null);
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title"));
@@ -72,7 +75,7 @@ public class AsciidocConfluencePageTest {
                 "= Page Title (header)";
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(stringAsInputStream(adoc), TEMPLATES_DIR, null);
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (meta)"));
@@ -88,7 +91,7 @@ public class AsciidocConfluencePageTest {
         this.expectedException.expectMessage("top-level heading or title meta information must be set");
 
         // act
-        newAsciidocConfluencePage(new ByteArrayInputStream(adoc.getBytes()), TEMPLATES_DIR);
+        newAsciidocConfluencePage(new ByteArrayInputStream(adoc.getBytes()), TEMPLATES_DIR, null);
     }
 
     @Test
@@ -101,7 +104,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"noformat\">" +
@@ -120,7 +123,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
@@ -139,7 +142,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
@@ -161,7 +164,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<h1>Title level 1</h1>" +
@@ -179,7 +182,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adoc));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<p>some paragraph</p>";
@@ -193,7 +196,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<p><strong>Bold phrase.</strong> bold le<strong>t</strong>ter.</p>";
@@ -207,7 +210,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<p><em>Italic phrase</em> italic le<em>t</em>ter.</p>";
@@ -221,7 +224,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<a href=\"http://www.foo.ch\"><ac:image ac:height=\"200\" ac:width=\"300\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a>";
@@ -235,7 +238,21 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithImageInDifferentFolder_returnsConfluencePageContentWithImageAttachmentFileNameOnly() throws Exception {
+        // arrange
+        String adocContent = "image::sub-folder/sunset.jpg[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
@@ -263,10 +280,10 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
-        String expectedContent ="<table><tbody><tr><td>A</td><td>B</td><td>C</td></tr><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
+        String expectedContent = "<table><tbody><tr><td>A</td><td>B</td><td>C</td></tr><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -291,10 +308,10 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
-        String expectedContent ="<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
+        String expectedContent = "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -302,18 +319,18 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +
-            "====\n" +
-            "Some note.\n" +
-            "====";
+                "====\n" +
+                "Some note.\n" +
+                "====";
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
-            "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
-            "</ac:structured-macro>";
+                "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -321,20 +338,20 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithNoteContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
         // arrange
         String adocContent = "[NOTE]\n" +
-            ".Note Title\n" +
-            "====\n" +
-            "Some note.\n" +
-            "====";
+                ".Note Title\n" +
+                "====\n" +
+                "Some note.\n" +
+                "====";
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
-            "<ac:parameter ac:name=\"title\">Note Title</ac:parameter>" +
-            "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
-            "</ac:structured-macro>";
+                "<ac:parameter ac:name=\"title\">Note Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Some note.</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -348,7 +365,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
@@ -368,7 +385,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
@@ -388,7 +405,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
@@ -408,7 +425,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
@@ -428,7 +445,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
@@ -448,7 +465,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"note\">" +
@@ -468,7 +485,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"warning\">" +
@@ -488,7 +505,7 @@ public class AsciidocConfluencePageTest {
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"warning\">" +
@@ -499,32 +516,183 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void images_asciiDocWithImage_returnsFilePathToImage() throws Exception {
+    public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitle() throws Exception {
+        // arrange
+        String relativeSourcePagePath = "src/test/resources/inter-document-cross-references/source-page.adoc";
+        FileInputStream sourceInputStream = new FileInputStream(relativeSourcePagePath);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(sourceInputStream, TEMPLATES_DIR, Paths.get(relativeSourcePagePath));
+
+        // assert
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\"></ri:page>" +
+                "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
+                "</ac:link> to the target page.</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCircularInterDocumentCrossReference_returnsConfluencePagesWithLinkToReferencedPageByPageTitle() throws Exception {
+        // arrange
+        String relativePagePathOne = "src/test/resources/circular-inter-document-cross-references/page-one.adoc";
+        FileInputStream sourceInputStreamOne = new FileInputStream(relativePagePathOne);
+        String relativePagePathTwo = "src/test/resources/circular-inter-document-cross-references/page-two.adoc";
+        FileInputStream sourceInputStreamTwo = new FileInputStream(relativePagePathTwo);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePageOne = newAsciidocConfluencePage(sourceInputStreamOne, TEMPLATES_DIR, Paths.get(relativePagePathOne));
+        AsciidocConfluencePage asciidocConfluencePageTwo = newAsciidocConfluencePage(sourceInputStreamTwo, TEMPLATES_DIR, Paths.get(relativePagePathTwo));
+
+        // assert
+        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\">"));
+        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\">"));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithoutLinkText_returnsConfluencePageWithLinkToAttachmentAndAttachmentNameAsLinkText() throws Exception {
+        // arrange
+        String adocContent = "link:foo.txt[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithLinkText_returnsConfluencePageWithLinkToAttachmentAndSpecifiedLinkText() throws Exception {
+        // arrange
+        String adocContent = "link:foo.txt[Bar]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment><ac:plain-text-link-body><![CDATA[Bar]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentInDifferentFolder_returnsConfluencePageWithLinkToAttachmentFileNameOnly() throws Exception {
+        // arrange
+        String adocContent = "link:bar/foo.txt[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+    
+    @Test
+    public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
-        assertThat(asciidocConfluencePage.images(), contains("sunset.jpg"));
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sunset.jpg", "sunset.jpg"));
     }
 
     @Test
-    public void images_asciiDocWithMultipleLevelsAndImages_returnsAllImages() throws Exception {
+    public void attachments_asciiDocWithImageInDifferentFolder_returnsImageAsAttachmentWithPathAndFileNameOnly() throws Exception {
+        // arrange
+        String adocContent = "image::sub-folder/sunset.jpg[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sub-folder/sunset.jpg", "sunset.jpg"));
+    }
+
+    @Test
+    public void attachments_asciiDocWithMultipleLevelsAndImages_returnsAllAttachments() throws Exception {
         // arrange
         String adocContent = "= Title 1\n\n" +
                 "image::sunset.jpg[]\n" +
                 "== Title 2\n" +
                 "image::sunrise.jpg[]";
+        InputStream is = stringAsInputStream(adocContent);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(2));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sunset.jpg", "sunset.jpg"));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sunrise.jpg", "sunrise.jpg"));
+    }
+
+    @Test
+    public void attachments_asciiDocWithMultipleTimesSameImage_returnsNoDuplicateAttachments() throws Exception {
+        // arrange
+        String adocContent = "image::sunrise.jpg[]\n" +
+                "image::sunrise.jpg[]";
         InputStream is = stringAsInputStream(prependTitle(adocContent));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR);
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
 
         // assert
-        assertThat(asciidocConfluencePage.images(), contains("sunset.jpg", "sunrise.jpg"));
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sunrise.jpg", "sunrise.jpg"));
+    }
+
+    @Test
+    public void attachments_asciiDocWithLinkToAttachment_returnsAttachmentWithPathAndName() throws Exception {
+        // arrange
+        String adocContent = "link:foo.txt[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("foo.txt", "foo.txt"));
+    }
+
+    @Test
+    public void attachments_asciiDocWithLinkToAttachmentInDifferentFolder_returnsAttachmentWithPathAndFileNameOnly() throws Exception {
+        // arrange
+        String adocContent = "link:sub-folder/foo.txt[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sub-folder/foo.txt", "foo.txt"));
+    }
+    
+    @Test
+    public void attachments_asciiDocWithImageAndLinkToAttachment_returnsAllAttachments() throws Exception {
+        // arrange
+        String adocContent = "image::sunrise.jpg[]\n" +
+                "link:foo.txt[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, null);
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(2));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("sunrise.jpg", "sunrise.jpg"));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("foo.txt", "foo.txt"));
     }
 
     private static String prependTitle(String content) {

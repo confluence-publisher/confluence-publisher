@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -514,6 +515,23 @@ public class AsciidocConfluencePageTest {
                 "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
                 "</ac:link> to the target page.</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCircularInterDocumentCrossReference_returnsConfluencePagesWithLinkToReferencedPageByPageTitle() throws Exception {
+        // arrange
+        String relativePagePathOne = "src/test/resources/circular-inter-document-cross-references/page-one.adoc";
+        FileInputStream sourceInputStreamOne = new FileInputStream(relativePagePathOne);
+        String relativePagePathTwo = "src/test/resources/circular-inter-document-cross-references/page-two.adoc";
+        FileInputStream sourceInputStreamTwo = new FileInputStream(relativePagePathTwo);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePageOne = newAsciidocConfluencePage(sourceInputStreamOne, TEMPLATES_DIR, Paths.get(relativePagePathOne));
+        AsciidocConfluencePage asciidocConfluencePageTwo = newAsciidocConfluencePage(sourceInputStreamTwo, TEMPLATES_DIR, Paths.get(relativePagePathTwo));
+
+        // assert
+        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\">"));
+        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\">"));
     }
 
     @Test

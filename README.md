@@ -4,8 +4,8 @@
 
 ## Open points:
 * Add some reporting service to print out result
-* Circular inter-document cross references
 * External links
+* Internal cross references
 * Links to attachments
 * Rich content in tables
 * Bullet and numbered lists

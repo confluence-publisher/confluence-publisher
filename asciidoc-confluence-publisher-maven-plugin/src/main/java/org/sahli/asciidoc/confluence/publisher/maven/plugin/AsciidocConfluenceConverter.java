@@ -129,7 +129,7 @@ final class AsciidocConfluenceConverter {
                 ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
                 confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
                 confluencePageMetadata.setContentFilePath(Paths.get(this.generatedDocOutputPath).relativize(Paths.get(confluenceHtmlOutputFile.toURI())).toString());
-                confluencePageMetadata.getAttachments().addAll(asciidocConfluencePage.images());
+                confluencePageMetadata.getAttachments().putAll(asciidocConfluencePage.images());
 
                 this.confluencePageMetadataRegistry.add(confluenceHtmlOutputFile.getParent(), confluencePageMetadata);
             } else {

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -85,8 +86,7 @@ public class ConfluencePublisher {
 
         pages.forEach(page -> {
             String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
-            String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content
-            );
+            String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content);
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
@@ -109,11 +109,11 @@ public class ConfluencePublisher {
         });
     }
 
-    private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, List<String> attachments) {
+    private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
         List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
-                .filter(confluenceAttachment -> attachments.stream().noneMatch(attachment -> attachment.equals(confluenceAttachment.getTitle())))
+                .filter(confluenceAttachment -> attachments.values().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
                 .map(ConfluenceAttachment::getId)
                 .collect(toList());
 
@@ -147,21 +147,21 @@ public class ConfluencePublisher {
         return sha256Hex(content);
     }
 
-    private void addAttachments(String contentId, List<String> attachments) {
-        attachments.forEach(attachment -> addOrUpdateAttachment(contentId, attachment));
+    private void addAttachments(String contentId, Map<String, String> attachments) {
+        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
     }
 
-    private void addOrUpdateAttachment(String contentId, String attachment) {
+    private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
         try {
-            ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachment);
+            ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
             InputStream existingAttachmentContent = this.confluenceClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
 
-            if (!isSameContent(existingAttachmentContent, fileInputStream(Paths.get(this.contentRoot, attachment).toString()))) {
-                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+            if (!isSameContent(existingAttachmentContent, fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()))) {
+                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()));
             }
 
         } catch (NotFoundException e) {
-            this.confluenceClient.addAttachment(contentId, attachment, fileInputStream(Paths.get(this.contentRoot, attachment).toString()));
+            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()));
         }
     }
 

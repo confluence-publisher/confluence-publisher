@@ -32,9 +32,10 @@ import java.util.List;
 import java.util.List;
 ----
 
-=== Nice plane on carpet
+=== Nice plane on carpet & Frisbee
 
-image::plane.jpg[width="300"]
+image::img/rc-model-plane.jpg[width="300"]
+image::frisbee.png[width="300"]
 
 == Simple table
 

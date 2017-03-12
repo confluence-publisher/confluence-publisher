@@ -19,7 +19,9 @@ package org.sahli.asciidoc.confluence.publisher.client.metadata;
 import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.emptyList;
 
@@ -32,7 +34,7 @@ public class ConfluencePageMetadata {
     private String title;
     private String contentFilePath;
     private List<ConfluencePageMetadata> children = new ArrayList<>();
-    private List<String> attachments = new ArrayList<>();
+    private Map<String, String> attachments = new HashMap<>();
 
     public String getTitle() {
         return this.title;
@@ -65,12 +67,12 @@ public class ConfluencePageMetadata {
         this.children = children;
     }
 
-    public List<String> getAttachments() {
+    public Map<String, String> getAttachments() {
         return this.attachments;
     }
 
     @RuntimeUse
-    public void setAttachments(List<String> attachments) {
+    public void setAttachments(Map<String, String> attachments) {
         this.attachments = attachments;
     }
 }

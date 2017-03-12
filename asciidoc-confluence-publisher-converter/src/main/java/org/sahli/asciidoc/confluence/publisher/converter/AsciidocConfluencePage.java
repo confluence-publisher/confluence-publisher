@@ -19,11 +19,11 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.ast.Document;
 import org.asciidoctor.ast.StructuredDocument;
 import org.asciidoctor.ast.Title;
 import org.asciidoctor.internal.IOUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -38,8 +39,7 @@ import java.util.function.Function;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toMap;
+import static java.util.Collections.unmodifiableMap;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 
 /**
@@ -51,14 +51,14 @@ public class AsciidocConfluencePage {
 
     private static Asciidoctor asciidoctor = create();
 
-    private final String htmlContent;
-    private final Document document;
     private final String pageTitle;
+    private final String htmlContent;
+    private final Map<String, String> attachments;
 
-    private AsciidocConfluencePage(String pageTitle, String htmlContent, Document document) {
+    private AsciidocConfluencePage(String pageTitle, String htmlContent, Map<String, String> attachments) {
         this.pageTitle = pageTitle;
         this.htmlContent = htmlContent;
-        this.document = document;
+        this.attachments = attachments;
     }
 
     public String content() {
@@ -69,48 +69,47 @@ public class AsciidocConfluencePage {
         return this.pageTitle;
     }
 
-    public Map<String, String> images() {
-        return this.document.findBy(singletonMap("context", ":image")).stream()
-                .map(image -> (String) image.getAttributes().get("target"))
-                .distinct()
-                .collect(toMap((path) -> path, (path) -> deriveAttachmentName(path)));
+    public Map<String, String> attachments() {
+        return unmodifiableMap(this.attachments);
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, Path pagePath) {
+        Map<String, String> attachmentCollector = new HashMap<>();
+
         String adocContent = IOUtils.readFull(adoc);
         StructuredDocument structuredDocument = structuredDocument(adocContent);
-        String pageContent = convertedContent(adocContent, options(templatesDir), pagePath);
+        String pageContent = convertedContent(adocContent, options(templatesDir), pagePath, attachmentCollector);
 
         String pageTitle = pageTitle(structuredDocument);
 
-        Document document = document(adocContent);
-
-        return new AsciidocConfluencePage(pageTitle, pageContent, document);
+        return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
     }
 
     private static String deriveAttachmentName(String path) {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(String adocContent, Options options, Path pagePath) {
+    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector) {
         String content = asciidoctor.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath),
-                replaceImageFileNames()
+                collectAndReplaceAttachmentFileNames(attachmentCollector)
         );
 
         return postProcessedContent;
     }
 
-    private static Function<String, String> replaceImageFileNames() {
+    private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector) {
         return (content) -> {
-            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(content, "UTF-8");
+            Document document = Jsoup.parse(content, "UTF-8");
 
-            return jsoupDocument.getElementsByTag("ri:attachment").stream().reduce(content, (accumulator, attachmentElement) -> {
-                String attachmentTarget = attachmentElement.attr("ri:filename");
-                String attachmentFileName = deriveAttachmentName(attachmentTarget);
+            return document.getElementsByTag("ri:attachment").stream().reduce(content, (accumulator, attachmentElement) -> {
+                String attachmentPath = attachmentElement.attr("ri:filename");
+                String attachmentFileName = deriveAttachmentName(attachmentPath);
 
-                return accumulator.replace("<ri:attachment ri:filename=\"" + attachmentTarget + "\"", "<ri:attachment ri:filename=\"" + attachmentFileName + "\"");
+                attachmentCollector.put(attachmentPath, attachmentFileName);
+
+                return accumulator.replace("<ri:attachment ri:filename=\"" + attachmentPath + "\"", "<ri:attachment ri:filename=\"" + attachmentFileName + "\"");
             }, unusedCombiner());
         };
     }
@@ -122,10 +121,6 @@ public class AsciidocConfluencePage {
 
     private static StructuredDocument structuredDocument(String adocContent) {
         return asciidoctor.readDocumentStructure(adocContent, emptyMap());
-    }
-
-    private static Document document(String adocContent) {
-        return asciidoctor.load(adocContent, emptyMap());
     }
 
     private static String pageTitle(StructuredDocument structuredDocument) {
@@ -153,9 +148,9 @@ public class AsciidocConfluencePage {
 
     private static Function<String, String> replaceCrossReferenceTargets(Path pagePath) {
         return (content) -> {
-            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(content, "UTF-8");
+            Document document = Jsoup.parse(content, "UTF-8");
 
-            return jsoupDocument.getElementsByTag("ri:page").stream().reduce(content, (accumulator, pageElement) -> {
+            return document.getElementsByTag("ri:page").stream().reduce(content, (accumulator, pageElement) -> {
                 String htmlTarget = pageElement.attr("ri:content-title");
                 Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
                 try {

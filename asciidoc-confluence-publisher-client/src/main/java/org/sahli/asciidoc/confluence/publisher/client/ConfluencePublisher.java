@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  * @since 1.0
  */
 public class ConfluencePublisher {
@@ -89,7 +91,7 @@ public class ConfluencePublisher {
             String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content);
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
-            addAttachments(contentId, page.getAttachments());
+            addAttachments(contentId, page.getContentFilePath(), page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
     }
@@ -147,22 +149,36 @@ public class ConfluencePublisher {
         return sha256Hex(content);
     }
 
-    private void addAttachments(String contentId, Map<String, String> attachments) {
-        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
+    private void addAttachments(String contentId, String contentFilePath, Map<String, String> attachments) {
+        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, contentFilePath, attachmentPath, attachmentFileName));
     }
 
-    private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
+    private void addOrUpdateAttachment(String contentId, String contentFilePath, String attachmentPath, String attachmentFileName) {
+        Path absoluteAttachmentPath = absoluteAttachmentPath(contentFilePath, attachmentPath);
+
         try {
             ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
             InputStream existingAttachmentContent = this.confluenceClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
 
-            if (!isSameContent(existingAttachmentContent, fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()))) {
-                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()));
+            if (!isSameContent(existingAttachmentContent, fileInputStream(absoluteAttachmentPath))) {
+                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(absoluteAttachmentPath));
             }
 
         } catch (NotFoundException e) {
-            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(Paths.get(this.contentRoot, attachmentPath).toString()));
+            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
         }
+    }
+
+    private Path absoluteAttachmentPath(String contentFilePath, String attachmentPath) {
+        if (isPageInContentRootFolder(contentFilePath)) {
+            return Paths.get(this.contentRoot).resolve(attachmentPath);
+        }
+
+        return Paths.get(this.contentRoot).resolve(contentFilePath).getParent().resolve(attachmentPath);
+    }
+
+    private boolean isPageInContentRootFolder(String contentFilePath) {
+        return Paths.get(contentFilePath).getParent() == null;
     }
 
     private static boolean notSameContentHash(String actualContentHash, String newContentHash) {
@@ -200,9 +216,9 @@ public class ConfluencePublisher {
         }
     }
 
-    private static FileInputStream fileInputStream(String filePath) {
+    private static FileInputStream fileInputStream(Path filePath) {
         try {
-            return new FileInputStream(filePath);
+            return new FileInputStream(filePath.toFile());
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Could not find attachment ", e);
         }

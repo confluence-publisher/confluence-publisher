@@ -4,3 +4,9 @@
     ri:page ri:content-title=target
     ac:plain-text-link-body
       <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
+- when :link
+  ac:link
+    ri:attachment ri:filename=target
+    - if target != text
+      ac:plain-text-link-body
+        <![CDATA[#{text}]]>

@@ -55,4 +55,9 @@ image::frisbee.png[width="300"]
 |===
 
 == Inter-Document Cross Reference
+
 <<index/sub-page.adoc#,Cross Reference>>
+
+== Attachment in Sub-Folder
+
+link:index/attachmentOne.txt[Attachment One]

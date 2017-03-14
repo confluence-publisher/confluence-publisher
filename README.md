@@ -90,3 +90,7 @@ Some warning.
 ```
 <<relative/path/to/target-page.adoc#,Label>>
 ```
+* Includes (included pages need to use `_` prefix in file name)
+```
+include::relative/path/to/_included-page.adoc[]
+```

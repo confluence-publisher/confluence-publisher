@@ -61,3 +61,7 @@ image::frisbee.png[width="300"]
 == Attachment in Sub-Folder
 
 link:index/attachmentOne.txt[Attachment One]
+
+== Includes
+
+include::index/_included-page.adoc[]

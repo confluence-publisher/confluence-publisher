@@ -95,6 +95,7 @@ final class AsciidocConfluenceConverter {
     private static class AdocFileVisitor implements FileVisitor<Path> {
 
         private static final String ADOC_FILE_EXTENSION = ".adoc";
+        private static final String INCLUDE_FILE_PREFIX = "_";
         private final String asciidocRootFolder;
         private final String generatedDocOutputPath;
         private final String asciidocConfluenceTemplatesPath;
@@ -120,24 +121,34 @@ final class AsciidocConfluenceConverter {
 
             createMissingDirectories(targetFile);
 
-            if (file.toString().endsWith(ADOC_FILE_EXTENSION)) {
-                File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
-                confluenceHtmlOutputFile.createNewFile();
-                AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, file);
-                write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
+            if (!isIncludeFile(file)) {
+                if (isAdocFile(file)) {
+                    File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
+                    confluenceHtmlOutputFile.createNewFile();
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, file);
+                    write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
-                ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
-                confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
-                confluencePageMetadata.setContentFilePath(Paths.get(this.generatedDocOutputPath).relativize(Paths.get(confluenceHtmlOutputFile.toURI())).toString());
-                confluencePageMetadata.getAttachments().putAll(asciidocConfluencePage.attachments());
+                    ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
+                    confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
+                    confluencePageMetadata.setContentFilePath(Paths.get(this.generatedDocOutputPath).relativize(Paths.get(confluenceHtmlOutputFile.toURI())).toString());
+                    confluencePageMetadata.getAttachments().putAll(asciidocConfluencePage.attachments());
 
-                this.confluencePageMetadataRegistry.add(confluenceHtmlOutputFile.getParent(), confluencePageMetadata);
-            } else {
-                targetFile.createNewFile();
-                IOUtils.copy(Files.newInputStream(file), new FileOutputStream(targetFile));
+                    this.confluencePageMetadataRegistry.add(confluenceHtmlOutputFile.getParent(), confluencePageMetadata);
+                } else {
+                    targetFile.createNewFile();
+                    IOUtils.copy(Files.newInputStream(file), new FileOutputStream(targetFile));
+                }
             }
 
             return CONTINUE;
+        }
+
+        private boolean isAdocFile(Path file) {
+            return file.toString().endsWith(ADOC_FILE_EXTENSION);
+        }
+
+        private boolean isIncludeFile(Path file) {
+            return file.getFileName().toString().startsWith(INCLUDE_FILE_PREFIX);
         }
 
         @SuppressWarnings("ResultOfMethodCallIgnored")

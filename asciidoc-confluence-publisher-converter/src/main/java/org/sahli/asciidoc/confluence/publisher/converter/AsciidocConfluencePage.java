@@ -41,6 +41,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.asciidoctor.Asciidoctor.Factory.create;
+import static org.asciidoctor.SafeMode.SAFE;
 
 /**
  * @author Alain Sahli
@@ -78,7 +79,7 @@ public class AsciidocConfluencePage {
 
         String adocContent = IOUtils.readFull(adoc);
         StructuredDocument structuredDocument = structuredDocument(adocContent);
-        String pageContent = convertedContent(adocContent, options(templatesDir), pagePath, attachmentCollector);
+        String pageContent = convertedContent(adocContent, options(templatesDir, parentFolder(pagePath)), pagePath, attachmentCollector);
 
         String pageTitle = pageTitle(structuredDocument);
 
@@ -129,7 +130,11 @@ public class AsciidocConfluencePage {
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static Options options(String templateDir) {
+    private static File parentFolder(Path pagePath) {
+        return pagePath.getParent().toFile();
+    }
+
+    private static Options options(String templateDir, File baseDir) {
         File templateDirFolder = new File(templateDir);
 
         if (!templateDirFolder.exists()) {
@@ -142,6 +147,8 @@ public class AsciidocConfluencePage {
 
         return OptionsBuilder.options()
                 .backend("html")
+                .safe(SAFE)
+                .baseDir(baseDir)
                 .templateDirs(templateDirFolder)
                 .get();
     }

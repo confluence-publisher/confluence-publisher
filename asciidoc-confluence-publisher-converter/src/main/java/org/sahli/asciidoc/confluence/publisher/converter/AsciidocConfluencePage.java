@@ -19,7 +19,6 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
-import org.asciidoctor.ast.StructuredDocument;
 import org.asciidoctor.ast.Title;
 import org.asciidoctor.internal.IOUtils;
 import org.jsoup.Jsoup;
@@ -38,10 +37,9 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.asciidoctor.Asciidoctor.Factory.create;
-import static org.asciidoctor.SafeMode.SAFE;
+import static org.asciidoctor.SafeMode.UNSAFE;
 
 /**
  * @author Alain Sahli
@@ -51,6 +49,10 @@ import static org.asciidoctor.SafeMode.SAFE;
 public class AsciidocConfluencePage {
 
     private static Asciidoctor asciidoctor = create();
+
+    static {
+        asciidoctor.requireLibrary("asciidoctor-diagram");
+    }
 
     private final String pageTitle;
     private final String htmlContent;
@@ -74,14 +76,15 @@ public class AsciidocConfluencePage {
         return unmodifiableMap(this.attachments);
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, Path pagePath) {
+    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String generatedDocOutputPath, Path pagePath) {
         Map<String, String> attachmentCollector = new HashMap<>();
 
         String adocContent = IOUtils.readFull(adoc);
-        StructuredDocument structuredDocument = structuredDocument(adocContent);
-        String pageContent = convertedContent(adocContent, options(templatesDir, parentFolder(pagePath)), pagePath, attachmentCollector);
 
-        String pageTitle = pageTitle(structuredDocument);
+        Options options = options(templatesDir, parentFolder(pagePath), generatedDocOutputPath);
+        String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);
+
+        String pageTitle = pageTitle(adocContent);
 
         return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
     }
@@ -120,12 +123,8 @@ public class AsciidocConfluencePage {
         return stream(postProcessors).reduce(initialContent, (accumulator, postProcessor) -> postProcessor.apply(accumulator), unusedCombiner());
     }
 
-    private static StructuredDocument structuredDocument(String adocContent) {
-        return asciidoctor.readDocumentStructure(adocContent, emptyMap());
-    }
-
-    private static String pageTitle(StructuredDocument structuredDocument) {
-        return Optional.ofNullable(structuredDocument.getHeader().getDocumentTitle())
+    private static String pageTitle(String pageContent) {
+        return Optional.ofNullable(asciidoctor.readDocumentHeader(pageContent).getDocumentTitle())
                 .map(Title::getMain)
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
@@ -134,7 +133,7 @@ public class AsciidocConfluencePage {
         return pagePath.getParent().toFile();
     }
 
-    private static Options options(String templateDir, File baseDir) {
+    private static Options options(String templateDir, File baseDir, String imagesOutDir) {
         File templateDirFolder = new File(templateDir);
 
         if (!templateDirFolder.exists()) {
@@ -145,11 +144,16 @@ public class AsciidocConfluencePage {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("imagesoutdir", imagesOutDir);
+        attributes.put("outdir", imagesOutDir);
+
         return OptionsBuilder.options()
                 .backend("html")
-                .safe(SAFE)
+                .safe(UNSAFE)
                 .baseDir(baseDir)
                 .templateDirs(templateDirFolder)
+                .attributes(attributes)
                 .get();
     }
 
@@ -162,8 +166,7 @@ public class AsciidocConfluencePage {
                 Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
                 try {
                     String referencedPageContent = IOUtils.readFull(new FileInputStream(referencedPagePath.toFile()));
-                    StructuredDocument structuredDocument = structuredDocument(referencedPageContent);
-                    String referencedPageTitle = pageTitle(structuredDocument);
+                    String referencedPageTitle = pageTitle(referencedPageContent);
 
                     return accumulator.replace("<ri:page ri:content-title=\"" + htmlTarget + "\"", "<ri:page ri:content-title=\"" + referencedPageTitle + "\"");
                 } catch (FileNotFoundException e) {

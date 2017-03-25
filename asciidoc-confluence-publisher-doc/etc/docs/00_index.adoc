@@ -1,0 +1,23 @@
+= Confluence Publisher Documentation
+
+The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
+to be published to a Confluence space. It converts the resulting AsciiDoc HTML output to XHTML compatible with
+Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last
+publication is again re-published.
+
+Currently, the Confluence Publisher supports the following AsciiDoc features:
+
+* <<00_index/01_pages.adoc#, Pages>>
+* <<00_index/02_includes.adoc#, Includes>>
+* <<00_index/03_sections.adoc#, Sections>>
+* <<00_index/04_paragraphs.adoc#, Paragraphs>>
+
+== To Document
+* reference to official AsciiDoc documentation (or AsciiDoctor ?)
+* supported Confluence versions
+* documentation content root
+* Confluence page tree structure (maybe improve based on file ordering)
+* Maven plugin configuration
+
+== To Discuss
+* document supported AsciiDoc features vs. Confluence constructs

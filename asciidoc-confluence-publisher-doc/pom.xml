@@ -15,4 +15,30 @@
     <artifactId>asciidoc-confluence-publisher-doc</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <spaceKey>CPI</spaceKey>
+        <ancestorId>327706</ancestorId>
+        <username>confluence-publisher-it</username>
+        <password>1234</password>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+                <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
+                <configuration>
+                    <asciidocRootFolder>etc/docs</asciidocRootFolder>
+                    <generatedDocOutputPath>${project.build.directory}/confluence-output</generatedDocOutputPath>
+                    <rootConfluenceUrl>${rootConfluenceUrl}</rootConfluenceUrl>
+                    <spaceKey>${spaceKey}</spaceKey>
+                    <ancestorId>${ancestorId}</ancestorId>
+                    <username>${username}</username>
+                    <password>${password}</password>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

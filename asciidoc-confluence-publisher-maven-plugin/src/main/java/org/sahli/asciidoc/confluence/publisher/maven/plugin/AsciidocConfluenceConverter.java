@@ -125,7 +125,7 @@ final class AsciidocConfluenceConverter {
                 if (isAdocFile(file)) {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, file);
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, this.generatedDocOutputPath, file);
                     write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();

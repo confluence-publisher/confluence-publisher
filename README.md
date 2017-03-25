@@ -94,3 +94,17 @@ Some warning.
 ```
 include::relative/path/to/_included-page.adoc[]
 ```
+
+* PlantUML Diagrams (requires dot to be installed)
+embedded
+```
+[plantuml, embedded-diagram, png]
+....
+(foo) -> (bar) : test
+....
+```
+
+included
+```
+plantuml::diagram.puml[]
+```

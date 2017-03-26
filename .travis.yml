@@ -9,6 +9,7 @@ jdk:
 
 script:
   - DEPLOY=""
+  - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH"
   - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./gpg.sh; DEPLOY="-Possrh"; fi
   - ./mvnw clean verify jacoco:report coveralls:report $DEPLOY
   - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
@@ -16,3 +17,7 @@ script:
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
   - ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify
   - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./mvnw nexus-staging:deploy $DEPLOY; fi
+
+cache:
+  directories:
+  - $HOME/.m2

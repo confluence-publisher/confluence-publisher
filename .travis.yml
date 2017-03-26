@@ -9,6 +9,7 @@ jdk:
 
 before_install:
   - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./gpg.sh; fi
+  - sudo apt-get install graphviz
 
 install:
   - if [ "$TRAVIS_BRANCH" = "master" ]; then ./mvnw clean verify jacoco:report coveralls:report -Possrh; else ./mvnw clean verify jacoco:report coveralls:report; fi

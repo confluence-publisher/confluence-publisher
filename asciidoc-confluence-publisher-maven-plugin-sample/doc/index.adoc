@@ -65,3 +65,23 @@ link:index/attachmentOne.txt[Attachment One]
 == Includes
 
 include::index/_included-page.adoc[]
+
+== PlantUML Diagrams
+
+embedded:
+
+[plantuml, embedded-diagram, png]
+....
+class BlockProcessor
+class DiagramBlock
+class DitaaBlock
+class PlantUmlBlock
+
+BlockProcessor <|-- DiagramBlock
+DiagramBlock <|-- DitaaBlock
+DiagramBlock <|-- PlantUmlBlock
+....
+
+included:
+
+plantuml::included-diagram.puml[]

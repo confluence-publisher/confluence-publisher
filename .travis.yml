@@ -1,12 +1,18 @@
 sudo: required
+
 services:
   - docker
 language: java
+
 jdk:
   - oraclejdk8
+
 script:
-  - ./mvnw clean test jacoco:report coveralls:report
+  - DEPLOY=""
+  - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./gpg.sh; DEPLOY="-Possrh"; fi
+  - ./mvnw clean verify jacoco:report coveralls:report $DEPLOY
   - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
   - docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it alainsahli/confluence-publisher-it:6.0.5
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
   - ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify
+  - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./mvnw nexus-staging:deploy $DEPLOY; fi

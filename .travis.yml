@@ -8,7 +8,7 @@ jdk:
   - oraclejdk8
 
 before_install:
-  - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./gpg.sh; fi
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then ./gpg.sh; fi
   - sudo apt-get install graphviz
 
 install:

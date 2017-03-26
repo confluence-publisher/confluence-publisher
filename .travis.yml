@@ -1,14 +1,24 @@
 sudo: required
+
 services:
   - docker
 language: java
+
 jdk:
   - oraclejdk8
+
 before_install:
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then ./gpg.sh; fi
   - sudo apt-get install graphviz
-script:
-  - ./mvnw clean test jacoco:report coveralls:report
+
+install:
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then ./mvnw clean verify jacoco:report coveralls:report -Possrh; else ./mvnw clean verify jacoco:report coveralls:report; fi
   - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
   - docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it alainsahli/confluence-publisher-it:6.0.5
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
   - ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then ./mvnw -s .settings.xml jar:jar deploy:deploy -Possrh; fi
+
+cache:
+  directories:
+  - $HOME/.m2

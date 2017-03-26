@@ -41,9 +41,14 @@
     <developers>
         <developer>
             <name>Alain Sahli</name>
-            <email>sahli.alain@gmail.com</email>
+            <email>alain.sahli@mimacom.com</email>
             <organization>mimacom ag</organization>
             <organizationUrl>http://www.mimacom.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Christian Stettler</name>
+            <email>cstettler@imap.ch</email>
+            <organizationUrl>https://github.com/cstettler</organizationUrl>
         </developer>
     </developers>
 

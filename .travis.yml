@@ -16,7 +16,7 @@ install:
   - docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it alainsahli/confluence-publisher-it:6.0.5
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
   - ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify
-  - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./mvnw -s .settings.xml deploy:deploy -Possrh; fi
+  - if [ "$TRAVIS_BRANCH" = "feature/release-process" ]; then ./mvnw -s .settings.xml jar:jar deploy:deploy -Possrh; fi
 
 cache:
   directories:

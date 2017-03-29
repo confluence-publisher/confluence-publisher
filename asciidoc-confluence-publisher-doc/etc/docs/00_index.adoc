@@ -11,6 +11,7 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 * <<00_index/02_includes.adoc#, Includes>>
 * <<00_index/03_sections.adoc#, Sections>>
 * <<00_index/04_paragraphs.adoc#, Paragraphs>>
+* <<00_index/05_tables.adoc#, Tables>>
 
 == To Document
 * reference to official AsciiDoc documentation (or AsciiDoctor ?)

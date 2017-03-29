@@ -4,7 +4,6 @@
 
 ## Open points:
 * Add some reporting service to print out result
-* External links
 * Internal cross references
 * Links to attachments
 * Rich content in tables
@@ -107,4 +106,13 @@ embedded
 included
 ```
 plantuml::diagram.puml[]
+```
+
+* External Links
+```
+link:http://www.google.com[Google]
+
+link:http://www.apple.com[]
+
+http://www.microsoft.com
 ```

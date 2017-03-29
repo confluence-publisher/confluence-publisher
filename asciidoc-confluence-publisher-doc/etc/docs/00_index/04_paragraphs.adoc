@@ -1,21 +1,28 @@
 = Paragraphs
 
-AsciiDoc paragraphs are translated to Confluence paragraphs, supporting all typical styles:
+AsciiDoc paragraphs are translated to Confluence paragraphs, supporting all typical styles, for example:
 
 ```
-This is a first paragraph with *bold* text.
+This is a paragraph with *bold* text.
 ```
-This is a first paragraph with *bold* text.
+This is a paragraph with *bold* text.
 
 ```
-This is a second paragraph with _italic_ text.
+This is a paragraph with _italic_ text.
 ```
-This is a second paragraph with _italic_ text.
+This is a paragraph with _italic_ text.
 
 ```
-This is a third paragraph with `monospaced` text.
+This is a paragraph with `monospaced` text.
 ```
-This is a third paragraph with `monospaced` text.
+This is a paragraph with `monospaced` text.
 
-== TODO
-* document more styles (underline, strike-through, sub-/superscript)
+```
+This is a paragraph with `*_monospaced bold italic_*` text.
+```
+This is a paragraph with `*_monospaced bold italic_*` text.
+
+```
+This is a paragraph with ^super^script and ~sub~script text.
+```
+This is a paragraph with ^super^script and ~sub~script text.

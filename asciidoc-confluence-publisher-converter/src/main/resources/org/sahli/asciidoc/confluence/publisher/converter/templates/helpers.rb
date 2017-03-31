@@ -19,6 +19,21 @@ module Slim::Helpers
 
   VOID_ELEMENTS = %w(area base br col command embed hr img input keygen link meta param source track wbr)
 
+  CG_ALPHA = '[a-zA-Z]'
+  CC_ALNUM = 'a-zA-Z0-9'
+
+  # Detects strings that resemble URIs.
+  #
+  # Examples
+  #   http://domain
+  #   https://domain
+  #   file:///path
+  #   data:info
+  #
+  #   not c:/sample.adoc or c:\sample.adoc
+  #
+  UriSniffRx = %r{^#{CG_ALPHA}[#{CC_ALNUM}.+-]+:/{0,2}}
+
   ##
   # Creates an HTML tag with the given name and optionally attributes. Can take
   # a block that will run between the opening and closing tags.
@@ -126,6 +141,18 @@ module Slim::Helpers
   def xref_text
     str = text || document.references[:ids][attr :refid || target]
     str.tr_s("\n", ' ') if str
+  end
+
+  # Public: Efficiently checks whether the specified String resembles a URI
+  #
+  # Uses the Asciidoctor::UriSniffRx regex to check whether the String begins
+  # with a URI prefix (e.g., http://). No validation of the URI is performed.
+  #
+  # str - the String to check
+  #
+  # @return true if the String is a URI, false if it is not
+  def uriish? str
+    (str.include? ':') && str =~ UriSniffRx
   end
 
 end

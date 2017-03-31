@@ -4,7 +4,6 @@
 
 ## Open points:
 * Add some reporting service to print out result
-* External links
 * Internal cross references
 * Links to attachments
 * Rich content in tables
@@ -93,4 +92,27 @@ Some warning.
 * Includes (included pages need to use `_` prefix in file name)
 ```
 include::relative/path/to/_included-page.adoc[]
+```
+
+* PlantUML Diagrams (requires dot to be installed)
+embedded
+```
+[plantuml, embedded-diagram, png]
+....
+(foo) -> (bar) : test
+....
+```
+
+included
+```
+plantuml::diagram.puml[]
+```
+
+* External Links
+```
+link:http://www.google.com[Google]
+
+link:http://www.apple.com[]
+
+http://www.microsoft.com
 ```

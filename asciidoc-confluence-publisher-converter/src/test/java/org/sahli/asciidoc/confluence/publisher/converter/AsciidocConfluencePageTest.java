@@ -644,6 +644,25 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithUnorderedList_returnsConfluencePageHavingCorrectListMarkup() {
+        // arrange
+        String adocContent = "* L1-1\n" +
+                "** L2-1\n" +
+                "*** L3-1\n" +
+                "**** L4-1\n" +
+                "***** L5-1\n" +
+                "* L1-2";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<ul><li>L1-1<ul><li>L2-1<ul><li>L3-1<ul><li>L4-1<ul><li>L5-1</li></ul></li></ul></li></ul></li></ul></li><li>L1-2</li></ul>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() throws Exception {
         // arrange
         String adocContent = "image::sunset.jpg[]";

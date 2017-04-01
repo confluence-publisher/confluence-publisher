@@ -37,6 +37,26 @@ import java.util.List;
 image::img/rc-model-plane.jpg[width="300"]
 image::frisbee.png[width="300"]
 
+== Lists
+
+unordered:
+
+* Level 1
+** Level 2
+*** Level 3
+**** Level 4
+***** Level 5
+* Level 1
+
+ordered:
+
+. Level 1
+.. Level 2
+... Level 3
+.... Level 4
+..... Level 5
+. Level 1
+
 == Simple table
 
 [cols="3*", options="header"]

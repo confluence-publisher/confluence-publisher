@@ -7,7 +7,6 @@
 * Internal cross references
 * Links to attachments
 * Rich content in tables
-* Bullet and numbered lists
 
 ## Supported Asciidoc Elements
 
@@ -28,6 +27,24 @@
 Paragraph 1
 
 Paragraph 2
+```
+* Unordered Lists
+```
+* Level 1
+** Level 2
+*** Level 3
+**** Level 4
+***** Level 5
+* Level 1
+```
+* Ordered Lists
+```
+. Level 1
+.. Level 2
+... Level 3
+.... Level 4
+..... Level 5
+. Level 1
 ```
 * Listings
 ```

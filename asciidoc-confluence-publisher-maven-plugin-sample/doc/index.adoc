@@ -85,3 +85,11 @@ DiagramBlock <|-- PlantUmlBlock
 included:
 
 plantuml::included-diagram.puml[]
+
+== External Links
+
+link:http://www.google.com[Google]
+
+link:http://www.apple.com[]
+
+http://www.microsoft.com

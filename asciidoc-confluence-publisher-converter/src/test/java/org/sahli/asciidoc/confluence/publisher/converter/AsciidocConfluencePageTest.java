@@ -612,6 +612,48 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithExplicitExternalLinkAndLinkText_returnsConfluencePageWithLinkToExternalPageAndSpecifiedLinkText() throws Exception {
+        // arrange
+        String adocContent = "link:http://www.google.com[Google]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<p><a href=\"http://www.google.com\">Google</a></p>";
+        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithExternalLinkWithoutLinkText_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() throws Exception {
+        // arrange
+        String adocContent = "link:http://www.google.com[]";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<p><a href=\"http://www.google.com\">http://www.google.com</a></p>";
+        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithImplicitExternalLink_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() throws Exception {
+        // arrange
+        String adocContent = "http://www.google.com";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<p><a href=\"http://www.google.com\">http://www.google.com</a></p>";
+        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
         // arrange
         String adocContent = "[plantuml, embedded-diagram, png]\n" +

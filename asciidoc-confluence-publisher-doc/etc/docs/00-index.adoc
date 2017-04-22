@@ -10,6 +10,26 @@ publication is again re-published.
 The Confluence Publisher has been tested with Confluence 6.0.5
 ====
 
+
+== Supported Features
+
+Currently, the Confluence Publisher supports the following AsciiDoc features:
+
+* <<00-index/01-pages.adoc#, Pages>>
+* <<00-index/02-includes.adoc#, Includes>>
+* <<00-index/03-sections.adoc#, Sections>>
+* <<00-index/04-paragraphs.adoc#, Paragraphs>>
+* <<00-index/05-tables.adoc#, Tables>>
+* <<00-index/06-images.adoc#, Images>>
+* <<00-index/07-listings.adoc#, Listings>>
+* <<00-index/08-admonitions.adoc#, Admonitions>>
+* <<00-index/09-external-links.adoc#, External Links>>
+* <<00-index/10-plantuml.adoc#, PlantUML>>
+
+The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
+See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
+
+
 == Documentation Source Structure
 
 The Confluence Publisher expects the AsciiDoc sources to be stored in a specific source structure. This source structure
@@ -36,24 +56,6 @@ Currently, the ordering of child pages cannot be influenced due to missing suppo
 https://jira.atlassian.com/browse/CRA-1276 for information and voting)
 ====
 
-
-== Supported Features
-
-Currently, the Confluence Publisher supports the following AsciiDoc features:
-
-* <<00-index/01-pages.adoc#, Pages>>
-* <<00-index/02-includes.adoc#, Includes>>
-* <<00-index/03-sections.adoc#, Sections>>
-* <<00-index/04-paragraphs.adoc#, Paragraphs>>
-* <<00-index/05-tables.adoc#, Tables>>
-* <<00-index/06-images.adoc#, Images>>
-* <<00-index/07-listings.adoc#, Listings>>
-* <<00-index/08-admonitions.adoc#, Admonitions>>
-* <<00-index/09-external-links.adoc#, External Links>>
-* <<00-index/10-plantuml.adoc#, PlantUML>>
-
-The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
-See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
 
 == Maven Plugin Configuration
 
@@ -101,7 +103,4 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | password
 | The password of the user to use for publishing
-
 |===
-
-

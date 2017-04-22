@@ -3,23 +3,31 @@
 Images included in AsciiDoc files are automatically added as an attachment to the corresponding Confluence page and
 inserted into the page using the Confluence image tag.
 
-```
+[listing]
+....
 image::../images/frisbee.png[]
-```
+....
+
 image::../images/frisbee.png[]
 
 
 In addition, width and/or height can be specified explicitly and are respected when inserting the image into the
 Confluence page:
 
-```
+[listing]
+....
 image::../images/frisbee.png[width=100, height=50]
-```
+....
+
 image::../images/frisbee.png[width=100, height=50]
 
-```
+
+[listing]
+....
 image::../images/frisbee.png[height=75]
-```
+....
+
 image::../images/frisbee.png[height=75]
+
 
 Image captions are currently not supported.

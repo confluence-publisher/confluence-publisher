@@ -7,8 +7,9 @@ impacting the resulting Confluence page tree.
 Included AsciiDoc files are resolved relative to the location of the referencing AsciiDoc file and may reside in any
 directory within the configured documentation content root. Include files must be prefixed with an underscore.
 
-```
-    include::_included-page.adoc[]
-    include::includes/_included-page.adoc[]
-    include::../includes/_included-page.adoc[]
-```
+[listing]
+....
+\include::_included-page.adoc[]
+\include::includes/_included-page.adoc[]
+\include::../includes/_included-page.adoc[]
+....

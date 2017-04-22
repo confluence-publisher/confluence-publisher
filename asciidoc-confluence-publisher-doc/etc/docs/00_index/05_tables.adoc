@@ -6,6 +6,18 @@ AsciiDoc tables are converted to Confluence tables. The following table features
 
 A table without header row.
 
+[listing]
+....
+[cols="2"]
+|===
+| A1
+| A2
+
+| B1
+| B2
+|===
+....
+
 [cols="2"]
 |===
 | A1
@@ -15,9 +27,26 @@ A table without header row.
 | B2
 |===
 
+
 == Table with Header
 
 A table with first row as header. Currently, only column headers, are supported, but row headers not.
+
+[listing]
+....
+[cols="2", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+
+....
 
 [cols="2", options="header"]
 |===
@@ -31,9 +60,25 @@ A table with first row as header. Currently, only column headers, are supported,
 | B2
 |===
 
+
 == Table with Styled Text
 
 A table with bold/italic text. Currently, only simple formattings, but no nested tables or lists are supported.
+
+[listing]
+....
+[cols="2", options="header"]
+|===
+| Column 1
+| Column 2
+
+| _A1_
+| _A2_
+
+| *B1*
+| *B2*
+|===
+....
 
 [cols="2", options="header"]
 |===

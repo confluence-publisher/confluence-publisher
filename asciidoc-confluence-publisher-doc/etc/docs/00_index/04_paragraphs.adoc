@@ -2,27 +2,38 @@
 
 AsciiDoc paragraphs are translated to Confluence paragraphs, supporting all typical styles, for example:
 
-```
+[listing]
+....
 This is a paragraph with *bold* text.
-```
+....
+
 This is a paragraph with *bold* text.
 
-```
+
+[listing]
+....
 This is a paragraph with _italic_ text.
-```
+....
 This is a paragraph with _italic_ text.
 
-```
+
+[listing]
+....
 This is a paragraph with `monospaced` text.
-```
+....
 This is a paragraph with `monospaced` text.
 
-```
+
+[listing]
+....
 This is a paragraph with `*_monospaced bold italic_*` text.
-```
+....
+
 This is a paragraph with `*_monospaced bold italic_*` text.
 
-```
+
+[listing]
+....
 This is a paragraph with ^super^script and ~sub~script text.
-```
+....
 This is a paragraph with ^super^script and ~sub~script text.

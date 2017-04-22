@@ -23,8 +23,10 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 * <<00_index/09_external_links.adoc#, External Links>>
 * <<00_index/10_plantuml.adoc#, PlantUML>>
 
+The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
+See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
+
 == To Document
-* reference to official AsciiDoc documentation (or AsciiDoctor ?)
 * documentation content root
 * Confluence page tree structure (maybe improve based on file ordering)
 * Maven plugin configuration

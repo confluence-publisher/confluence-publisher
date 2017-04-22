@@ -1,0 +1,32 @@
+= Pages
+
+Each AsciiDoc file (unless being an <<02-includes.adoc#, included file>>) will result in a separate Confluence page and
+must contain a top-level document title which will be used as the Confluence page title:
+
+[listing]
+....
+= Document Title
+....
+
+According to the restrictions of Confluence, document titles must be unique within the Confluence space the
+documentation is published to. The AsciiDoc file name itself is not reflected in Confluence.
+
+== Links between Pages
+
+Links between pages in Confluence are supported using AsciiDoc inter-document cross references. Target pages are
+referenced via the path to the corresponding AsciiDoc file. Paths are resolved relative to the location of the
+referencing AsciiDoc file.
+
+[listing]
+....
+<<01-pages.adoc#, Link to Pages>>
+<<../00-index/06-images.adoc#, Link to Images>>
+....
+
+<<01-pages.adoc#, Link to Pages>>
+<<../00-index/06-images.adoc#, Link to Images>>
+
+[WARNING]
+====
+Links within the same page are currently not supported.
+====

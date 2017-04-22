@@ -1,0 +1,77 @@
+= Admonitions
+
+AsciiDoc admonitions are converted to info, note or warning blocks in Confluence.
+
+== Notes / Tips
+
+Notes and tips are displayed using the "info" macro.
+
+[listing]
+....
+[NOTE]
+====
+this is a note
+====
+....
+
+[NOTE]
+====
+this is a note
+====
+
+
+== Cautions / Warnings
+
+Cautions and warnings are displayed using the "note" macro.
+
+[listing]
+....
+[WARNING]
+====
+this is a warning
+====
+....
+
+[WARNING]
+====
+this is a warning
+====
+
+
+== Important Messages
+
+Important messages are displayed using the "warning" macro.
+
+
+[listing]
+....
+[IMPORTANT]
+====
+this is an important message
+====
+....
+
+[IMPORTANT]
+====
+this is an important message
+====
+
+
+== Admonition with Title
+
+Admonition titles are displayed as title of the corresponding block in Confluence:
+
+[listing]
+....
+[NOTE]
+.Note Title
+====
+this is a note with title
+====
+....
+
+[NOTE]
+.Note Title
+====
+this is a note with title
+====

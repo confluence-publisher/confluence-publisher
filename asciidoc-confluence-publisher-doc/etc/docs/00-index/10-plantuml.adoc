@@ -1,0 +1,46 @@
+= PlantUML
+
+PlantUML diagrams in AsciiDoc files are automatically generated using AsciiDoc Diagram, added as an attachment to the
+corresponding Confluence page and inserted into the page using the Confluence image tag.
+
+
+== Embedded PlantUML Source
+
+PlantUML sources can be embedded directly into an AsciiDoc file and are replaced by the generated image when the
+AsciiDoc file is published to Confluence.
+
+----
+[plantuml, diagram-name, png]
+....
+class Alpha
+class Beta
+class Gamma
+
+Alpha <|-- Beta
+Alpha <|-- Gamma
+....
+----
+
+[plantuml, embedded-diagram, png]
+....
+class Alpha
+class Beta
+class Gamma
+
+Alpha <|-- Beta
+Alpha <|-- Gamma
+....
+
+
+== Included PlantUML Source
+
+PlantUML sources can also be externalized to a separate file and included into the AsciiDoc file. Included PlantUML
+files are resolved relative to the location of the referencing AsciiDoc file and may reside in any directory within the
+configured documentation content root.
+
+[listing]
+....
+plantuml::../files/included-diagram.puml[]
+....
+
+plantuml::../files/included-diagram.puml[]

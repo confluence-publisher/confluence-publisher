@@ -1,0 +1,13 @@
+image:https://travis-ci.org/alainsahli/confluence-publisher.svg?branch=master["Build Status", link="https://travis-ci.org/alainsahli/confluence-publisher"]
+image:https://coveralls.io/repos/github/alainsahli/confluence-publisher/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/alainsahli/confluence-publisher?branch=master"]
+
+= Confluence Publisher
+
+The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
+to be published to a Confluence space.
+
+It converts the resulting AsciiDoc HTML output to XHTML compatible with
+Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last
+publication is again re-published.
+
+The documentation can be found link:asciidoc-confluence-publisher-doc/etc/docs/00-index.adoc[here].

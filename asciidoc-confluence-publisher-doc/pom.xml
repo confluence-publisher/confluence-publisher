@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+        <artifactId>asciidoc-confluence-publisher</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <name>Asciidoc Confluence Publisher Documentation</name>
+
+    <artifactId>asciidoc-confluence-publisher-doc</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <spaceKey>CPI</spaceKey>
+        <ancestorId>327706</ancestorId>
+        <username>confluence-publisher-it</username>
+        <password>1234</password>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+                <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
+                <configuration>
+                    <asciidocRootFolder>etc/docs</asciidocRootFolder>
+                    <rootConfluenceUrl>${rootConfluenceUrl}</rootConfluenceUrl>
+                    <spaceKey>${spaceKey}</spaceKey>
+                    <ancestorId>${ancestorId}</ancestorId>
+                    <username>${username}</username>
+                    <password>${password}</password>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

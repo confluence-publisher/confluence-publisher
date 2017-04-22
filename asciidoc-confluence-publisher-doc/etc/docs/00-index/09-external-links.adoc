@@ -1,0 +1,32 @@
+= External Links
+
+External links in AsciiDoc files are converted to links in Confluence.
+
+
+== Link with Label
+[listing]
+....
+awesome code can be found on link:http://www.github.com[] projects
+....
+
+awesome code can be found on link:http://www.github.com[] projects
+
+
+== Link without Label
+
+[listing]
+....
+awesome code can be found on link:http://www.github.com[GitHub] projects
+....
+
+awesome code can be found on link:http://www.github.com[GitHub] projects
+
+
+== Implicit Link
+
+[listing]
+....
+awesome code can be found on http://www.github.com projects
+....
+
+awesome code can be found on http://www.github.com projects

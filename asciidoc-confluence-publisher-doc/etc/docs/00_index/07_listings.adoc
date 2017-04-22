@@ -89,6 +89,7 @@ Restricting the source code to be included based on tags is supported:
 include::../files/SourceWithMethodTag.java[tags=myMethod]
 ----
 
-
-Other advanced features like listing file names or callouts are not
-supported.
+[WARNING]
+====
+Other advanced features like listing file names or callouts are not supported.
+====

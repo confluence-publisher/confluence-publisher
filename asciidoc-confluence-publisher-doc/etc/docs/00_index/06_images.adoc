@@ -30,5 +30,7 @@ image::../images/frisbee.png[height=75]
 
 image::../images/frisbee.png[height=75]
 
-
+[WARNING]
+====
 Image captions and images from URLs are currently not supported.
+====

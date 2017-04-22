@@ -30,7 +30,12 @@ A table without header row.
 
 == Table with Header
 
-A table with first row as header. Currently, only column headers, are supported, but row headers not.
+A table with first row as header.
+
+[WARNING]
+====
+Currently, only column headers, are supported, but row headers not.
+====
 
 [listing]
 ....
@@ -63,7 +68,12 @@ A table with first row as header. Currently, only column headers, are supported,
 
 == Table with Styled Text
 
-A table with bold/italic text. Currently, only simple formattings, but no nested tables or lists are supported.
+A table with bold/italic text.
+
+[WARNING]
+====
+Currently, only simple formattings, but no nested tables or lists are supported.
+====
 
 [listing]
 ....

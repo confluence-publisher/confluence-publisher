@@ -26,4 +26,7 @@ referencing AsciiDoc file.
 <<01_pages.adoc#, Link to Pages>>
 <<../00_index/06_images.adoc#, Link to Images>>
 
+[WARNING]
+====
 Links within the same page are currently not supported.
+====

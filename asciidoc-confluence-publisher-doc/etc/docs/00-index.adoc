@@ -10,18 +10,14 @@ publication is again re-published.
 The Confluence Publisher has been tested with Confluence 6.0.5
 ====
 
-Currently, the Confluence Publisher supports the following AsciiDoc features:
+== Documentation Source Structure
 
-* <<00-index/01-pages.adoc#, Pages>>
-* <<00-index/02-includes.adoc#, Includes>>
-* <<00-index/03-sections.adoc#, Sections>>
-* <<00-index/04-paragraphs.adoc#, Paragraphs>>
-* <<00-index/05-tables.adoc#, Tables>>
-* <<00-index/06-images.adoc#, Images>>
-* <<00-index/07-listings.adoc#, Listings>>
-* <<00-index/08-admonitions.adoc#, Admonitions>>
-* <<00-index/09-external-links.adoc#, External Links>>
-* <<00-index/10-plantuml.adoc#, PlantUML>>
+include::_source-structure.adoc[]
 
-The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
-See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
+== Supported Features
+
+include::_supported-features.adoc[]
+
+== Maven Plugin Configuration
+
+include::_plugin-configuration.adoc[]

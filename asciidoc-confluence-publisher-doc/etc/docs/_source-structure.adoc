@@ -1,0 +1,23 @@
+The Confluence Publisher expects the AsciiDoc sources to be stored in a specific source structure. This source structure
+is used to derive the page hierarchy in Confluence.
+
+....
+<root>
+ +- top-level-page.adoc    // top-level page AsciiDoc file
+ +- top-level-page         // folder for sub-pages and resources of top-level page
+    +- sub-page-one.adoc   // first sub page AsciiDoc file
+    +- sub-page-two.adoc   // second sub page AsciiDoc file
+    +- sub-page-two        // folder for sub-pages and resources of sub-page-two
+  +- any-other-folder      // folder for additional files (e.g. images, PlantUML files, ...)
+    +- ...
+....
+
+Resources like images, PlantUML files, other attachment types and include files can be placed in any location within
+the documentation root folder. See <<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>>
+and <<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource file path resolution.
+
+[NOTE]
+====
+Currently, the ordering of child pages cannot be influenced due to missing support in the Confluence REST API (see
+https://jira.atlassian.com/browse/CRA-1276 for information and voting)
+====

@@ -1,5 +1,3 @@
-= Getting Started
-
 The Confluence Publisher is configured with the help of a Maven plugin. A typical configuration could look like this:
 
 [source,xml]

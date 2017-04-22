@@ -1,0 +1,94 @@
+= Listings
+
+AsciiDoc literal blocks, listing blocks and code blocks are converted to formatted blocks in Confluence.
+
+== Literal Block
+
+Literal blocks are converted as pre-formatted text.
+
+----
+....
+this is a literal block
+....
+----
+
+....
+this is a literal block
+....
+
+== Listing Block
+
+Listing blocks are converted using the "noformat" macro.
+
+
+[listing]
+....
+----
+this is a listing block
+----
+....
+
+----
+this is a listing block
+----
+
+== Source Block
+
+Source blocks are converted using the "code" macro.
+
+[listing]
+....
+[source,java]
+----
+public class MyCode {
+    // comment
+}
+----
+....
+
+[source,java]
+----
+public class MyCode {
+    // comment
+}
+----
+
+
+== Source Blocks from External Files (Full Content)
+
+Including source code from external files is supported:
+
+[listing]
+....
+[source,java]
+----
+\include::../files/Source.java[]
+----
+....
+
+[source,java]
+----
+ include::../files/Source.java[]
+----
+
+
+== Source Blocks from External Files (Partial Content)
+
+Restricting the source code to be included based on tags is supported:
+
+[listing]
+....
+[source,java]
+----
+\include::../files/SourceWithMethodTag.java[tags=myMethod]
+----
+....
+
+[source,java]
+----
+include::../files/SourceWithMethodTag.java[tags=myMethod]
+----
+
+
+Other advanced features like listing file names or callouts are not
+supported.

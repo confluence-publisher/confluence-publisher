@@ -12,12 +12,96 @@ The Confluence Publisher has been tested with Confluence 6.0.5
 
 == Documentation Source Structure
 
-include::_source-structure.adoc[]
+The Confluence Publisher expects the AsciiDoc sources to be stored in a specific source structure. This source structure
+is used to derive the page hierarchy in Confluence.
+
+....
+<root>
+ +- top-level-page.adoc    // top-level page AsciiDoc file
+ +- top-level-page         // folder for sub-pages and resources of top-level page
+    +- sub-page-one.adoc   // first sub page AsciiDoc file
+    +- sub-page-two.adoc   // second sub page AsciiDoc file
+    +- sub-page-two        // folder for sub-pages and resources of sub-page-two
+  +- any-other-folder      // folder for additional files (e.g. images, PlantUML files, ...)
+    +- ...
+....
+
+Resources like images, PlantUML files, other attachment types and include files can be placed in any location within
+the documentation root folder. See <<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>>
+and <<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource file path resolution.
+
+[NOTE]
+====
+Currently, the ordering of child pages cannot be influenced due to missing support in the Confluence REST API (see
+https://jira.atlassian.com/browse/CRA-1276 for information and voting)
+====
+
 
 == Supported Features
 
-include::_supported-features.adoc[]
+Currently, the Confluence Publisher supports the following AsciiDoc features:
+
+* <<00-index/01-pages.adoc#, Pages>>
+* <<00-index/02-includes.adoc#, Includes>>
+* <<00-index/03-sections.adoc#, Sections>>
+* <<00-index/04-paragraphs.adoc#, Paragraphs>>
+* <<00-index/05-tables.adoc#, Tables>>
+* <<00-index/06-images.adoc#, Images>>
+* <<00-index/07-listings.adoc#, Listings>>
+* <<00-index/08-admonitions.adoc#, Admonitions>>
+* <<00-index/09-external-links.adoc#, External Links>>
+* <<00-index/10-plantuml.adoc#, PlantUML>>
+
+The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
+See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
 
 == Maven Plugin Configuration
 
-include::_plugin-configuration.adoc[]
+The Confluence Publisher is configured with the help of a Maven plugin. A typical configuration could look like this:
+
+[source,xml]
+.pom.xml
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+      <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
+      <version><!-- insert version here --></version>
+      <configuration>
+        <asciidocRootFolder>etc/docs</asciidocRootFolder>
+        <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <spaceKey>SPACE</spaceKey>
+        <ancestorId>327706</ancestorId>
+        <username>username</username> <!-- or read from property -->
+        <password>password</password> <!-- or read from property -->
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+----
+
+|===
+| Configuration Property | Description
+
+| asciidocRootFolder
+| The documentation root folder with the AsciiDoc file structure.
+
+| rootConfluenceUrl
+| The root URL of the Confluence instance to publish to.
+
+| spaceKey
+| The key of the Confluence space to publish to.
+
+| ancestorId
+| The id of the ancestor page under which the pages are appended. If omitted the pages are published directly under the space's home page.
+
+| username
+| The username of the user to use for publishing
+
+| password
+| The password of the user to use for publishing
+
+|===
+
+

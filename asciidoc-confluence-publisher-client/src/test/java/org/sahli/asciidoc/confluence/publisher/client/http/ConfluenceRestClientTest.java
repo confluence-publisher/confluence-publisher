@@ -510,6 +510,20 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
+    public void getPropertyByKey_withNonExistingKeyAsParameter_returnsNull() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 404);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        String propertyValue = confluenceRestClient.getPropertyByKey("1234", "content-hash");
+
+        // assert
+        assertThat(propertyValue, is(nullValue()));
+        verify(httpClientMock, times(1)).execute(any(HttpGet.class), any(HttpContext.class));
+    }
+
+    @Test
     public void deletePropertyByKey_withValidParameters_sendsDeleteRequestForPropertyKey() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
@@ -517,6 +531,19 @@ public class ConfluenceRestClientTest {
 
         // act
         confluenceRestClient.deletePropertyByKey("1234", "content-hash");
+
+        // assert
+        verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));
+    }
+
+    @Test
+    public void deletePropertyByKey_withNonExistingKey_sendsDeleteRequestForPropertyKeyAndIgnoresError() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 403);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        confluenceRestClient.deletePropertyByKey("1234", "unknown");
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));

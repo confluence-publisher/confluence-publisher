@@ -37,6 +37,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -220,7 +222,14 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         return sendRequestAndFailIfNot20x(getAttachmentContentRequest, (response) -> {
             try {
-                return response.getEntity().getContent();
+                byte[] buffer = new byte[1024];
+                int read;
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                while ((read = response.getEntity().getContent().read(buffer)) != -1) {
+                    byteArrayOutputStream.write(buffer, 0, read);
+                }
+
+                return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
             } catch (IOException e) {
                 throw new RuntimeException("Could not read attachment content", e);
             }
@@ -371,17 +380,19 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public String getPropertyByKey(String contentId, String key) {
         HttpGet propertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
 
-        return sendRequestAndFailIfNot20x(propertyByKeyRequest, (response) -> {
-            String propertyValue = extractPropertyValueFromJsonNode(parseJsonResponse(response));
-
-            return propertyValue;
+        return sendRequest(propertyByKeyRequest, (response) -> {
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return extractPropertyValueFromJsonNode(parseJsonResponse(response));
+            } else {
+                return null;
+            }
         });
     }
 
     @Override
     public void deletePropertyByKey(String contentId, String key) {
         HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
-        sendRequestAndFailIfNot20x(deletePropertyByKeyRequest);
+        sendRequest(deletePropertyByKeyRequest, (ignored) -> null);
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {

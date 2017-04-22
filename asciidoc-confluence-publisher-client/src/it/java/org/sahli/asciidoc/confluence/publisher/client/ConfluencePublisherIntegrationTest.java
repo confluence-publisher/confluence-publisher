@@ -15,6 +15,8 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.fail;
 
 public class ConfluencePublisherIntegrationTest {
 
@@ -56,6 +58,33 @@ public class ConfluencePublisherIntegrationTest {
                 .then().body("version.number", is(1));
     }
 
+    @Test
+    public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() throws Exception {
+        // arrange
+        String title = uniqueTitle("Invalid Markup Test Page");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+
+        // act
+        confluencePublisher.publish();
+
+        confluencePageMetadata.setContentFilePath("invalid-xhtml.xhtml");
+        try {
+            confluencePublisher.publish();
+            fail("publish with invalid XHTML is expected to fail");
+        } catch (Exception ignored) {
+        }
+
+        confluencePageMetadata.setContentFilePath("single-page.xhtml");
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(propertyValueOf(pageIdBy(title), "content-hash"))
+                .then().body("value", is(notNullValue()));
+    }
+
     private static String uniqueTitle(String title) {
         return title + " - " + randomUUID().toString();
     }
@@ -83,6 +112,10 @@ public class ConfluencePublisherIntegrationTest {
 
     private static String pageVersionOf(String singlePageId) {
         return "http://localhost:8090/rest/api/content/" + singlePageId + "?expand=version";
+    }
+
+    private static String propertyValueOf(String contentId, String key) {
+        return "http://localhost:8090/rest/api/content/" + contentId + "/property/" + key;
     }
 
     private static String pageIdBy(String title) {

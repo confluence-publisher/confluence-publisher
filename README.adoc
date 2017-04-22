@@ -1,0 +1,4 @@
+image:https://travis-ci.org/alainsahli/confluence-publisher.svg?branch=master["Build Status", link="https://travis-ci.org/alainsahli/confluence-publisher"]
+image:https://coveralls.io/repos/github/alainsahli/confluence-publisher/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/alainsahli/confluence-publisher?branch=master"]
+
+include::asciidoc-confluence-publisher-doc/etc/docs/00_index.adoc[]

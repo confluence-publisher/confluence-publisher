@@ -83,17 +83,17 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        extractTemplatesFromJar();
-
         try {
+            extractTemplatesFromJar();
             this.generatedDocOutputPath.mkdirs();
 
             ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.asciidocRootFolder.getAbsolutePath(),
                     this.generatedDocOutputPath.getAbsolutePath(), this.asciidocConfluenceTemplates.getAbsolutePath(), this.spaceKey, this.ancestorId);
 
             publish(confluencePublisherMetadata);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            getLog().error("Publishing to Confluence failed: " + e.getMessage());
+            throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
     }
 

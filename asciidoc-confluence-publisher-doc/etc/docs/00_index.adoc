@@ -24,6 +24,3 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 * documentation content root
 * Confluence page tree structure (maybe improve based on file ordering)
 * Maven plugin configuration
-
-== To Discuss
-* document supported AsciiDoc features vs. Confluence constructs

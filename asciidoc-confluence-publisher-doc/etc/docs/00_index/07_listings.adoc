@@ -68,7 +68,7 @@ Including source code from external files is supported:
 
 [source,java]
 ----
- include::../files/Source.java[]
+include::../files/Source.java[]
 ----
 
 

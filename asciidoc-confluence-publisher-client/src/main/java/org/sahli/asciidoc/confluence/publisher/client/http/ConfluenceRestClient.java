@@ -60,10 +60,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient) {
-        this(rootConfluenceUrl, httpClient, null, null);
-    }
-
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
         AssertUtils.assertMandatoryParameter(httpClient != null, "httpClient");
 

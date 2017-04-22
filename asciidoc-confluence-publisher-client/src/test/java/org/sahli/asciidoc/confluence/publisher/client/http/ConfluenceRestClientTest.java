@@ -76,7 +76,7 @@ public class ConfluenceRestClientTest {
         this.expectedException.expectMessage("rootConfluenceUrl must be set");
 
         // arrange + act
-        new ConfluenceRestClient("", anyCloseableHttpClient());
+        new ConfluenceRestClient("", anyCloseableHttpClient(), null, null);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class ConfluenceRestClientTest {
         this.expectedException.expectMessage("httpClient must be set");
 
         // arrange + act
-        new ConfluenceRestClient(CONFLUENCE_ROOT_URL, null);
+        new ConfluenceRestClient(CONFLUENCE_ROOT_URL, null, null, null);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String expectedContentId = "1234";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\":\"" + expectedContentId + "\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         String contentId = confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
@@ -107,7 +107,7 @@ public class ConfluenceRestClientTest {
     public void updatePage_withValidParameters_sendUpdateRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\":\"1234\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2);
@@ -120,7 +120,7 @@ public class ConfluenceRestClientTest {
     public void deletePage_withValidParameters_sendsDeleteRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 204);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.deletePage("1234");
@@ -134,7 +134,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String expectedContentId = "1234";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [{\"id\":\"" + expectedContentId + "\"}], \"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         String contentId = confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
@@ -147,7 +147,7 @@ public class ConfluenceRestClientTest {
     public void getPageByTitle_withEmptyResult_throwsPageNotFoundException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act + assert
         confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
@@ -157,7 +157,7 @@ public class ConfluenceRestClientTest {
     public void getPageByTitle_withMultipleResults_throwsMultipleResultsException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 2}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act + assert
         confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
@@ -167,7 +167,7 @@ public class ConfluenceRestClientTest {
     public void addAttachment_withValidParameters_sendsMultipartHttpPostRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.addAttachment("1234", "file.txt", new ByteArrayInputStream("file content".getBytes()));
@@ -180,7 +180,7 @@ public class ConfluenceRestClientTest {
     public void updateAttachmentContent_withValidParameters_sendsMultipartHttPostRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()));
@@ -193,7 +193,7 @@ public class ConfluenceRestClientTest {
     public void deleteAttachment_withValidParameters_sendsHttpDeleteRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.deleteAttachment("att12");
@@ -207,7 +207,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String jsonAttachment = "{\"id\": \"att12\", \"title\": \"Attachment.txt\", \"_links\": {\"download\": \"/download/Attachment.txt\"}, \"version\": {\"number\": 1}}";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + jsonAttachment + "], \"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         ConfluenceAttachment confluenceAttachment = confluenceRestClient.getAttachmentByFileName("1234", "file.txt");
@@ -223,7 +223,7 @@ public class ConfluenceRestClientTest {
     public void getAttachmentByFileName_withEmptyResult_throwsNotFoundException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.getAttachmentByFileName("1234", "file.txt");
@@ -233,7 +233,7 @@ public class ConfluenceRestClientTest {
     public void getAttachmentByFileName_withMultipleResults_throwsMultipleResultsException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 2}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.getAttachmentByFileName("4321", "another-file.txt");
@@ -244,7 +244,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String responseFilePath = "src/test/resources/org/sahli/asciidoc/confluence/publisher/client/http/page-content.json";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse(fileContent(responseFilePath), 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         ConfluencePage confluencePage = confluenceRestClient.getPageWithContentAndVersionById("1234");
@@ -262,7 +262,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String title = "Some title";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
@@ -276,7 +276,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String title = "Some title";
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
@@ -289,7 +289,7 @@ public class ConfluenceRestClientTest {
     public void attachmentExistsByFileName_withExistingAttachment_returnsTrue() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
@@ -302,7 +302,7 @@ public class ConfluenceRestClientTest {
     public void attachmentExistsByFileName_withNonExistingAttachment_returnsTrue() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
@@ -315,7 +315,7 @@ public class ConfluenceRestClientTest {
     public void attachmentExistsByFileName_withNonExistingContentId_returnsFalse() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 404);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("abc", "file.txt");
@@ -329,7 +329,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String resultSet = generateJsonPageResults(2);
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + resultSet + "], \"size\": 2}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
 
         // act
@@ -349,7 +349,7 @@ public class ConfluenceRestClientTest {
         List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
         ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
 
@@ -371,7 +371,7 @@ public class ConfluenceRestClientTest {
         List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
         ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
 
@@ -390,7 +390,7 @@ public class ConfluenceRestClientTest {
         // arrange
         String resultSet = generateJsonAttachmentResults(2);
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"results\": [" + resultSet + "], \"size\": 2}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
 
         // act
@@ -410,7 +410,7 @@ public class ConfluenceRestClientTest {
         List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
         ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
 
@@ -432,7 +432,7 @@ public class ConfluenceRestClientTest {
         List<String> jsonResponses = asList(firstResultSet, secondResultSet);
         List<Integer> statusCodes = asList(200, 200);
         CloseableHttpClient httpClientMock = recordHttpClientForMultipleJsonAndStatusCodeResponse(jsonResponses, statusCodes);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
         String contentId = "1234";
         ArgumentCaptor<HttpGet> httpGetArgumentCaptor = ArgumentCaptor.forClass(HttpGet.class);
 
@@ -450,7 +450,7 @@ public class ConfluenceRestClientTest {
     public void getSpaceContentId_withValidParameter_sendsHttpGetRequest() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"id\": \"12\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         String contentId = confluenceRestClient.getSpaceContentId("~personalSpace");
@@ -486,7 +486,7 @@ public class ConfluenceRestClientTest {
     public void setPropertyByKey_withValidParameters_sendsPostRequestForPropertyCreation() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.setPropertyByKey("1234", "content-hash", "hash-value");
@@ -499,7 +499,7 @@ public class ConfluenceRestClientTest {
     public void getPropertyByKey_withValidParameters_sendsGetRequestForPropertyRetrieval() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"value\": \"hash-value\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         String propertyValue = confluenceRestClient.getPropertyByKey("1234", "content-hash");
@@ -513,7 +513,7 @@ public class ConfluenceRestClientTest {
     public void deletePropertyByKey_withValidParameters_sendsDeleteRequestForPropertyKey() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
         confluenceRestClient.deletePropertyByKey("1234", "content-hash");
@@ -526,7 +526,7 @@ public class ConfluenceRestClientTest {
     public void addPageUnderAncestor_withUnsuccessfulResponse_throwsRuntimeExceptionWithResponseInformation() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"some\": \"json\"}", 404, "reason");
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // assert
         this.expectedException.expect(RuntimeException.class);

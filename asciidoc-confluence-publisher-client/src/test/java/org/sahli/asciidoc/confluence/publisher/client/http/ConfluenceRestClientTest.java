@@ -468,7 +468,7 @@ public class ConfluenceRestClientTest {
         ArgumentCaptor<HttpContext> httpContentArgumentCaptor = ArgumentCaptor.forClass(HttpContext.class);
 
         // act
-        confluenceRestClient.sendRequest(httpRequest);
+        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
 
         // assert
         verify(closeableHttpClient, times(1)).execute(eq(httpRequest), httpContentArgumentCaptor.capture());

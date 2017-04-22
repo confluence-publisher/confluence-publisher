@@ -18,5 +18,3 @@ Include files must be prefixed with an underscore.
 \include::includes/_included-page.adoc[]
 \include::../includes/_included-page.adoc[]
 ....
-
-Links within the same page are currently not supported.

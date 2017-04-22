@@ -1,6 +1,6 @@
 = Pages
 
-Each AsciiDoc file (unless being an <<02_includes.adoc#, included file>>) will result in a separate Confluence page and
+Each AsciiDoc file (unless being an <<02-includes.adoc#, included file>>) will result in a separate Confluence page and
 must contain a top-level document title which will be used as the Confluence page title:
 
 [listing]
@@ -19,12 +19,12 @@ referencing AsciiDoc file.
 
 [listing]
 ....
-<<01_pages.adoc#, Link to Pages>>
-<<../00_index/06_images.adoc#, Link to Images>>
+<<01-pages.adoc#, Link to Pages>>
+<<../00-index/06-images.adoc#, Link to Images>>
 ....
 
-<<01_pages.adoc#, Link to Pages>>
-<<../00_index/06_images.adoc#, Link to Images>>
+<<01-pages.adoc#, Link to Pages>>
+<<../00-index/06-images.adoc#, Link to Images>>
 
 [WARNING]
 ====

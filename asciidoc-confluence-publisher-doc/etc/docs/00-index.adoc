@@ -12,16 +12,16 @@ The Confluence Publisher has been tested with Confluence 6.0.5
 
 Currently, the Confluence Publisher supports the following AsciiDoc features:
 
-* <<00_index/01_pages.adoc#, Pages>>
-* <<00_index/02_includes.adoc#, Includes>>
-* <<00_index/03_sections.adoc#, Sections>>
-* <<00_index/04_paragraphs.adoc#, Paragraphs>>
-* <<00_index/05_tables.adoc#, Tables>>
-* <<00_index/06_images.adoc#, Images>>
-* <<00_index/07_listings.adoc#, Listings>>
-* <<00_index/08_admonitions.adoc#, Admonitions>>
-* <<00_index/09_external_links.adoc#, External Links>>
-* <<00_index/10_plantuml.adoc#, PlantUML>>
+* <<00-index/01-pages.adoc#, Pages>>
+* <<00-index/02-includes.adoc#, Includes>>
+* <<00-index/03-sections.adoc#, Sections>>
+* <<00-index/04-paragraphs.adoc#, Paragraphs>>
+* <<00-index/05-tables.adoc#, Tables>>
+* <<00-index/06-images.adoc#, Images>>
+* <<00-index/07-listings.adoc#, Listings>>
+* <<00-index/08-admonitions.adoc#, Admonitions>>
+* <<00-index/09-external-links.adoc#, External Links>>
+* <<00-index/10-plantuml.adoc#, PlantUML>>
 
 The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
 See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.

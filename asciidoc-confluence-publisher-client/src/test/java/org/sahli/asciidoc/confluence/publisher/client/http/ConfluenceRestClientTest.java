@@ -37,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -58,6 +59,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
+import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
 
 /**
  * @author Alain Sahli
@@ -563,6 +565,28 @@ public class ConfluenceRestClientTest {
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
     }
 
+    @Test
+    public void getAttachmentContent_withValidParameters_returnsAttachmentInputStream() throws Exception {
+        // arrange
+        HttpEntity httpEntityMock = recordHttpEntityForContent("Attachment content");
+
+        CloseableHttpResponse httpResponseMock = mock(CloseableHttpResponse.class);
+        when(httpResponseMock.getEntity()).thenReturn(httpEntityMock);
+
+        StatusLine statusLineMock = recordStatusLine(200, null);
+        when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+
+        CloseableHttpClient httpClientMock = anyCloseableHttpClient();
+        when(httpClientMock.execute(any(HttpGet.class), any(HttpContext.class))).thenReturn(httpResponseMock);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        InputStream attachmentContent = confluenceRestClient.getAttachmentContent("/download/file.txt?v=2");
+
+        // assert
+        assertThat(inputStreamAsString(attachmentContent), is("Attachment content"));
+    }
+
     private String generateJsonAttachmentResults(int numberOfAttachment) {
         return IntStream.range(1, numberOfAttachment + 1)
                 .boxed()
@@ -608,10 +632,10 @@ public class ConfluenceRestClientTest {
         return httpClientMock;
     }
 
-    private static HttpEntity recordHttpEntityForContent(String jsonResponse) {
+    private static HttpEntity recordHttpEntityForContent(String content) {
         HttpEntity httpEntityMock = mock(HttpEntity.class);
         try {
-            when(httpEntityMock.getContent()).thenReturn(new ByteArrayInputStream(jsonResponse.getBytes()));
+            when(httpEntityMock.getContent()).thenReturn(new ByteArrayInputStream(content.getBytes()));
         } catch (IOException e) {
             fail(e.getMessage());
         }

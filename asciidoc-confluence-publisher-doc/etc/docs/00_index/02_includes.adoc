@@ -13,3 +13,5 @@ directory within the configured documentation content root. Include files must b
 \include::includes/_included-page.adoc[]
 \include::../includes/_included-page.adoc[]
 ....
+
+Links within the same page are currently not supported.

@@ -36,7 +36,6 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +44,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
+import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
  * @author Alain Sahli
@@ -61,7 +60,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
-        AssertUtils.assertMandatoryParameter(httpClient != null, "httpClient");
+        assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.rootConfluenceUrl = rootConfluenceUrl;
         this.httpClient = httpClient;
@@ -205,8 +204,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
             }
 
             if (statusCode != 200) {
-                throw new RuntimeException("Response had not expected status code (200 or 404) -> "
-                        + statusCode + " " + statusLine.getReasonPhrase());
+                throw new RequestFailedException(attachmentByFileNameRequest, response);
             }
 
             JsonNode jsonNode = parseJsonResponse(response);
@@ -241,21 +239,11 @@ public class ConfluenceRestClient implements ConfluenceClient {
         sendRequestAndFailIfNot20x(httpRequest, (response) -> null);
     }
 
-    private <T> T sendRequestAndFailIfNot20x(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
-        return sendRequest(httpRequest, (response) -> {
+    private <T> T sendRequestAndFailIfNot20x(HttpRequestBase request, Function<HttpResponse, T> responseHandler) {
+        return sendRequest(request, (response) -> {
             StatusLine statusLine = response.getStatusLine();
             if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
-                throw new RuntimeException(""
-                        + statusLine.getStatusCode()
-                        + " "
-                        + statusLine.getReasonPhrase()
-                        + " "
-                        + httpRequest.getMethod()
-                        + " "
-                        + httpRequest.getURI().toString()
-                        + " "
-                        + failedResponseContent(response)
-                );
+                throw new RequestFailedException(request, response);
             }
 
             return responseHandler.apply(response);
@@ -278,14 +266,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
                 }
             } catch (IOException ignored) {
             }
-        }
-    }
-
-    private static String failedResponseContent(HttpResponse response) {
-        try {
-            return inputStreamAsString(response.getEntity().getContent());
-        } catch (Exception ignored) {
-            return "";
         }
     }
 
@@ -449,8 +429,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private static void closeInputStream(InputStream inputStream) {
         try {
             inputStream.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Exception while closing input stream", e);
+        } catch (IOException ignored) {
         }
     }
 

@@ -16,6 +16,7 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 * <<00_index/07_listings.adoc#, Listings>>
 * <<00_index/08_admonitions.adoc#, Admonitions>>
 * <<00_index/09_external_links.adoc#, External Links>>
+* <<00_index/10_plantuml.adoc#, PlantUML>>
 
 == To Document
 * reference to official AsciiDoc documentation (or AsciiDoctor ?)

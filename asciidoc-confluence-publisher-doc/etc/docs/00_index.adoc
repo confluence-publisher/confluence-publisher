@@ -25,8 +25,3 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 
 The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
 See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.
-
-== To Document
-* documentation content root
-* Confluence page tree structure (maybe improve based on file ordering)
-* Maven plugin configuration

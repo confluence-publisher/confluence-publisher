@@ -110,8 +110,8 @@ public class ConfluencePublisherIntegrationTest {
         return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
 
-    private static String pageVersionOf(String singlePageId) {
-        return "http://localhost:8090/rest/api/content/" + singlePageId + "?expand=version";
+    private static String pageVersionOf(String contentId) {
+        return "http://localhost:8090/rest/api/content/" + contentId + "?expand=version";
     }
 
     private static String propertyValueOf(String contentId, String key) {

@@ -65,6 +65,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 public class ConfluenceRestClientTest {
 
     private static final String CONFLUENCE_ROOT_URL = "http://confluence.com";
+
     @Rule
     public ExpectedException expectedException = none();
 
@@ -521,6 +522,20 @@ public class ConfluenceRestClientTest {
         verify(httpClientMock, times(1)).execute(any(HttpDelete.class), any(HttpContext.class));
     }
 
+    @Test
+    public void addPageUnderAncestor_withUnsuccessfulResponse_throwsRuntimeExceptionWithResponseInformation() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleJsonAndStatusCodeResponse("{\"some\": \"json\"}", 404, "reason");
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock);
+
+        // assert
+        this.expectedException.expect(RuntimeException.class);
+        this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content {\"some\": \"json\"}");
+
+        // act
+        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
+    }
+
     private String generateJsonAttachmentResults(int numberOfAttachment) {
         return IntStream.range(1, numberOfAttachment + 1)
                 .boxed()
@@ -531,12 +546,16 @@ public class ConfluenceRestClientTest {
     }
 
     private static CloseableHttpClient recordHttpClientForSingleJsonAndStatusCodeResponse(String jsonResponse, int statusCode) throws IOException {
+        return recordHttpClientForSingleJsonAndStatusCodeResponse(jsonResponse, statusCode, null);
+    }
+
+    private static CloseableHttpClient recordHttpClientForSingleJsonAndStatusCodeResponse(String jsonResponse, int statusCode, String reason) throws IOException {
         CloseableHttpResponse httpResponseMock = mock(CloseableHttpResponse.class);
         HttpEntity httpEntityMock = recordHttpEntityForContent(jsonResponse);
 
         when(httpResponseMock.getEntity()).thenReturn(httpEntityMock);
 
-        StatusLine statusLineMock = recordStatusLine(statusCode);
+        StatusLine statusLineMock = recordStatusLine(statusCode, reason);
         when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
 
         CloseableHttpClient httpClientMock = anyCloseableHttpClient();
@@ -552,7 +571,7 @@ public class ConfluenceRestClientTest {
         when(httpResponseMock.getEntity())
                 .thenReturn(httpEntities.get(0), httpEntities.subList(1, httpEntities.size()).toArray(new HttpEntity[httpEntities.size() - 1]));
 
-        List<StatusLine> statusLines = statusCodes.stream().map(ConfluenceRestClientTest::recordStatusLine).collect(toList());
+        List<StatusLine> statusLines = statusCodes.stream().map((statusCode) -> recordStatusLine(statusCode, null)).collect(toList());
         when(httpResponseMock.getStatusLine())
                 .thenReturn(statusLines.get(0), statusLines.subList(1, statusLines.size()).toArray(new StatusLine[statusLines.size() - 1]));
 
@@ -577,9 +596,10 @@ public class ConfluenceRestClientTest {
         return mock(CloseableHttpClient.class);
     }
 
-    private static StatusLine recordStatusLine(int statusCode) {
+    private static StatusLine recordStatusLine(int statusCode, String reason) {
         StatusLine statusLineMock = mock(StatusLine.class);
         when(statusLineMock.getStatusCode()).thenReturn(statusCode);
+        when(statusLineMock.getReasonPhrase()).thenReturn(reason);
 
         return statusLineMock;
     }

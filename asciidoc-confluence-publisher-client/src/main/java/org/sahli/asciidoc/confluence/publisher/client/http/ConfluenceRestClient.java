@@ -242,15 +242,17 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         StatusLine statusLine = response.getStatusLine();
         if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
-            try {
-                System.out.println("hoops error occurred");
-                System.out.println(inputStreamAsString(response.getEntity().getContent()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            throw new RuntimeException("Response had not expected status code (between 200 and 206) -> "
-                    + statusLine.getStatusCode() + " " + statusLine.getReasonPhrase() + " "
-                    + httpRequest.getMethod() + " " + httpRequest.getURI().toString());
+            throw new RuntimeException(""
+                    + statusLine.getStatusCode()
+                    + " "
+                    + statusLine.getReasonPhrase()
+                    + " "
+                    + httpRequest.getMethod()
+                    + " "
+                    + httpRequest.getURI().toString()
+                    + " "
+                    + failedResponseContent(response)
+            );
         }
 
         return response;
@@ -265,6 +267,14 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
 
         return response;
+    }
+
+    private static String failedResponseContent(CloseableHttpResponse response) {
+        try {
+            return inputStreamAsString(response.getEntity().getContent());
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     private HttpContext httpContext() {

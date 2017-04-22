@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -662,13 +663,15 @@ public class AsciidocConfluencePageTest {
                 "....";
 
         InputStream is = stringAsInputStream(prependTitle(adocContent));
+        String imagesOutDirectory = dummyOutputPath();
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, imagesOutDirectory, dummyPagePath());
 
         // assert
         String expectedContent = "<ac:image ac:height=\"175\" ac:width=\"57\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+        assertThat(new File(imagesOutDirectory, "embedded-diagram.png").exists(), is(true));
     }
 
     @Test

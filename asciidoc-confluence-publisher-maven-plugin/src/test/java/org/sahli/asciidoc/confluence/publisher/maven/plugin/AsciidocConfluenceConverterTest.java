@@ -57,5 +57,6 @@ public class AsciidocConfluenceConverterTest {
         assertThat("index/sub-page.html", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page.html")), is(true));
         assertThat("index/sub-page/", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page")), is(true));
         assertThat("index/sub-page/sub-sub-page.html", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page", "sub-sub-page.html")), is(true));
+        assertThat("index/embedded-diagram.png", Files.exists(Paths.get(generatedDocOutputPath, "index", "embedded-diagram.png")), is(true));
     }
 }

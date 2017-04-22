@@ -26,3 +26,11 @@ import java.util.List;
 ====
 Some note
 ====
+
+[plantuml, embedded-diagram, png]
+....
+class A
+class B
+
+A <|-- B
+....

@@ -118,6 +118,7 @@ final class AsciidocConfluenceConverter {
             String absolutePath = file.toFile().getAbsolutePath();
             String relativePath = absolutePath.substring(this.asciidocRootFolder.length() + 1);
             File targetFile = new File(this.generatedDocOutputPath, relativePath);
+            String imagesOutDir = targetFile.getParent();
 
             createMissingDirectories(targetFile);
 
@@ -125,7 +126,7 @@ final class AsciidocConfluenceConverter {
                 if (isAdocFile(file)) {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, this.generatedDocOutputPath, file);
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
                     write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();

@@ -222,18 +222,22 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         return sendRequestAndFailIfNot20x(getAttachmentContentRequest, (response) -> {
             try {
-                byte[] buffer = new byte[1024];
-                int read;
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                while ((read = response.getEntity().getContent().read(buffer)) != -1) {
-                    byteArrayOutputStream.write(buffer, 0, read);
-                }
-
-                return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                return copyInputStream(response);
             } catch (IOException e) {
                 throw new RuntimeException("Could not read attachment content", e);
             }
         });
+    }
+
+    private static ByteArrayInputStream copyInputStream(HttpResponse response) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        while ((read = response.getEntity().getContent().read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, read);
+        }
+
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
     private JsonNode parseJsonResponse(HttpResponse response) {

@@ -1,4 +1,4 @@
-= Confluence Publisher Documentation
+= Confluence Publisher
 
 The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
 to be published to a Confluence space. It converts the resulting AsciiDoc HTML output to XHTML compatible with

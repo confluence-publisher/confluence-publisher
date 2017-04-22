@@ -21,15 +21,15 @@ Alpha <|-- Gamma
 ....
 ----
 
-[plantuml, embedded-diagram, png]
-....
-class Alpha
-class Beta
-class Gamma
-
-Alpha <|-- Beta
-Alpha <|-- Gamma
-....
+//[plantuml, embedded-diagram, png]
+//....
+//class Alpha
+//class Beta
+//class Gamma
+//
+//Alpha <|-- Beta
+//Alpha <|-- Gamma
+//....
 
 
 == Included PlantUML Source

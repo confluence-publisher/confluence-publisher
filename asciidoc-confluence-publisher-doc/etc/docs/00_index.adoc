@@ -5,6 +5,11 @@ to be published to a Confluence space. It converts the resulting AsciiDoc HTML o
 Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last
 publication is again re-published.
 
+[NOTE]
+====
+The Confluence Publisher has been tested with Confluence 6.0.5
+====
+
 Currently, the Confluence Publisher supports the following AsciiDoc features:
 
 * <<00_index/01_pages.adoc#, Pages>>
@@ -20,7 +25,6 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 
 == To Document
 * reference to official AsciiDoc documentation (or AsciiDoctor ?)
-* supported Confluence versions
 * documentation content root
 * Confluence page tree structure (maybe improve based on file ordering)
 * Maven plugin configuration

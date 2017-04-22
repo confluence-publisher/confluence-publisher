@@ -182,7 +182,7 @@ public class ConfluencePublisher {
     }
 
     private static boolean notSameContentHash(String actualContentHash, String newContentHash) {
-        return !actualContentHash.equals(newContentHash);
+        return actualContentHash == null || !actualContentHash.equals(newContentHash);
     }
 
     private static boolean isSameContent(InputStream left, InputStream right) {

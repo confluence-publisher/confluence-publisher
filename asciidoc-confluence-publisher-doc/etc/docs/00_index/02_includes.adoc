@@ -1,6 +1,6 @@
 = Includes
 
-AsciiDoc file can include other AsciiDoc files. Included AsciiDoc files do not result in a separate Confluence page, but
+AsciiDoc files can include other AsciiDoc files. Included AsciiDoc files do not result in a separate Confluence page, but
 instead get included in the corresponding referencing page. This allows for structuring the AsciiDoc files without
 impacting the resulting Confluence page tree.
 

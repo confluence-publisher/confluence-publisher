@@ -182,41 +182,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public boolean pageExistsByTitle(String spaceKey, String title) {
-        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
-
-        return sendRequestAndFailIfNot20x(pageByTitleRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
-            boolean pageExists = jsonNode.get("size").asInt() == 1;
-
-            return pageExists;
-        });
-    }
-
-    @Override
-    public boolean attachmentExistsByFileName(String contentId, String attachmentFileName) {
-        HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, null);
-
-        return sendRequest(attachmentByFileNameRequest, (response) -> {
-            StatusLine statusLine = response.getStatusLine();
-
-            int statusCode = statusLine.getStatusCode();
-            if (statusCode == 404) {
-                return false;
-            }
-
-            if (statusCode != 200) {
-                throw new RequestFailedException(attachmentByFileNameRequest, response);
-            }
-
-            JsonNode jsonNode = parseJsonResponse(response);
-            boolean attachmentExists = jsonNode.get("size").asInt() == 1;
-
-            return attachmentExists;
-        });
-    }
-
-    @Override
     public InputStream getAttachmentContent(String relativeDownloadLink) {
         HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
 

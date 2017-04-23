@@ -42,10 +42,6 @@ public interface ConfluenceClient {
 
     ConfluencePage getPageWithContentAndVersionById(String contentId);
 
-    boolean pageExistsByTitle(String spaceKey, String title);
-
-    boolean attachmentExistsByFileName(String contentId, String attachmentFileName);
-
     InputStream getAttachmentContent(String relativeDownloadLink);
 
     List<ConfluencePage> getChildPages(String contentId);

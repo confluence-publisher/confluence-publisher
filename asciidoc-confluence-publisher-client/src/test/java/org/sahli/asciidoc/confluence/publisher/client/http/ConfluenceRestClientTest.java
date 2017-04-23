@@ -71,7 +71,7 @@ public class ConfluenceRestClientTest {
     private static final String CONFLUENCE_ROOT_URL = "http://confluence.com";
 
     @Rule
-    public ExpectedException expectedException = none();
+    public final ExpectedException expectedException = none();
 
     @Test
     public void instantiation_withEmptyRootConfluenceUrl_throwsIllegalArgumentException() throws Exception {
@@ -258,74 +258,6 @@ public class ConfluenceRestClientTest {
         assertThat(confluencePage.getTitle(), is("Some title"));
         assertThat(confluencePage.getContent(), is("Some content"));
         assertThat(confluencePage.getVersion(), is(1));
-    }
-
-
-    @Test
-    public void pageExistsByTitle_withExistingPageTitleParameter_returnsTrue() throws Exception {
-        // arrange
-        String title = "Some title";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
-
-        // assert
-        assertThat(pageExistsByTitle, is(true));
-    }
-
-    @Test
-    public void pageExistsByTitle_withNonExistingPageTitleParameter_returnsTrue() throws Exception {
-        // arrange
-        String title = "Some title";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        boolean pageExistsByTitle = confluenceRestClient.pageExistsByTitle("~personalSpace", title);
-
-        // assert
-        assertThat(pageExistsByTitle, is(false));
-    }
-
-    @Test
-    public void attachmentExistsByFileName_withExistingAttachment_returnsTrue() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 1}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
-
-        // assert
-        assertThat(attachmentExistsByFileName, is(true));
-    }
-
-    @Test
-    public void attachmentExistsByFileName_withNonExistingAttachment_returnsTrue() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 0}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("1234", "file.txt");
-
-        // assert
-        assertThat(attachmentExistsByFileName, is(false));
-    }
-
-    @Test
-    public void attachmentExistsByFileName_withNonExistingContentId_returnsFalse() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 404);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        boolean attachmentExistsByFileName = confluenceRestClient.attachmentExistsByFileName("abc", "file.txt");
-
-        // assert
-        assertThat(attachmentExistsByFileName, is(false));
     }
 
     @Test

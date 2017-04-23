@@ -34,6 +34,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
 
+/**
+ * @author Alain Sahli
+ * @author Christian Stettler
+ */
 public class ConfluencePublisherIntegrationTest {
 
     private static final String ANCESTOR_ID = "327706";

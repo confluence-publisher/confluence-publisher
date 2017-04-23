@@ -74,4 +74,5 @@ public class ConfluencePageMetadata {
     public void setAttachments(Map<String, String> attachments) {
         this.attachments = attachments;
     }
+
 }

@@ -50,6 +50,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class ConfluenceRestClient implements ConfluenceClient {
 

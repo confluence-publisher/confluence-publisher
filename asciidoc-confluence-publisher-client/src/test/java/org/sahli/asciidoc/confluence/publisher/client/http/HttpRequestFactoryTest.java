@@ -40,6 +40,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMat
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class HttpRequestFactoryTest {
 

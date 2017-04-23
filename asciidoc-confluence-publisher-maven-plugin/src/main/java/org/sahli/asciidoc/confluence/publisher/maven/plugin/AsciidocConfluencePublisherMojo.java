@@ -45,6 +45,7 @@ import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfl
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {

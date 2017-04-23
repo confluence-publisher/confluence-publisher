@@ -50,6 +50,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class ConfluencePublisherTest {
 

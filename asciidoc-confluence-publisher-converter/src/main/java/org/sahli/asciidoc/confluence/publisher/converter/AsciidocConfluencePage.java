@@ -35,9 +35,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.regex.Pattern.DOTALL;
+import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.SafeMode.UNSAFE;
 
@@ -48,6 +52,7 @@ import static org.asciidoctor.SafeMode.UNSAFE;
  */
 public class AsciidocConfluencePage {
 
+    private static final Pattern CDATA_PATTERN = Pattern.compile("<!\\[CDATA\\[.*?\\]\\]>", DOTALL);
     private static Asciidoctor asciidoctor = create();
 
     static {
@@ -97,10 +102,15 @@ public class AsciidocConfluencePage {
         String content = asciidoctor.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath),
-                collectAndReplaceAttachmentFileNames(attachmentCollector)
+                collectAndReplaceAttachmentFileNames(attachmentCollector),
+                unescapeCdataHtmlContent()
         );
 
         return postProcessedContent;
+    }
+
+    private static Function<String, String> unescapeCdataHtmlContent() {
+        return (content) -> replaceAll(content, CDATA_PATTERN, (match) -> unescapeHtml(match));
     }
 
     private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector) {
@@ -116,6 +126,19 @@ public class AsciidocConfluencePage {
                 return accumulator.replace("<ri:attachment ri:filename=\"" + attachmentPath + "\"", "<ri:attachment ri:filename=\"" + attachmentFileName + "\"");
             }, unusedCombiner());
         };
+    }
+
+    private static String replaceAll(String content, Pattern pattern, Function<String, String> replacer) {
+        StringBuffer replacedContent = new StringBuffer();
+        Matcher matcher = pattern.matcher(content);
+
+        while (matcher.find()) {
+            matcher.appendReplacement(replacedContent, replacer.apply(matcher.group()));
+        }
+
+        matcher.appendTail(replacedContent);
+
+        return replacedContent.toString();
     }
 
     @SafeVarargs

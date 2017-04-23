@@ -1,3 +1,0 @@
-= Supported AsciiDoc Elements
-
-The following AsciiDoc elements are currently supported.

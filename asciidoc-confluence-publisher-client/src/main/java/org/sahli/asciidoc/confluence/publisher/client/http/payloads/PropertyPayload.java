@@ -16,6 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http.payloads;
 
+import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
+
 /**
  * @author Alain Sahli
  * @author Christian Stettler
@@ -25,6 +27,7 @@ public class PropertyPayload {
     private String key;
     private String value;
 
+    @RuntimeUse
     public String getKey() {
         return key;
     }
@@ -33,6 +36,7 @@ public class PropertyPayload {
         this.key = key;
     }
 
+    @RuntimeUse
     public String getValue() {
         return value;
     }

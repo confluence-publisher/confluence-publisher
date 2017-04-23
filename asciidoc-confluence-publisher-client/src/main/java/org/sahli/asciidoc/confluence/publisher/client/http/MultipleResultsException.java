@@ -19,6 +19,7 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 /**
  * @author Alain Sahli
  */
+@SuppressWarnings("WeakerAccess")
 public class MultipleResultsException extends RuntimeException {
 
 }

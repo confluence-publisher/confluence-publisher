@@ -50,7 +50,8 @@ public class HttpRequestFactoryTest {
     private static final String CONFLUENCE_REST_API_ENDPOINT = ROOT_CONFLUENCE_URL + "/rest/api";
 
     @Rule
-    public ExpectedException expectedException = none();
+    public final ExpectedException expectedException = none();
+
     private HttpRequestFactory httpRequestFactory;
 
     @Before

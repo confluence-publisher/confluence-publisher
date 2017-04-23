@@ -37,8 +37,9 @@ public class AsciidocConfluenceConverterTest {
 
     private static final String TEMPLATES_PATH = "../asciidoc-confluence-publisher-converter/src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates";
     private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/maven/plugin/doc";
+
     @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {

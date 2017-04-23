@@ -20,9 +20,6 @@ import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Title;
-import org.asciidoctor.internal.IOUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,15 +32,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.DOTALL;
+import static java.util.regex.Pattern.compile;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.SafeMode.UNSAFE;
+import static org.asciidoctor.internal.IOUtils.readFull;
 
 /**
  * @author Alain Sahli
@@ -52,7 +52,10 @@ import static org.asciidoctor.SafeMode.UNSAFE;
  */
 public class AsciidocConfluencePage {
 
-    private static final Pattern CDATA_PATTERN = Pattern.compile("<!\\[CDATA\\[.*?\\]\\]>", DOTALL);
+    private static final Pattern CDATA_PATTERN = compile("<!\\[CDATA\\[.*?\\]\\]>", DOTALL);
+    private static final Pattern ATTACHMENT_PATH_PATTERN = compile("<ri:attachment ri:filename=\"(.*?)\"");
+    private static final Pattern PAGE_TITLE_PATTERN = compile("<ri:page ri:content-title=\"(.*?)\"");
+
     private static Asciidoctor asciidoctor = create();
 
     static {
@@ -84,7 +87,7 @@ public class AsciidocConfluencePage {
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {
         Map<String, String> attachmentCollector = new HashMap<>();
 
-        String adocContent = IOUtils.readFull(adoc);
+        String adocContent = readFull(adoc);
 
         Options options = options(templatesDir, parentFolder(pagePath), imagesOutDir);
         String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);
@@ -110,30 +113,26 @@ public class AsciidocConfluencePage {
     }
 
     private static Function<String, String> unescapeCdataHtmlContent() {
-        return (content) -> replaceAll(content, CDATA_PATTERN, (match) -> unescapeHtml(match));
+        return (content) -> replaceAll(content, CDATA_PATTERN, (matchResult) -> unescapeHtml(matchResult.group()));
     }
 
     private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector) {
-        return (content) -> {
-            Document document = Jsoup.parse(content, "UTF-8");
+        return (content) -> replaceAll(content, ATTACHMENT_PATH_PATTERN, (matchResult) -> {
+            String attachmentPath = matchResult.group(1);
+            String attachmentFileName = deriveAttachmentName(attachmentPath);
 
-            return document.getElementsByTag("ri:attachment").stream().reduce(content, (accumulator, attachmentElement) -> {
-                String attachmentPath = attachmentElement.attr("ri:filename");
-                String attachmentFileName = deriveAttachmentName(attachmentPath);
+            attachmentCollector.put(attachmentPath, attachmentFileName);
 
-                attachmentCollector.put(attachmentPath, attachmentFileName);
-
-                return accumulator.replace("<ri:attachment ri:filename=\"" + attachmentPath + "\"", "<ri:attachment ri:filename=\"" + attachmentFileName + "\"");
-            }, unusedCombiner());
-        };
+            return "<ri:attachment ri:filename=\"" + attachmentFileName + "\"";
+        });
     }
 
-    private static String replaceAll(String content, Pattern pattern, Function<String, String> replacer) {
+    private static String replaceAll(String content, Pattern pattern, Function<MatchResult, String> replacer) {
         StringBuffer replacedContent = new StringBuffer();
         Matcher matcher = pattern.matcher(content);
 
         while (matcher.find()) {
-            matcher.appendReplacement(replacedContent, replacer.apply(matcher.group()));
+            matcher.appendReplacement(replacedContent, replacer.apply(matcher.toMatchResult()));
         }
 
         matcher.appendTail(replacedContent);
@@ -181,22 +180,19 @@ public class AsciidocConfluencePage {
     }
 
     private static Function<String, String> replaceCrossReferenceTargets(Path pagePath) {
-        return (content) -> {
-            Document document = Jsoup.parse(content, "UTF-8");
+        return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
+            String htmlTarget = matchResult.group(1);
+            Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
-            return document.getElementsByTag("ri:page").stream().reduce(content, (accumulator, pageElement) -> {
-                String htmlTarget = pageElement.attr("ri:content-title");
-                Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
-                try {
-                    String referencedPageContent = IOUtils.readFull(new FileInputStream(referencedPagePath.toFile()));
-                    String referencedPageTitle = pageTitle(referencedPageContent);
+            try {
+                String referencedPageContent = readFull(new FileInputStream(referencedPagePath.toFile()));
+                String referencedPageTitle = pageTitle(referencedPageContent);
 
-                    return accumulator.replace("<ri:page ri:content-title=\"" + htmlTarget + "\"", "<ri:page ri:content-title=\"" + referencedPageTitle + "\"");
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException("unable to find cross-referenced page '" + referencedPagePath + "'", e);
-                }
-            }, unusedCombiner());
-        };
+                return "<ri:page ri:content-title=\"" + referencedPageTitle + "\"";
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException("unable to find cross-referenced page '" + referencedPagePath + "'", e);
+            }
+        });
     }
 
     private static BinaryOperator<String> unusedCombiner() {

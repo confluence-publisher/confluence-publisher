@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMat
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class HttpRequestFactoryTest {
 
@@ -49,7 +50,8 @@ public class HttpRequestFactoryTest {
     private static final String CONFLUENCE_REST_API_ENDPOINT = ROOT_CONFLUENCE_URL + "/rest/api";
 
     @Rule
-    public ExpectedException expectedException = none();
+    public final ExpectedException expectedException = none();
+
     private HttpRequestFactory httpRequestFactory;
 
     @Before

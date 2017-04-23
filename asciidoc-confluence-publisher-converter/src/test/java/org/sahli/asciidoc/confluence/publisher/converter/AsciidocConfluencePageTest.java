@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,10 @@ public class AsciidocConfluencePageTest {
     private static final String TEMPLATES_DIR = "src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates";
 
     @ClassRule
-    public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+    public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
 
     @Rule
-    public ExpectedException expectedException = none();
+    public final ExpectedException expectedException = none();
 
     @Test
     public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() throws Exception {
@@ -895,7 +895,7 @@ public class AsciidocConfluencePageTest {
 
     private static Path temporaryPath() {
         try {
-            return temporaryFolder.newFolder().toPath();
+            return TEMPORARY_FOLDER.newFolder().toPath();
         } catch (IOException e) {
             throw new IllegalStateException("unable to create temporary path", e);
         }

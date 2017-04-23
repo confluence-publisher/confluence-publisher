@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,15 @@ import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfl
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class AsciidocConfluenceConverterTest {
 
     private static final String TEMPLATES_PATH = "../asciidoc-confluence-publisher-converter/src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates";
     private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/maven/plugin/doc";
+
     @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {

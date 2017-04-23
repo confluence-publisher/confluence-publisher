@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 public class ConfluencePublisherTest {
 
@@ -57,7 +58,7 @@ public class ConfluencePublisherTest {
     private static final String SOME_CONFLUENCE_CONTENT_SHA256_HASH = "7a901829ba6a0b6f7f084ae4313bdb5d83bc2c4ea21b452ba7073c0b0c60faae";
 
     @Rule
-    public ExpectedException expectedException = none();
+    public final ExpectedException expectedException = none();
 
     @Test
     public void metadata_withOnePageAndAncestorId_convertItCorrectlyAndIsValid() throws Exception {

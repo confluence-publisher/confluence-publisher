@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import static org.asciidoctor.internal.IOUtils.readFull;
 /**
  * @author Alain Sahli
  * @author Christian Stettler
- * @since 1.0
  */
 public class AsciidocConfluencePage {
 
@@ -56,10 +55,10 @@ public class AsciidocConfluencePage {
     private static final Pattern ATTACHMENT_PATH_PATTERN = compile("<ri:attachment ri:filename=\"(.*?)\"");
     private static final Pattern PAGE_TITLE_PATTERN = compile("<ri:page ri:content-title=\"(.*?)\"");
 
-    private static Asciidoctor asciidoctor = create();
+    private static final Asciidoctor ASCIIDOCTOR = create();
 
     static {
-        asciidoctor.requireLibrary("asciidoctor-diagram");
+        ASCIIDOCTOR.requireLibrary("asciidoctor-diagram");
     }
 
     private final String pageTitle;
@@ -102,7 +101,7 @@ public class AsciidocConfluencePage {
     }
 
     private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector) {
-        String content = asciidoctor.convert(adocContent, options);
+        String content = ASCIIDOCTOR.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath),
                 collectAndReplaceAttachmentFileNames(attachmentCollector),
@@ -146,7 +145,7 @@ public class AsciidocConfluencePage {
     }
 
     private static String pageTitle(String pageContent) {
-        return Optional.ofNullable(asciidoctor.readDocumentHeader(pageContent).getDocumentTitle())
+        return Optional.ofNullable(ASCIIDOCTOR.readDocumentHeader(pageContent).getDocumentTitle())
                 .map(Title::getMain)
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }

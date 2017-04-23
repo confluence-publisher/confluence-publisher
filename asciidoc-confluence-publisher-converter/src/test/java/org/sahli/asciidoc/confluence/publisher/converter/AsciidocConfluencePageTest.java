@@ -161,6 +161,45 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithListingWithHtmlMarkup_returnsConfluencePageContentWithMacroWithoutHtmlEscape() throws Exception {
+        // arrange
+        String adocContent = "----\n" +
+                "<b>line one</b>\n" +
+                "<b>line two</b>\n" +
+                "----";
+
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"noformat\">" +
+                "<ac:plain-text-body><![CDATA[<b>line one</b>\n<b>line two</b>]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithHtmlContent_returnsConfluencePageContentWithoutHtmlEscape() throws Exception {
+        // arrange
+        String adocContent = "[source]\n" +
+                "----\n" +
+                "<b>content with html</b>\n" +
+                "----";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:plain-text-body><![CDATA[<b>content with html</b>]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() throws Exception {
         // arrange
         String adocContent = "= Title level 0\n\n" +

@@ -70,7 +70,6 @@
         <module>asciidoc-confluence-publisher-converter</module>
         <module>asciidoc-confluence-publisher-doc</module>
         <module>asciidoc-confluence-publisher-maven-plugin</module>
-        <module>asciidoc-confluence-publisher-maven-plugin-sample</module>
     </modules>
 
     <dependencyManagement>

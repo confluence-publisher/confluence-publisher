@@ -1,0 +1,24 @@
+= Attachments
+
+If an AsciiDoc file references a non-AsciiDoc file (e.g. a text file, PDF, ...) that non-AsciiDoc file is automatically
+added as an attachment to the corresponding Confluence page. Referenced non-AsciiDoc files are resolved relative to the
+location of the referencing AsciiDoc file.
+
+Attachment links may specify a label.
+
+[listing]
+....
+link:../files/attachment.txt[Attachment]
+....
+
+link:../files/attachment.txt[Attachment]
+
+
+If no label is specified, the attachment filename is used as the label.
+
+[listing]
+....
+link:../files/attachment.txt[]
+....
+
+link:../files/attachment.txt[]

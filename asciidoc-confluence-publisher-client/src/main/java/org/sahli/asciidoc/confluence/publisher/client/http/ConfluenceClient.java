@@ -21,7 +21,6 @@ import java.util.List;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 public interface ConfluenceClient {
 

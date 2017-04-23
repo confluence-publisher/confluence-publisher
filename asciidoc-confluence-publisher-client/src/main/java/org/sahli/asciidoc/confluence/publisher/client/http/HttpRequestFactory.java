@@ -53,7 +53,6 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 class HttpRequestFactory {
 

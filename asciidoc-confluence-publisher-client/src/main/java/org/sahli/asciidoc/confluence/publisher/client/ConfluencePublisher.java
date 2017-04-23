@@ -45,7 +45,6 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 /**
  * @author Alain Sahli
  * @author Christian Stettler
- * @since 1.0
  */
 public class ConfluencePublisher {
 

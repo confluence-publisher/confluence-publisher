@@ -48,7 +48,6 @@ import static org.asciidoctor.internal.IOUtils.readFull;
 /**
  * @author Alain Sahli
  * @author Christian Stettler
- * @since 1.0
  */
 public class AsciidocConfluencePage {
 

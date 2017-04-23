@@ -42,7 +42,6 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 final class AsciidocConfluenceConverter {
 

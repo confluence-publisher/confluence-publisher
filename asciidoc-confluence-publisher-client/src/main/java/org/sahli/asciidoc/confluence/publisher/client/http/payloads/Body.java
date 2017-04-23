@@ -20,7 +20,6 @@ import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 public class Body {
 

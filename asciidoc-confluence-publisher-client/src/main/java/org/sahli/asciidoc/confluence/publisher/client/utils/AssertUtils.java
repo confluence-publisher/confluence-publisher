@@ -18,7 +18,6 @@ package org.sahli.asciidoc.confluence.publisher.client.utils;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 public final class AssertUtils {
 

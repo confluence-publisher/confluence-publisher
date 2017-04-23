@@ -18,7 +18,6 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 public class MultipleResultsException extends RuntimeException {
 }

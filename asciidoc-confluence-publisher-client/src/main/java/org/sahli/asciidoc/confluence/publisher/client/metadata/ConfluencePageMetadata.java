@@ -27,7 +27,6 @@ import static java.util.Collections.emptyList;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 public class ConfluencePageMetadata {
 

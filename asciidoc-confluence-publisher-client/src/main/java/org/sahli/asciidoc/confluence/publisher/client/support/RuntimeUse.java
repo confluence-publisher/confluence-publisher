@@ -25,7 +25,6 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * @author Alain Sahli
- * @since 1.0
  */
 @Retention(SOURCE)
 @Target({TYPE, METHOD})

@@ -15,13 +15,13 @@ before_script:
 
 script:
   - if [ -n "$TRAVIS_TAG" ]; then ./mvnw versions:set -DnewVersion=$TRAVIS_TAG -nsu; fi
-  - ./mvnw clean install jacoco:report coveralls:report -Possrh -nsu
+  - ./mvnw clean install jacoco:report coveralls:report -nsu
   - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
   - docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it alainsahli/confluence-publisher-it:6.0.5
   - ./waitForConfluenceStartup.sh confluence-publisher-it 300
   - ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
   - ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
-  - if [ "$TRAVIS_BRANCH" = "master" ] || [ -n "$TRAVIS_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar -Dmaven.javadoc.skip=true deploy:deploy -Possrh -nsu; fi
+  - if [ "$TRAVIS_BRANCH" = "master" ] || [ -n "$TRAVIS_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi
 
 before_cache:
   - rm -rf $HOME/.m2/repository/org/sahli/asciidoc/confluence/publisher

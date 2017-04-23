@@ -35,8 +35,7 @@ Alpha <|-- Gamma
 == Included PlantUML Source
 
 PlantUML sources can also be externalized to a separate file and included into the AsciiDoc file. Included PlantUML
-files are resolved relative to the location of the referencing AsciiDoc file and may reside in any directory within the
-configured documentation content root.
+files are resolved relative to the location of the referencing AsciiDoc file.
 
 [listing]
 ....

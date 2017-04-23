@@ -2,7 +2,7 @@
 
 Images included in AsciiDoc files are automatically added as an attachment to the corresponding Confluence page and
 inserted into the page using the Confluence image tag. Included image files are resolved relative to the location of the
-referencing AsciiDoc file and may reside in any directory within the configured documentation content root.
+referencing AsciiDoc file.
 
 [listing]
 ....

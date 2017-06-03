@@ -106,6 +106,9 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The password of the user to use for publishing
 |===
 
+As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
+configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
+help of `-D` prefix when invoking Maven.
 
 == Maven Plugin Execution
 

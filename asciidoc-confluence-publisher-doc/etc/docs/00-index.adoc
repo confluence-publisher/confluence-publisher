@@ -105,3 +105,29 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | password
 | The password of the user to use for publishing
 |===
+
+
+== Maven Plugin Execution
+
+The Confluence Publisher Maven plugin goal `publish` can be bound to a specific lifecycle, if it should be executed
+automatically when building the project, e.g. for execution during the `site` phase:
+
+----
+<!-- ... -->
+<executions>
+    <execution>
+        <id>publish-documentation</id>
+        <goals>
+            <goal>publish</goal>
+        </goals>
+        <phase>site</phase>
+    </execution>
+</executions>
+<!-- ... -->
+----
+
+Alternatively, the Confluence Publisher Maven plugin can also be executed manually via the command line:
+
+----
+mvn org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish
+----

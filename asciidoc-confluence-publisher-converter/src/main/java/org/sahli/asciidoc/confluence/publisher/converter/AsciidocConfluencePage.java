@@ -170,7 +170,7 @@ public class AsciidocConfluencePage {
         attributes.put("outdir", imagesOutDir);
 
         return OptionsBuilder.options()
-                .backend("html")
+                .backend("xhtml5")
                 .safe(UNSAFE)
                 .baseDir(baseDir)
                 .templateDirs(templateDirFolder)

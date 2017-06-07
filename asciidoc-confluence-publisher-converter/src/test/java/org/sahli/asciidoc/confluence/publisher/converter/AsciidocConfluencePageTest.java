@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -247,6 +248,20 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<p><strong>Bold phrase.</strong> bold le<strong>t</strong>ter.</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithBr_returnsConfluencePageContentWithXhtml() throws Exception {
+        // arrange
+        String adocContent = "a +\nb +\nc";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<p>a<br/>\nb<br/>\nc</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -694,6 +709,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    @Ignore // FIXME -> https://github.com/alainsahli/confluence-publisher/issues/47
     public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
         // arrange
         String adocContent = "[plantuml, embedded-diagram, png]\n" +
@@ -714,6 +730,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    @Ignore // FIXME -> https://github.com/alainsahli/confluence-publisher/issues/47
     public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
         // arrange
         String relativeSourcePagePath = "src/test/resources/plantuml/page.adoc";

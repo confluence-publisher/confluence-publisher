@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
 import static org.junit.rules.ExpectedException.none;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
@@ -695,6 +696,9 @@ public class AsciidocConfluencePageTest {
 
     @Test
     public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
+
+        assumeTrue(isGraphVizInstalled());
+
         // arrange
         String adocContent = "[plantuml, embedded-diagram, png]\n" +
                 "....\n" +
@@ -715,6 +719,9 @@ public class AsciidocConfluencePageTest {
 
     @Test
     public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
+
+        assumeTrue(isGraphVizInstalled());
+
         // arrange
         String relativeSourcePagePath = "src/test/resources/plantuml/page.adoc";
         FileInputStream sourceInputStream = new FileInputStream(relativeSourcePagePath);
@@ -868,6 +875,15 @@ public class AsciidocConfluencePageTest {
         assertThat(asciidocConfluencePage.attachments().size(), is(2));
         assertThat(asciidocConfluencePage.attachments(), hasEntry("sunrise.jpg", "sunrise.jpg"));
         assertThat(asciidocConfluencePage.attachments(), hasEntry("foo.txt", "foo.txt"));
+    }
+
+    private boolean isGraphVizInstalled() {
+        try {
+            Process p = Runtime.getRuntime().exec("dot -V");
+            return p.waitFor() == 0;
+        } catch (InterruptedException | IOException e) {
+            return false;
+        }
     }
 
     private static String prependTitle(String content) {

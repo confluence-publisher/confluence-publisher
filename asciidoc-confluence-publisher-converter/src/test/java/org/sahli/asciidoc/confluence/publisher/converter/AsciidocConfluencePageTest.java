@@ -709,7 +709,6 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    @Ignore // FIXME -> https://github.com/alainsahli/confluence-publisher/issues/47
     public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
         // arrange
         String adocContent = "[plantuml, embedded-diagram, png]\n" +
@@ -730,7 +729,6 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    @Ignore // FIXME -> https://github.com/alainsahli/confluence-publisher/issues/47
     public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
         // arrange
         String relativeSourcePagePath = "src/test/resources/plantuml/page.adoc";

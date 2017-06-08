@@ -34,8 +34,12 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
+import static java.lang.System.lineSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.Files.readAllLines;
 import static java.nio.file.Files.walkFileTree;
+import static java.util.stream.Collectors.joining;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.apache.commons.io.IOUtils.write;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
@@ -125,7 +129,8 @@ final class AsciidocConfluenceConverter {
                 if (isAdocFile(file)) {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
+                    String adocContent = readAllLines(file, UTF_8).stream().collect(joining(lineSeparator()));
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
                     write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();

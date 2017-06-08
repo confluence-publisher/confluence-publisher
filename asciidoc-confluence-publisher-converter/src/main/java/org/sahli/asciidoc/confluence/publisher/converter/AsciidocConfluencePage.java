@@ -83,10 +83,8 @@ public class AsciidocConfluencePage {
         return unmodifiableMap(this.attachments);
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {
+    public static AsciidocConfluencePage newAsciidocConfluencePage(String adocContent, String templatesDir, String imagesOutDir, Path pagePath) {
         Map<String, String> attachmentCollector = new HashMap<>();
-
-        String adocContent = readFull(adoc);
 
         Options options = options(templatesDir, parentFolder(pagePath), imagesOutDir);
         String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);

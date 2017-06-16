@@ -17,7 +17,6 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

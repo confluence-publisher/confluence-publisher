@@ -21,7 +21,7 @@ script:
   - if ( [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ); then ./waitForConfluenceStartup.sh confluence-publisher-it 300; fi
   - if ( [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ); then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
   - if ( [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ); then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
-  - if ( [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] ) || [ -n "$TRAVIS_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign nexus-staging:deploy -Possrh -nsu; fi
+  - if ( [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] ) || [ -n "$TRAVIS_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi
 
 before_cache:
   - rm -rf $HOME/.m2/repository/org/sahli/asciidoc/confluence/publisher

@@ -13,3 +13,5 @@ publication is again re-published.
 The documentation can be found link:asciidoc-confluence-publisher-doc/etc/docs/00-index.adoc[here].
 
 Some useless changes in order to test the contributor build.
+
+Some changed from maintainer.

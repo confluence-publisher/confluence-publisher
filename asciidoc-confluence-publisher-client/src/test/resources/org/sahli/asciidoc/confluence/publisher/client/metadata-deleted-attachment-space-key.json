@@ -1,5 +1,6 @@
 {
   "spaceKey": "~personalSpace",
+  "ancestorId": "SPACE_ROOT",
   "pages": [
     {
       "title": "Existing Page",

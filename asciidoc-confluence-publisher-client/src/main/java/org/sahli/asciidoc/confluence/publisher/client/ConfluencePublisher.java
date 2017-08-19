@@ -49,6 +49,8 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 public class ConfluencePublisher {
 
     static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
+    private static final String SPACE_ROOT_ANCESTOR_ID = "SPACE_ROOT";
+
     private final ConfluencePublisherMetadata metadata;
     private final ConfluenceClient confluenceClient;
     private final String contentRoot;
@@ -71,12 +73,13 @@ public class ConfluencePublisher {
 
     public void publish() {
         assertMandatoryParameter(isNotBlank(this.getMetadata().getSpaceKey()), "spaceKey");
+        assertMandatoryParameter(isNotBlank(this.getMetadata().getAncestorId()), "ancestorId");
 
         String ancestorId;
-        if (isNotBlank(this.metadata.getAncestorId())) {
-            ancestorId = this.getMetadata().getAncestorId();
-        } else {
+        if (SPACE_ROOT_ANCESTOR_ID.equals(this.metadata.getAncestorId())) {
             ancestorId = this.confluenceClient.getSpaceContentId(this.metadata.getSpaceKey());
+        } else {
+            ancestorId = this.getMetadata().getAncestorId();
         }
 
         startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), ancestorId);

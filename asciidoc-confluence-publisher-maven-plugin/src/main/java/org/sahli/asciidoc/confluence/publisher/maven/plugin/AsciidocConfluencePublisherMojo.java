@@ -71,7 +71,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(required = true)
     private String spaceKey;
 
-    @Parameter
+    @Parameter(required = true)
     private String ancestorId;
 
     @Parameter

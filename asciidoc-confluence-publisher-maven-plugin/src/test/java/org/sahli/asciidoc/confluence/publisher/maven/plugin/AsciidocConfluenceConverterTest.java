@@ -51,7 +51,7 @@ public class AsciidocConfluenceConverterTest {
         copyDirectory(new File(CLASSPATH_DOC_LOCATION), docFolder);
 
         // act
-        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, TEMPLATES_PATH, "~personalSpace", "1234");
+        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, Paths.get(TEMPLATES_PATH), "~personalSpace", "1234");
 
         // assert
         assertThat("index.html", Files.exists(Paths.get(generatedDocOutputPath, "index.html")), is(true));

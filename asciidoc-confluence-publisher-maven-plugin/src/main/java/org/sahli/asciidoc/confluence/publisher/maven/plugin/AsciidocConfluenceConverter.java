@@ -20,6 +20,10 @@ import org.apache.commons.io.IOUtils;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -35,25 +39,33 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.walkFileTree;
+import static java.util.Arrays.asList;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.apache.commons.io.IOUtils.write;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
  * @author Alain Sahli
+ * @author Christian Stettler
  */
 final class AsciidocConfluenceConverter {
+
+    private static final String TEMPLATES_CLASSPATH_PATTERN = "org/sahli/asciidoc/confluence/publisher/converter/templates/*";
 
     private AsciidocConfluenceConverter() {
         throw new UnsupportedOperationException("Instantiation not supported");
     }
 
-    static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
+    static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, Path asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
+        extractTemplatesFromClassPathTo(asciidocConfluenceTemplatesPath);
+
         ConfluencePublisherMetadata confluencePublisherMetadata = initializeConfluencePublisherMetadata(spaceKey, ancestorId);
 
         AsciidocConfluenceConverter.AdocFileVisitor visitor = new AsciidocConfluenceConverter.AdocFileVisitor(asciidocRootFolderPath, generatedDocOutputPath,
-                asciidocConfluenceTemplatesPath);
+                asciidocConfluenceTemplatesPath.toString());
         walkFileTree(Paths.get(asciidocRootFolderPath), visitor);
 
         MultiValueMap<String, ConfluencePageMetadata> confluencePublisherMetadataRegistry = visitor.confluencePageMetadataRegistry();
@@ -88,6 +100,41 @@ final class AsciidocConfluenceConverter {
         }
 
         return confluencePublisherMetadata;
+    }
+
+    private static void extractTemplatesFromClassPathTo(Path targetFolder) {
+        createTemplatesTargetFolder(targetFolder);
+        copyTemplatesTo(templateResources(), targetFolder);
+    }
+
+    private static List<Resource> templateResources() {
+        try {
+            ResourceLoader resourceLoader = new DefaultResourceLoader(AsciidocConfluencePage.class.getClassLoader());
+            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver(resourceLoader);
+
+            return asList(pathMatchingResourcePatternResolver.getResources(TEMPLATES_CLASSPATH_PATTERN));
+        } catch (IOException e) {
+            throw new RuntimeException("Could no load template resources from class path", e);
+        }
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void createTemplatesTargetFolder(Path targetFolder) {
+        try {
+            createDirectories(targetFolder);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create template folder", e);
+        }
+    }
+
+    private static void copyTemplatesTo(List<Resource> templateResources, Path targetFolder) {
+        templateResources.forEach(templateResource -> {
+            try {
+                copyInputStreamToFile(templateResource.getInputStream(), new File(targetFolder.toFile(), templateResource.getFilename()));
+            } catch (IOException e) {
+                throw new RuntimeException("Could not write template to target file", e);
+            }
+        });
     }
 
 

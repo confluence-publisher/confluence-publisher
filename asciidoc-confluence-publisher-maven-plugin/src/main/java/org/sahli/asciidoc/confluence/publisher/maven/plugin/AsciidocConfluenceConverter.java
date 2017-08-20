@@ -20,8 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,7 +33,10 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.nio.file.FileSystems.newFileSystem;
@@ -71,7 +72,7 @@ final class AsciidocConfluenceConverter {
         AdocFileVisitor visitor = new AdocFileVisitor(asciidocRootFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath);
         walkFileTree(Paths.get(asciidocRootFolderPath), visitor);
 
-        MultiValueMap<String, ConfluencePageMetadata> confluencePublisherMetadataRegistry = visitor.confluencePageMetadataRegistry();
+        Map<String, List<ConfluencePageMetadata>> confluencePublisherMetadataRegistry = visitor.confluencePageMetadataRegistry();
 
         List<ConfluencePageMetadata> rootPages = confluencePublisherMetadataRegistry.get(generatedDocOutputPath);
         if (rootPages != null) {
@@ -82,7 +83,7 @@ final class AsciidocConfluenceConverter {
         return confluencePublisherMetadata;
     }
 
-    private static void buildPageTree(List<ConfluencePageMetadata> parentPages, MultiValueMap<String, ConfluencePageMetadata> confluencePageMetadataRegistry, String generatedDocOutputPath) {
+    private static void buildPageTree(List<ConfluencePageMetadata> parentPages, Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry, String generatedDocOutputPath) {
         parentPages.forEach(page -> {
             String parentFolder = removeExtension(Paths.get(generatedDocOutputPath, page.getContentFilePath()).toFile().getAbsolutePath());
             List<ConfluencePageMetadata> childPages = confluencePageMetadataRegistry.get(parentFolder);
@@ -172,7 +173,7 @@ final class AsciidocConfluenceConverter {
         private final String asciidocRootFolder;
         private final String generatedDocOutputPath;
         private final String asciidocConfluenceTemplatesPath;
-        private final MultiValueMap<String, ConfluencePageMetadata> confluencePageMetadataRegistry = new LinkedMultiValueMap<>();
+        private final Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry = new HashMap<>();
 
         private AdocFileVisitor(String asciidocRootFolder, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath) {
             this.asciidocRootFolder = asciidocRootFolder;
@@ -207,7 +208,9 @@ final class AsciidocConfluenceConverter {
                     confluencePageMetadata.setContentFilePath(Paths.get(this.generatedDocOutputPath).relativize(Paths.get(confluenceHtmlOutputFile.toURI())).toString());
                     confluencePageMetadata.getAttachments().putAll(asciidocConfluencePage.attachments());
 
-                    this.confluencePageMetadataRegistry.add(confluenceHtmlOutputFile.getParent(), confluencePageMetadata);
+                    this.confluencePageMetadataRegistry
+                            .computeIfAbsent(confluenceHtmlOutputFile.getParent(), (key) -> new ArrayList<>())
+                            .add(confluencePageMetadata);
                 } else {
                     targetFile.createNewFile();
                     IOUtils.copy(newInputStream(file), new FileOutputStream(targetFile));
@@ -246,7 +249,7 @@ final class AsciidocConfluenceConverter {
             return CONTINUE;
         }
 
-        MultiValueMap<String, ConfluencePageMetadata> confluencePageMetadataRegistry() {
+        Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry() {
             return this.confluencePageMetadataRegistry;
         }
     }

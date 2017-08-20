@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.maven.plugin;
+package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import java.nio.file.Paths;
 import static java.nio.file.Files.exists;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
 
 /**
  * @author Alain Sahli
@@ -35,7 +35,7 @@ import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfl
  */
 public class AsciidocConfluenceConverterTest {
 
-    private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/maven/plugin/doc";
+    private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/converter/doc";
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();

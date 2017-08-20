@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.maven.plugin;
+package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +52,7 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
  * @author Alain Sahli
  * @author Christian Stettler
  */
-final class AsciidocConfluenceConverter {
+public final class AsciidocConfluenceConverter {
 
     private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
 
@@ -61,7 +60,7 @@ final class AsciidocConfluenceConverter {
         throw new UnsupportedOperationException("Instantiation not supported");
     }
 
-    static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
+    public static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
         extractTemplatesFromClassPathTo(Paths.get(asciidocConfluenceTemplatesPath));
 
         ConfluencePublisherMetadata confluencePublisherMetadata = initializeConfluencePublisherMetadata(spaceKey, ancestorId);

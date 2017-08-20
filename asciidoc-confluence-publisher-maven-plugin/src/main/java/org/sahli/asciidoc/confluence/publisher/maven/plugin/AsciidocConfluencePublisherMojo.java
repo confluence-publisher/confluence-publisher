@@ -30,7 +30,7 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublish
 
 import java.io.File;
 
-import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
 
 /**
  * @author Alain Sahli

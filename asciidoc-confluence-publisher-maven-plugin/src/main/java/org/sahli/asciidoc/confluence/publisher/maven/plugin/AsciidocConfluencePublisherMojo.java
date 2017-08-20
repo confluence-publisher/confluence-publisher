@@ -19,7 +19,6 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -28,20 +27,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.List;
-import java.util.Map;
 
-import static java.util.Arrays.asList;
-import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
 
 /**
  * @author Alain Sahli
@@ -50,17 +39,11 @@ import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfl
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
-    private static final String TEMPLATES_CLASSPATH_PATTERN = "org/sahli/asciidoc/confluence/publisher/converter/templates/*";
-
     @Parameter(defaultValue = "${project.build.directory}/confluence-publisher")
     private File generatedDocOutputPath;
 
     @Parameter(defaultValue = "${project.build.directory}/asciidoc2confluence-templates", readonly = true)
     private File asciidocConfluenceTemplates;
-
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Parameter(defaultValue = "${plugin.artifactMap}", required = true, readonly = true)
-    private Map<String, Artifact> pluginArtifactMap;
 
     @Parameter
     private File asciidocRootFolder;
@@ -84,7 +67,6 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            extractTemplatesFromJar();
             this.generatedDocOutputPath.mkdirs();
 
             ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.asciidocRootFolder.getAbsolutePath(),
@@ -101,38 +83,6 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, httpClient(), this.username, this.password);
         ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, this.generatedDocOutputPath.getAbsolutePath());
         confluencePublisher.publish();
-    }
-
-    private void extractTemplatesFromJar() {
-        try {
-            createTemplatesTargetFolder();
-            copyTemplatesToTarget(templateResources());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private List<Resource> templateResources() throws IOException {
-        Artifact artifact = this.pluginArtifactMap.get("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-converter");
-        URLClassLoader templateClassLoader = new URLClassLoader(new URL[]{artifact.getFile().toURI().toURL()});
-        PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver(new DefaultResourceLoader(templateClassLoader));
-
-        return asList(pathMatchingResourcePatternResolver.getResources(TEMPLATES_CLASSPATH_PATTERN));
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void createTemplatesTargetFolder() {
-        this.asciidocConfluenceTemplates.mkdir();
-    }
-
-    private void copyTemplatesToTarget(List<Resource> resources) {
-        resources.forEach(templateResource -> {
-            try {
-                copyInputStreamToFile(templateResource.getInputStream(), new File(this.asciidocConfluenceTemplates, templateResource.getFilename()));
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write template to target file", e);
-            }
-        });
     }
 
     private static CloseableHttpClient httpClient() {

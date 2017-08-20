@@ -16,13 +16,11 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
-import org.apache.commons.io.IOUtils;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,10 +44,9 @@ import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.list;
 import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.walkFileTree;
+import static java.nio.file.Files.write;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyMap;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
-import static org.apache.commons.io.IOUtils.write;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
@@ -85,14 +82,22 @@ final class AsciidocConfluenceConverter {
 
     private static void buildPageTree(List<ConfluencePageMetadata> parentPages, Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry, String generatedDocOutputPath) {
         parentPages.forEach(page -> {
-            String parentFolder = removeExtension(Paths.get(generatedDocOutputPath, page.getContentFilePath()).toFile().getAbsolutePath());
-            List<ConfluencePageMetadata> childPages = confluencePageMetadataRegistry.get(parentFolder);
+            String childPagesFolder = resolveChildPagesFolder(generatedDocOutputPath, page);
+            List<ConfluencePageMetadata> childPages = confluencePageMetadataRegistry.get(childPagesFolder);
 
             if (childPages != null) {
                 page.getChildren().addAll(childPages);
                 buildPageTree(childPages, confluencePageMetadataRegistry, generatedDocOutputPath);
             }
         });
+    }
+
+    private static String resolveChildPagesFolder(String generatedDocOutputPath, ConfluencePageMetadata page) {
+        return removeExtension(Paths.get(generatedDocOutputPath, page.getContentFilePath()).toFile().getAbsolutePath());
+    }
+
+    private static String removeExtension(String path) {
+        return path.substring(0, path.lastIndexOf('.'));
     }
 
     private static ConfluencePublisherMetadata initializeConfluencePublisherMetadata(String spaceKey, String ancestorId) {
@@ -201,7 +206,7 @@ final class AsciidocConfluenceConverter {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
                     AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
-                    write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
+                    write(confluenceHtmlOutputFile.toPath(), asciidocConfluencePage.content().getBytes("UTF-8"));
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
                     confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
@@ -212,8 +217,7 @@ final class AsciidocConfluenceConverter {
                             .computeIfAbsent(confluenceHtmlOutputFile.getParent(), (key) -> new ArrayList<>())
                             .add(confluencePageMetadata);
                 } else {
-                    targetFile.createNewFile();
-                    IOUtils.copy(newInputStream(file), new FileOutputStream(targetFile));
+                    copy(file, targetFile.toPath());
                 }
             }
 

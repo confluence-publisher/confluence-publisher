@@ -21,10 +21,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.nio.file.Files.exists;
-import static org.apache.commons.io.FileUtils.copyDirectory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
@@ -43,16 +43,14 @@ public class AsciidocConfluenceConverterTest {
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
-        File docFolder = this.temporaryFolder.newFolder();
-        String docFolderPath = docFolder.getAbsolutePath();
-        copyDirectory(new File(CLASSPATH_DOC_LOCATION), docFolder);
+        Path sourceDocFolder = Paths.get(CLASSPATH_DOC_LOCATION).toAbsolutePath();
 
         File generatedDocOutput = this.temporaryFolder.newFolder();
         String generatedDocOutputPath = generatedDocOutput.getAbsolutePath();
         String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
 
         // act
-        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
+        convertAndBuildConfluencePages(sourceDocFolder.toString(), generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
 
         // assert
         assertThat("index.html", exists(Paths.get(generatedDocOutputPath, "index.html")), is(true));
@@ -66,12 +64,12 @@ public class AsciidocConfluenceConverterTest {
     @Test
     public void convertAndBuildConfluencePages_withTemplates_extractsTemplatesFromClassPathToTargetFolder() throws Exception {
         // arrange
-        String docFolderPath = this.temporaryFolder.newFolder().getAbsolutePath();
+        String sourceDocFolderPath = this.temporaryFolder.newFolder().getAbsolutePath();
         String generatedDocOutputPath = this.temporaryFolder.newFolder().getAbsolutePath();
         String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
 
         // act
-        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
+        convertAndBuildConfluencePages(sourceDocFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
 
         // assert
         assertThat(exists(Paths.get(asciidocConfluenceTemplatesPath, "helpers.rb")), is(true));

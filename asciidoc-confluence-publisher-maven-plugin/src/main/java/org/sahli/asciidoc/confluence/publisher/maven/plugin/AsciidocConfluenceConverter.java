@@ -20,29 +20,33 @@ import org.apache.commons.io.IOUtils;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystem;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.function.Consumer;
 
+import static java.nio.file.FileSystems.newFileSystem;
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.list;
+import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.walkFileTree;
-import static java.util.Arrays.asList;
-import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.util.Collections.emptyMap;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.apache.commons.io.IOUtils.write;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
@@ -53,19 +57,18 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
  */
 final class AsciidocConfluenceConverter {
 
-    private static final String TEMPLATES_CLASSPATH_PATTERN = "org/sahli/asciidoc/confluence/publisher/converter/templates/*";
+    private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
 
     private AsciidocConfluenceConverter() {
         throw new UnsupportedOperationException("Instantiation not supported");
     }
 
-    static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, Path asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
-        extractTemplatesFromClassPathTo(asciidocConfluenceTemplatesPath);
+    static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
+        extractTemplatesFromClassPathTo(Paths.get(asciidocConfluenceTemplatesPath));
 
         ConfluencePublisherMetadata confluencePublisherMetadata = initializeConfluencePublisherMetadata(spaceKey, ancestorId);
 
-        AsciidocConfluenceConverter.AdocFileVisitor visitor = new AsciidocConfluenceConverter.AdocFileVisitor(asciidocRootFolderPath, generatedDocOutputPath,
-                asciidocConfluenceTemplatesPath.toString());
+        AdocFileVisitor visitor = new AdocFileVisitor(asciidocRootFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath);
         walkFileTree(Paths.get(asciidocRootFolderPath), visitor);
 
         MultiValueMap<String, ConfluencePageMetadata> confluencePublisherMetadataRegistry = visitor.confluencePageMetadataRegistry();
@@ -104,17 +107,43 @@ final class AsciidocConfluenceConverter {
 
     private static void extractTemplatesFromClassPathTo(Path targetFolder) {
         createTemplatesTargetFolder(targetFolder);
-        copyTemplatesTo(templateResources(), targetFolder);
+        withTemplates((template) -> copyTemplateTo(targetFolder, template));
     }
 
-    private static List<Resource> templateResources() {
+    private static void withTemplates(Consumer<Path> templateConsumer) {
         try {
-            ResourceLoader resourceLoader = new DefaultResourceLoader(AsciidocConfluencePage.class.getClassLoader());
-            PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver(resourceLoader);
+            URI templatePathUri = resolveTemplateRootUri();
 
-            return asList(pathMatchingResourcePatternResolver.getResources(TEMPLATES_CLASSPATH_PATTERN));
-        } catch (IOException e) {
-            throw new RuntimeException("Could no load template resources from class path", e);
+            if (templatePathUri.getScheme().startsWith("jar")) {
+                withTemplatesFromJar(templatePathUri, templateConsumer);
+            } else {
+                withTemplatesFromFileSystem(templatePathUri, templateConsumer);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not resolve template root folder", e);
+        }
+    }
+
+    private static URI resolveTemplateRootUri() throws URISyntaxException {
+        URL templateRootUrl = AsciidocConfluencePage.class.getClassLoader().getResource(TEMPLATE_ROOT_CLASS_PATH_LOCATION);
+
+        if (templateRootUrl == null) {
+            throw new RuntimeException("Could not load templates from class path '" + TEMPLATE_ROOT_CLASS_PATH_LOCATION + "'");
+        }
+
+        return templateRootUrl.toURI();
+    }
+
+    private static void withTemplatesFromFileSystem(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
+        list(Paths.get(templatePathUri)).forEach((template) -> templateConsumer.accept(template));
+    }
+
+    private static void withTemplatesFromJar(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
+        URI jarFileUri = URI.create(templatePathUri.toString().substring(0, templatePathUri.toString().indexOf('!')));
+
+        try (FileSystem jarFileSystem = newFileSystem(jarFileUri, emptyMap())) {
+            Path templateRootFolder = jarFileSystem.getPath("/" + TEMPLATE_ROOT_CLASS_PATH_LOCATION);
+            list(templateRootFolder).forEach((template) -> templateConsumer.accept(template));
         }
     }
 
@@ -127,14 +156,12 @@ final class AsciidocConfluenceConverter {
         }
     }
 
-    private static void copyTemplatesTo(List<Resource> templateResources, Path targetFolder) {
-        templateResources.forEach(templateResource -> {
-            try {
-                copyInputStreamToFile(templateResource.getInputStream(), new File(targetFolder.toFile(), templateResource.getFilename()));
-            } catch (IOException e) {
-                throw new RuntimeException("Could not write template to target file", e);
-            }
-        });
+    private static void copyTemplateTo(Path targetFolder, Path template) {
+        try {
+            copy(template, targetFolder.resolve(template.getFileName().toString()), REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not write template to target file", e);
+        }
     }
 
 
@@ -172,7 +199,7 @@ final class AsciidocConfluenceConverter {
                 if (isAdocFile(file)) {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(Files.newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
                     write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
@@ -183,7 +210,7 @@ final class AsciidocConfluenceConverter {
                     this.confluencePageMetadataRegistry.add(confluenceHtmlOutputFile.getParent(), confluencePageMetadata);
                 } else {
                     targetFile.createNewFile();
-                    IOUtils.copy(Files.newInputStream(file), new FileOutputStream(targetFile));
+                    IOUtils.copy(newInputStream(file), new FileOutputStream(targetFile));
                 }
             }
 

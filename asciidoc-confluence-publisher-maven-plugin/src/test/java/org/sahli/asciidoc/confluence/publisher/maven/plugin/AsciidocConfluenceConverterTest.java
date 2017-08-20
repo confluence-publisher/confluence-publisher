@@ -21,9 +21,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static java.nio.file.Files.exists;
 import static org.apache.commons.io.FileUtils.copyDirectory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -35,7 +35,6 @@ import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfl
  */
 public class AsciidocConfluenceConverterTest {
 
-    private static final String TEMPLATES_PATH = "../asciidoc-confluence-publisher-converter/src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates";
     private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/maven/plugin/doc";
 
     @Rule
@@ -44,21 +43,38 @@ public class AsciidocConfluenceConverterTest {
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
-        File generatedDocOutput = this.temporaryFolder.newFolder();
-        String generatedDocOutputPath = generatedDocOutput.getAbsolutePath();
         File docFolder = this.temporaryFolder.newFolder();
         String docFolderPath = docFolder.getAbsolutePath();
         copyDirectory(new File(CLASSPATH_DOC_LOCATION), docFolder);
 
+        File generatedDocOutput = this.temporaryFolder.newFolder();
+        String generatedDocOutputPath = generatedDocOutput.getAbsolutePath();
+        String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
+
         // act
-        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, Paths.get(TEMPLATES_PATH), "~personalSpace", "1234");
+        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
 
         // assert
-        assertThat("index.html", Files.exists(Paths.get(generatedDocOutputPath, "index.html")), is(true));
-        assertThat("index/", Files.exists(Paths.get(generatedDocOutputPath, "index")), is(true));
-        assertThat("index/sub-page.html", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page.html")), is(true));
-        assertThat("index/sub-page/", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page")), is(true));
-        assertThat("index/sub-page/sub-sub-page.html", Files.exists(Paths.get(generatedDocOutputPath, "index", "sub-page", "sub-sub-page.html")), is(true));
-        assertThat("index/embedded-diagram.png", Files.exists(Paths.get(generatedDocOutputPath, "index", "embedded-diagram.png")), is(true));
+        assertThat("index.html", exists(Paths.get(generatedDocOutputPath, "index.html")), is(true));
+        assertThat("index/", exists(Paths.get(generatedDocOutputPath, "index")), is(true));
+        assertThat("index/sub-page.html", exists(Paths.get(generatedDocOutputPath, "index", "sub-page.html")), is(true));
+        assertThat("index/sub-page/", exists(Paths.get(generatedDocOutputPath, "index", "sub-page")), is(true));
+        assertThat("index/sub-page/sub-sub-page.html", exists(Paths.get(generatedDocOutputPath, "index", "sub-page", "sub-sub-page.html")), is(true));
+        assertThat("index/embedded-diagram.png", exists(Paths.get(generatedDocOutputPath, "index", "embedded-diagram.png")), is(true));
     }
+
+    @Test
+    public void convertAndBuildConfluencePages_withTemplates_extractsTemplatesFromClassPathToTargetFolder() throws Exception {
+        // arrange
+        String docFolderPath = this.temporaryFolder.newFolder().getAbsolutePath();
+        String generatedDocOutputPath = this.temporaryFolder.newFolder().getAbsolutePath();
+        String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
+
+        // act
+        convertAndBuildConfluencePages(docFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
+
+        // assert
+        assertThat(exists(Paths.get(asciidocConfluenceTemplatesPath, "helpers.rb")), is(true));
+    }
+
 }

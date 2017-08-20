@@ -70,7 +70,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             this.generatedDocOutputPath.mkdirs();
 
             ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.asciidocRootFolder.getAbsolutePath(),
-                    this.generatedDocOutputPath.getAbsolutePath(), this.asciidocConfluenceTemplates.toPath().toAbsolutePath(), this.spaceKey, this.ancestorId);
+                    this.generatedDocOutputPath.getAbsolutePath(), this.asciidocConfluenceTemplates.getAbsolutePath(), this.spaceKey, this.ancestorId);
 
             publish(confluencePublisherMetadata);
         } catch (Exception e) {

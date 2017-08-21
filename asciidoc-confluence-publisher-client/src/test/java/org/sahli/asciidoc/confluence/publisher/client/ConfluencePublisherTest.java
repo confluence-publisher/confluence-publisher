@@ -41,8 +41,6 @@ import static java.nio.file.Files.newInputStream;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -68,36 +66,6 @@ public class ConfluencePublisherTest {
 
     @Rule
     public final ExpectedException expectedException = none();
-
-    @Test
-    public void metadata_withOnePageAndAncestorId_convertItCorrectlyAndIsValid() throws Exception {
-        // arrange + act
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock);
-
-        // assert
-        ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
-        assertThat(metadata.getAncestorId(), is("72189173"));
-        assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
-        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), endsWith("some-confluence-content.html"));
-    }
-
-    @Test
-    public void metadata_withOnePageSpaceKey_convertItCorrectlyAndIsValid() throws Exception {
-        // arrange + act
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-space-key", confluenceRestClientMock);
-
-        // assert
-        ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
-        assertThat(metadata.getSpaceKey(), is("~personalSpace"));
-        assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
-        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), endsWith("some-confluence-content.html"));
-    }
 
     @Test
     public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() throws Exception {

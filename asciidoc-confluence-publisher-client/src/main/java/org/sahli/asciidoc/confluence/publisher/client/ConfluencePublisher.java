@@ -56,19 +56,15 @@ public class ConfluencePublisher {
         this.confluenceClient = confluenceClient;
     }
 
-    public ConfluencePublisherMetadata getMetadata() {
-        return this.metadata;
-    }
-
     public void publish() {
-        assertMandatoryParameter(isNotBlank(this.getMetadata().getSpaceKey()), "spaceKey");
-        assertMandatoryParameter(isNotBlank(this.getMetadata().getAncestorId()), "ancestorId");
+        assertMandatoryParameter(isNotBlank(this.metadata.getSpaceKey()), "spaceKey");
+        assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
         String ancestorId;
         if (SPACE_ROOT_ANCESTOR_ID.equals(this.metadata.getAncestorId())) {
             ancestorId = this.confluenceClient.getSpaceContentId(this.metadata.getSpaceKey());
         } else {
-            ancestorId = this.getMetadata().getAncestorId();
+            ancestorId = this.metadata.getAncestorId();
         }
 
         startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), ancestorId);

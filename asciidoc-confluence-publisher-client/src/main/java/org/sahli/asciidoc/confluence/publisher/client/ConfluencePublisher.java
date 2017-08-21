@@ -16,8 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
@@ -25,14 +23,12 @@ import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,37 +50,10 @@ public class ConfluencePublisher {
 
     private final ConfluencePublisherMetadata metadata;
     private final ConfluenceClient confluenceClient;
-    private final String contentRoot;
 
-    public ConfluencePublisher(String metadataFilePath, ConfluenceClient confluenceClient) {
-        this.metadata = readConfig(metadataFilePath);
-        this.contentRoot = new File(metadataFilePath).getParentFile().getAbsoluteFile().toString();
-        this.confluenceClient = confluenceClient;
-
-        adjustContentFilePaths(this.metadata.getPages(), this.contentRoot);
-    }
-
-    // TODO move code for creating confluence publisher metadata based on json to usage in test
-    @SuppressWarnings("CodeBlock2Expr")
-    private static void adjustContentFilePaths(List<ConfluencePageMetadata> pages, String contentRoot) {
-        pages.forEach((page) -> {
-            page.setContentFilePath(contentRoot + "/" + page.getContentFilePath());
-
-            Map<String, String> attachmentsWithAbsolutePaths = new HashMap<>();
-            Map<String, String> attachmentsWithRelativePath = page.getAttachments();
-            attachmentsWithRelativePath.forEach((attachmentFilePath, attachmentFileName) -> {
-                attachmentsWithAbsolutePaths.put(contentRoot + "/" + attachmentFilePath, attachmentFileName);
-            });
-
-            page.setAttachments(attachmentsWithAbsolutePaths);
-            adjustContentFilePaths(page.getChildren(), contentRoot);
-        });
-    }
-
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient, String contentRoot) {
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient) {
         this.metadata = metadata;
         this.confluenceClient = confluenceClient;
-        this.contentRoot = contentRoot;
     }
 
     public ConfluencePublisherMetadata getMetadata() {
@@ -216,17 +185,6 @@ public class ConfluencePublisher {
                 content.close();
             } catch (IOException ignored) {
             }
-        }
-    }
-
-    private static ConfluencePublisherMetadata readConfig(String configPath) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-
-        try {
-            return objectMapper.readValue(new File(configPath), ConfluencePublisherMetadata.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read metadata", e);
         }
     }
 

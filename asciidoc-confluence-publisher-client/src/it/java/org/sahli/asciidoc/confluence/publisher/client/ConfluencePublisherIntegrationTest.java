@@ -49,7 +49,7 @@ public class ConfluencePublisherIntegrationTest {
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
@@ -66,7 +66,7 @@ public class ConfluencePublisherIntegrationTest {
         String title = uniqueTitle("Single Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
@@ -84,7 +84,7 @@ public class ConfluencePublisherIntegrationTest {
         String title = uniqueTitle("Invalid Markup Test Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
@@ -144,8 +144,8 @@ public class ConfluencePublisherIntegrationTest {
                 .then().extract().jsonPath().getString("results.find({it.title == '" + title + "'}).id");
     }
 
-    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, String contentRoot) {
-        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient(), "src/it/resources/" + contentRoot);
+    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata) {
+        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient());
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

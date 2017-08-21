@@ -78,7 +78,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     private void publish(ConfluencePublisherMetadata confluencePublisherMetadata) {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, httpClient(), this.username, this.password);
-        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, this.confluencePublisherBuildFolder.getAbsolutePath());
+        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
         confluencePublisher.publish();
     }
 

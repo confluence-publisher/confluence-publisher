@@ -16,6 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,10 +30,16 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMet
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
+import static java.nio.file.Files.newInputStream;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
@@ -349,7 +357,36 @@ public class ConfluencePublisherTest {
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {
-        return new ConfluencePublisher(TEST_RESOURCES + "/metadata-" + qualifier + ".json", confluenceRestClient);
+        Path metadataFilePath = Paths.get(TEST_RESOURCES + "/metadata-" + qualifier + ".json");
+        Path contentRoot = metadataFilePath.getParent().toAbsolutePath();
+
+        ConfluencePublisherMetadata metadata = readConfig(metadataFilePath);
+        resolveAbsoluteContentFileAndAttachmentsPath(metadata.getPages(), contentRoot);
+
+        return new ConfluencePublisher(metadata, confluenceRestClient);
+    }
+
+    private static ConfluencePublisherMetadata readConfig(Path metadataFile) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
+        try {
+            return objectMapper.readValue(newInputStream(metadataFile), ConfluencePublisherMetadata.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read metadata", e);
+        }
+    }
+
+    private static void resolveAbsoluteContentFileAndAttachmentsPath(List<ConfluencePageMetadata> pages, Path contentRoot) {
+        pages.forEach((page) -> {
+            page.setContentFilePath(contentRoot.resolve(page.getContentFilePath()).toString());
+            page.setAttachments(page.getAttachments().entrySet().stream().collect(toMap(
+                    (entry) -> contentRoot.resolve(entry.getKey()).toString(),
+                    (entry) -> entry.getValue()
+            )));
+
+            resolveAbsoluteContentFileAndAttachmentsPath(page.getChildren(), contentRoot);
+        });
     }
 
 }

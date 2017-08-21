@@ -34,3 +34,5 @@ class B
 
 A <|-- B
 ....
+
+link:attachmentOne.txt[]

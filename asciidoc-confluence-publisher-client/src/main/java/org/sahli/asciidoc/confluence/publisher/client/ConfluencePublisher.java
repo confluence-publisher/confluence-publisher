@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +60,25 @@ public class ConfluencePublisher {
         this.metadata = readConfig(metadataFilePath);
         this.contentRoot = new File(metadataFilePath).getParentFile().getAbsoluteFile().toString();
         this.confluenceClient = confluenceClient;
+
+        adjustContentFilePaths(this.metadata.getPages(), this.contentRoot);
+    }
+
+    // TODO move code for creating confluence publisher metadata based on json to usage in test
+    @SuppressWarnings("CodeBlock2Expr")
+    private static void adjustContentFilePaths(List<ConfluencePageMetadata> pages, String contentRoot) {
+        pages.forEach((page) -> {
+            page.setContentFilePath(contentRoot + "/" + page.getContentFilePath());
+
+            Map<String, String> attachmentsWithAbsolutePaths = new HashMap<>();
+            Map<String, String> attachmentsWithRelativePath = page.getAttachments();
+            attachmentsWithRelativePath.forEach((attachmentFilePath, attachmentFileName) -> {
+                attachmentsWithAbsolutePaths.put(contentRoot + "/" + attachmentFilePath, attachmentFileName);
+            });
+
+            page.setAttachments(attachmentsWithAbsolutePaths);
+            adjustContentFilePaths(page.getChildren(), contentRoot);
+        });
     }
 
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient, String contentRoot) {
@@ -89,11 +109,11 @@ public class ConfluencePublisher {
         deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
 
         pages.forEach(page -> {
-            String content = fileContent(Paths.get(this.contentRoot, page.getContentFilePath()).toString());
+            String content = fileContent(page.getContentFilePath());
             String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content);
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
-            addAttachments(contentId, page.getContentFilePath(), page.getAttachments());
+            addAttachments(contentId, page.getAttachments());
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
         });
     }
@@ -151,12 +171,12 @@ public class ConfluencePublisher {
         return sha256Hex(content);
     }
 
-    private void addAttachments(String contentId, String contentFilePath, Map<String, String> attachments) {
-        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, contentFilePath, attachmentPath, attachmentFileName));
+    private void addAttachments(String contentId, Map<String, String> attachments) {
+        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
     }
 
-    private void addOrUpdateAttachment(String contentId, String contentFilePath, String attachmentPath, String attachmentFileName) {
-        Path absoluteAttachmentPath = absoluteAttachmentPath(contentFilePath, attachmentPath);
+    private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
+        Path absoluteAttachmentPath = absoluteAttachmentPath(attachmentPath);
 
         try {
             ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
@@ -171,16 +191,8 @@ public class ConfluencePublisher {
         }
     }
 
-    private Path absoluteAttachmentPath(String contentFilePath, String attachmentPath) {
-        if (isPageInContentRootFolder(contentFilePath)) {
-            return Paths.get(this.contentRoot).resolve(attachmentPath);
-        }
-
-        return Paths.get(this.contentRoot).resolve(contentFilePath).getParent().resolve(attachmentPath);
-    }
-
-    private boolean isPageInContentRootFolder(String contentFilePath) {
-        return Paths.get(contentFilePath).getParent() == null;
+    private Path absoluteAttachmentPath(String attachmentPath) {
+        return Paths.get(attachmentPath);
     }
 
     private static boolean notSameContentHash(String actualContentHash, String newContentHash) {

@@ -27,6 +27,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
+import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 
 import java.io.File;
 
@@ -39,11 +41,8 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
-    @Parameter(defaultValue = "${project.build.directory}/confluence-publisher")
-    private File generatedDocOutputPath;
-
-    @Parameter(defaultValue = "${project.build.directory}/asciidoc2confluence-templates", readonly = true)
-    private File asciidocConfluenceTemplates;
+    @Parameter(defaultValue = "${project.build.directory}/asciidoc-confluence-publisher", readonly = true)
+    private File confluencePublisherBuildFolder;
 
     @Parameter
     private File asciidocRootFolder;
@@ -67,10 +66,8 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            this.generatedDocOutputPath.mkdirs();
-
-            ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.asciidocRootFolder.getAbsolutePath(),
-                    this.generatedDocOutputPath.getAbsolutePath(), this.asciidocConfluenceTemplates.getAbsolutePath(), this.spaceKey, this.ancestorId);
+            AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath());
+            ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.spaceKey, this.ancestorId, this.confluencePublisherBuildFolder.toPath(), asciidocPagesStructureProvider);
 
             publish(confluencePublisherMetadata);
         } catch (Exception e) {
@@ -81,7 +78,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     private void publish(ConfluencePublisherMetadata confluencePublisherMetadata) {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, httpClient(), this.username, this.password);
-        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, this.generatedDocOutputPath.getAbsolutePath());
+        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, this.confluencePublisherBuildFolder.getAbsolutePath());
         confluencePublisher.publish();
     }
 

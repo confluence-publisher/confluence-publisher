@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -28,6 +27,7 @@ import static java.nio.file.Files.exists;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
  * @author Alain Sahli
@@ -35,7 +35,7 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
  */
 public class AsciidocConfluenceConverterTest {
 
-    private static final String CLASSPATH_DOC_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/converter/doc";
+    private static final String DOCUMENTATION_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/converter/doc";
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -43,36 +43,42 @@ public class AsciidocConfluenceConverterTest {
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
-        Path sourceDocFolder = Paths.get(CLASSPATH_DOC_LOCATION).toAbsolutePath();
+        Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
+        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        File generatedDocOutput = this.temporaryFolder.newFolder();
-        String generatedDocOutputPath = generatedDocOutput.getAbsolutePath();
-        String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
 
         // act
-        convertAndBuildConfluencePages(sourceDocFolder.toString(), generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
+        convertAndBuildConfluencePages("~personalSpace", "1234", buildFolder, asciidocPagesStructureProvider);
 
         // assert
-        assertThat("index.html", exists(Paths.get(generatedDocOutputPath, "index.html")), is(true));
-        assertThat("index/", exists(Paths.get(generatedDocOutputPath, "index")), is(true));
-        assertThat("index/sub-page.html", exists(Paths.get(generatedDocOutputPath, "index", "sub-page.html")), is(true));
-        assertThat("index/sub-page/", exists(Paths.get(generatedDocOutputPath, "index", "sub-page")), is(true));
-        assertThat("index/sub-page/sub-sub-page.html", exists(Paths.get(generatedDocOutputPath, "index", "sub-page", "sub-sub-page.html")), is(true));
-        assertThat("index/embedded-diagram.png", exists(Paths.get(generatedDocOutputPath, "index", "embedded-diagram.png")), is(true));
+        assertThat("index.html", exists(targetFilePath(buildFolder, documentationRootFolder, "index.adoc", "index.html")), is(true));
+        assertThat("index/sub-page.html", exists(targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "sub-page.html")), is(true));
+        assertThat("index/attachmentOne.txt", exists(targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "attachmentOne.txt")), is(true));
+        assertThat("index/embedded-diagram.png", exists(targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram.png")), is(true));
+        assertThat("index/sub-page/sub-sub-page.html", exists(targetFilePath(buildFolder, documentationRootFolder, "index/sub-page/sub-sub-page.adoc", "sub-sub-page.html")), is(true));
     }
 
     @Test
     public void convertAndBuildConfluencePages_withTemplates_extractsTemplatesFromClassPathToTargetFolder() throws Exception {
         // arrange
-        String sourceDocFolderPath = this.temporaryFolder.newFolder().getAbsolutePath();
-        String generatedDocOutputPath = this.temporaryFolder.newFolder().getAbsolutePath();
-        String asciidocConfluenceTemplatesPath = this.temporaryFolder.newFolder().getAbsolutePath();
+        Path documentationRootFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
 
         // act
-        convertAndBuildConfluencePages(sourceDocFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath, "~personalSpace", "1234");
+        convertAndBuildConfluencePages("~personalSpace", "1234", buildFolder, asciidocPagesStructureProvider);
 
         // assert
-        assertThat(exists(Paths.get(asciidocConfluenceTemplatesPath, "helpers.rb")), is(true));
+        assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));
+    }
+
+    private static Path targetFilePath(Path buildFolder, Path documentationRootFolder, String relevantAdocFilePath, String targetFileName) {
+        Path sourceFilePath = documentationRootFolder.resolve(relevantAdocFilePath);
+        Path targetFilePath = buildFolder.resolve("assets").resolve(uniquePageId(sourceFilePath)).resolve(targetFileName);
+
+        return targetFilePath;
     }
 
 }

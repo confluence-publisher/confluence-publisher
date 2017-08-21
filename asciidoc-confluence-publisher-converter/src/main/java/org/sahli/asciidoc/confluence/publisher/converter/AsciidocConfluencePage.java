@@ -20,10 +20,12 @@ import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Title;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +38,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.file.Files.newInputStream;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.DOTALL;
@@ -81,6 +84,10 @@ public class AsciidocConfluencePage {
 
     public Map<String, String> attachments() {
         return unmodifiableMap(this.attachments);
+    }
+
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) throws IOException {
+        return newAsciidocConfluencePage(newInputStream(asciidocPage.path()), templatesDir.toString(), pageAssetsFolder.toString(), asciidocPage.path());
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {

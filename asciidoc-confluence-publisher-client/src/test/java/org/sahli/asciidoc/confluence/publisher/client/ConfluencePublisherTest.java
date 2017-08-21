@@ -33,6 +33,7 @@ import java.util.Arrays;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -72,7 +73,7 @@ public class ConfluencePublisherTest {
         assertThat(metadata.getPages(), hasSize(1));
         ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
         assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
+        assertThat(confluencePageMetadata.getContentFilePath(), endsWith("some-confluence-content.html"));
     }
 
     @Test
@@ -87,7 +88,7 @@ public class ConfluencePublisherTest {
         assertThat(metadata.getPages(), hasSize(1));
         ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
         assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
+        assertThat(confluencePageMetadata.getContentFilePath(), endsWith("some-confluence-content.html"));
     }
 
     @Test
@@ -190,9 +191,8 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
         verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
         assertThat(contentId.getAllValues(), contains("4321", "4321"));
-        assertThat(attachmentFileName.getAllValues(), contains("attachmentOne.txt", "attachmentTwo.txt"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(0)), is("attachment1"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(1)), is("attachment2"));
+        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentOne.txt"))), is("attachment1"));
+        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentTwo.txt"))), is("attachment2"));
     }
 
     @Test

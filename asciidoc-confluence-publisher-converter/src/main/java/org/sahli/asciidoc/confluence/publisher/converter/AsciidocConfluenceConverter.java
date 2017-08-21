@@ -131,7 +131,7 @@ public final class AsciidocConfluenceConverter {
         attachments.forEach((attachment) -> {
             try {
                 if (exists(attachment.sourcePath())) {
-                    copy(attachment.sourcePath(), attachment.targetPath());
+                    copy(attachment.sourcePath(), attachment.targetPath(), REPLACE_EXISTING);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Could not copy attachment to target structure", e);

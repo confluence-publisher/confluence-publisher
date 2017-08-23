@@ -26,6 +26,8 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
+import java.nio.file.Paths;
+
 import static io.restassured.RestAssured.given;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
@@ -46,7 +48,7 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_singlePage_pageIsCreatedInConfluence() {
         // arrange
         String title = uniqueTitle("Single Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
         ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
@@ -64,7 +66,7 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() throws Exception {
         // arrange
         String title = uniqueTitle("Single Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
         ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
@@ -82,21 +84,21 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() throws Exception {
         // arrange
         String title = uniqueTitle("Invalid Markup Test Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
         ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
 
-        confluencePageMetadata.setContentFilePath("invalid-xhtml.xhtml");
+        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/invalid-xhtml.xhtml"));
         try {
             confluencePublisher.publish();
             fail("publish with invalid XHTML is expected to fail");
         } catch (Exception ignored) {
         }
 
-        confluencePageMetadata.setContentFilePath("single-page.xhtml");
+        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/single-page.xhtml"));
         confluencePublisher.publish();
 
         // assert
@@ -124,6 +126,10 @@ public class ConfluencePublisherIntegrationTest {
         confluencePublisherMetadata.setPages(asList(pages));
 
         return confluencePublisherMetadata;
+    }
+
+    private static String absolutePathTo(String relativePath) {
+        return Paths.get("src/it/resources/").resolve(relativePath).toAbsolutePath().toString();
     }
 
     private static String childPages() {

@@ -22,11 +22,9 @@ import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Title;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -38,6 +36,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.newInputStream;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
@@ -86,21 +86,22 @@ public class AsciidocConfluencePage {
         return unmodifiableMap(this.attachments);
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) throws IOException {
-        return newAsciidocConfluencePage(newInputStream(asciidocPage.path()), templatesDir.toString(), pageAssetsFolder.toString(), asciidocPage.path());
-    }
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) {
+        try {
+            Path asciidocPagePath = asciidocPage.path();
+            String asciidocContent = readFull(newInputStream(asciidocPagePath));
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {
-        Map<String, String> attachmentCollector = new HashMap<>();
+            Map<String, String> attachmentCollector = new HashMap<>();
 
-        String adocContent = readFull(adoc);
+            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
+            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector);
 
-        Options options = options(templatesDir, parentFolder(pagePath), imagesOutDir);
-        String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);
+            String pageTitle = pageTitle(asciidocContent);
 
-        String pageTitle = pageTitle(adocContent);
-
-        return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
+            return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create asciidoc confluence page", e);
+        }
     }
 
     private static String deriveAttachmentName(String path) {
@@ -157,30 +158,24 @@ public class AsciidocConfluencePage {
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static File parentFolder(Path pagePath) {
-        return pagePath.getParent().toFile();
-    }
-
-    private static Options options(String templateDir, File baseDir, String imagesOutDir) {
-        File templateDirFolder = new File(templateDir);
-
-        if (!templateDirFolder.exists()) {
+    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder) {
+        if (!(exists(templatesFolder))) {
             throw new RuntimeException("templateDir folder does not exist");
         }
 
-        if (!templateDirFolder.isDirectory()) {
+        if (!(isDirectory(templatesFolder))) {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("imagesoutdir", imagesOutDir);
-        attributes.put("outdir", imagesOutDir);
+        attributes.put("imagesoutdir", generatedAssetsTargetFolder.toString());
+        attributes.put("outdir", generatedAssetsTargetFolder.toString());
 
         return OptionsBuilder.options()
                 .backend("html")
                 .safe(UNSAFE)
-                .baseDir(baseDir)
-                .templateDirs(templateDirFolder)
+                .baseDir(baseFolder.toFile())
+                .templateDirs(templatesFolder.toFile())
                 .attributes(attributes)
                 .get();
     }

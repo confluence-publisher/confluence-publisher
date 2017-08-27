@@ -20,15 +20,12 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMet
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,16 +33,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.lang.System.lineSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileSystems.newFileSystem;
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.Files.copy;
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.list;
-import static java.nio.file.Files.newInputStream;
-import static java.nio.file.Files.walkFileTree;
-import static java.nio.file.Files.write;
+import static java.nio.file.Files.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;
+import static org.apache.commons.io.IOUtils.write;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
@@ -204,8 +200,9 @@ public final class AsciidocConfluenceConverter {
                 if (isAdocFile(file)) {
                     File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
                     confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
-                    write(confluenceHtmlOutputFile.toPath(), asciidocConfluencePage.content().getBytes("UTF-8"));
+                    String adocContent = readAllLines(file, UTF_8).stream().collect(joining(lineSeparator()));
+                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
+                    write(asciidocConfluencePage.content(), new FileOutputStream(confluenceHtmlOutputFile), "UTF-8");
 
                     ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
                     confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());

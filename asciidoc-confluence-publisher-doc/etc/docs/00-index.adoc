@@ -36,7 +36,7 @@ See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for m
 The Confluence Publisher expects the AsciiDoc sources to be stored in a specific source structure. This source structure
 is used to derive the page hierarchy in Confluence.
 
-....
+----
 <root>
  +- top-level-page.adoc    // top-level page AsciiDoc file
  +- top-level-page         // folder for sub-pages and resources of top-level page
@@ -45,7 +45,7 @@ is used to derive the page hierarchy in Confluence.
     +- sub-page-two        // folder for sub-pages and resources of sub-page-two
   +- any-other-folder      // folder for additional files (e.g. images, PlantUML files, ...)
     +- ...
-....
+----
 
 Resources like images, PlantUML files, other attachment types and include files can be placed in any location within
 the documentation root folder. See <<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>>
@@ -97,11 +97,43 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The key of the Confluence space to publish to.
 
 | ancestorId
-| The id of the ancestor page under which the pages are appended. If omitted the pages are published directly under the space's home page.
+| The id of the ancestor page under which the pages are appended.
+
+  Use `SPACE_ROOT` to publish to the space root directly. Be aware that publishing to the space root directly will
+  remove all pages that are not part of the published documentation.
 
 | username
-| The username of the user to use for publishing
+| The username of the user to use for publishing.
 
 | password
-| The password of the user to use for publishing
+| The password of the user to use for publishing.
 |===
+
+As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
+configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
+help of `-D` prefix when invoking Maven.
+
+== Maven Plugin Execution
+
+The Confluence Publisher Maven plugin goal `publish` can be bound to a specific lifecycle, if it should be executed
+automatically when building the project, e.g. for execution during the `site` phase:
+
+----
+<!-- ... -->
+<executions>
+    <execution>
+        <id>publish-documentation</id>
+        <goals>
+            <goal>publish</goal>
+        </goals>
+        <phase>site</phase>
+    </execution>
+</executions>
+<!-- ... -->
+----
+
+Alternatively, the Confluence Publisher Maven plugin can also be executed manually via the command line:
+
+----
+mvn org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish
+----

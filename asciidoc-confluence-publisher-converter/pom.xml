@@ -33,9 +33,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+            <artifactId>asciidoc-confluence-publisher-client</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
         </dependency>
         <dependency>
             <groupId>org.asciidoctor</groupId>

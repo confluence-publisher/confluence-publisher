@@ -1,6 +1,6 @@
 {
   "spaceKey": "~personalSpace",
-  "ancestorId": "1234",
+  "ancestorId": "SPACE_ROOT",
   "pages": [
     {
       "title": "Some Confluence Content",

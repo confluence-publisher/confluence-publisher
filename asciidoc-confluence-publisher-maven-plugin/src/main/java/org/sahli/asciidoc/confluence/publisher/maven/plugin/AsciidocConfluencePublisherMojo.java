@@ -27,12 +27,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 
 import java.io.File;
-
-import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
 
 /**
  * @author Alain Sahli
@@ -67,7 +66,8 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath());
-            ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.spaceKey, this.ancestorId, this.confluencePublisherBuildFolder.toPath(), asciidocPagesStructureProvider);
+            AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, this.confluencePublisherBuildFolder.toPath());
 
             publish(confluencePublisherMetadata);
         } catch (Exception e) {

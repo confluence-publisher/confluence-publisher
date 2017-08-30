@@ -53,29 +53,37 @@ public final class AsciidocConfluenceConverter {
 
     private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
 
-    private AsciidocConfluenceConverter() {
-        throw new UnsupportedOperationException("Instantiation not supported");
+    private final String spaceKey;
+    private final String ancestorId;
+
+    public AsciidocConfluenceConverter(String spaceKey, String ancestorId) {
+        this.spaceKey = spaceKey;
+        this.ancestorId = ancestorId;
     }
 
-    public static ConfluencePublisherMetadata convertAndBuildConfluencePages(String spaceKey, String ancestorId, Path buildFolder, AsciidocPagesStructureProvider asciidocPagesStructureProvider) throws Exception {
-        Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
-        createDirectories(templatesRootFolder);
+    public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, Path buildFolder) {
+        try {
+            Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
+            createDirectories(templatesRootFolder);
 
-        Path assetsRootFolder = buildFolder.resolve("assets").toAbsolutePath();
-        createDirectories(assetsRootFolder);
+            Path assetsRootFolder = buildFolder.resolve("assets").toAbsolutePath();
+            createDirectories(assetsRootFolder);
 
-        extractTemplatesFromClassPathTo(templatesRootFolder);
+            extractTemplatesFromClassPathTo(templatesRootFolder);
 
-        AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
-        List<AsciidocPage> asciidocPages = structure.pages();
-        List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages);
+            AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
+            List<AsciidocPage> asciidocPages = structure.pages();
+            List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages);
 
-        ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
-        confluencePublisherMetadata.setSpaceKey(spaceKey);
-        confluencePublisherMetadata.setAncestorId(ancestorId);
-        confluencePublisherMetadata.setPages(confluencePages);
+            ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
+            confluencePublisherMetadata.setSpaceKey(this.spaceKey);
+            confluencePublisherMetadata.setAncestorId(this.ancestorId);
+            confluencePublisherMetadata.setPages(confluencePages);
 
-        return confluencePublisherMetadata;
+            return confluencePublisherMetadata;
+        } catch (Exception e) {
+            throw new RuntimeException("Could not convert asciidoc pages", e);
+        }
     }
 
     private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages) {

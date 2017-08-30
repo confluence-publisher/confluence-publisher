@@ -102,7 +102,7 @@ public class ConfluencePublisher {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
         List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
-                .filter(confluenceAttachment -> attachments.values().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
+                .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
                 .map(ConfluenceAttachment::getId)
                 .collect(toList());
 
@@ -137,7 +137,7 @@ public class ConfluencePublisher {
     }
 
     private void addAttachments(String contentId, Map<String, String> attachments) {
-        attachments.forEach((attachmentPath, attachmentFileName) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
+        attachments.forEach((attachmentFileName, attachmentPath) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
     }
 
     private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {

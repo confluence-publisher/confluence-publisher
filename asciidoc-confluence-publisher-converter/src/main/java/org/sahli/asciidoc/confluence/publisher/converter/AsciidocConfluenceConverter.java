@@ -98,7 +98,7 @@ public final class AsciidocConfluenceConverter {
                 confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
                 confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
                 confluencePageMetadata.setChildren(childConfluencePages);
-                confluencePageMetadata.getAttachments().putAll(toTargetAttachmentPathAndFileName(attachments));
+                confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
 
                 confluencePages.add(confluencePageMetadata);
             } catch (IOException e) {
@@ -139,11 +139,11 @@ public final class AsciidocConfluenceConverter {
         });
     }
 
-    private static Map<String, String> toTargetAttachmentPathAndFileName(List<AttachmentMetadata> attachments) {
+    private static Map<String, String> toTargetAttachmentFileNameAndAttachmentPath(List<AttachmentMetadata> attachments) {
         return attachments.stream().collect(toMap(
-                (attachment) -> attachment.targetPath().toString(),
-                (attachment) -> attachment.targetPath().getFileName().toString())
-        );
+                (attachment) -> attachment.targetPath().getFileName().toString(),
+                (attachment) -> attachment.targetPath().toString()
+        ));
     }
 
     private static Path determineTargetPagePath(AsciidocPage asciidocPage, Path pageAssetsFolder) {

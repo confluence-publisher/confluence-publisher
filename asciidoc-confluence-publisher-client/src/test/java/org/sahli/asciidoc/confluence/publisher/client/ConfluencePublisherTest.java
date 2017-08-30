@@ -349,8 +349,8 @@ public class ConfluencePublisherTest {
         pages.forEach((page) -> {
             page.setContentFilePath(contentRoot.resolve(page.getContentFilePath()).toString());
             page.setAttachments(page.getAttachments().entrySet().stream().collect(toMap(
-                    (entry) -> contentRoot.resolve(entry.getKey()).toString(),
-                    (entry) -> entry.getValue()
+                    (entry) -> entry.getValue(),
+                    (entry) -> contentRoot.resolve(entry.getKey()).toString()
             )));
 
             resolveAbsoluteContentFileAndAttachmentsPath(page.getChildren(), contentRoot);

@@ -4,5 +4,5 @@ table
       - @rows[tblsec].each do |row|
         tr
           - row.each do |cell|
-            *{:tag => (tblsec == :head ? 'th' : 'td'), rowspan: cell.rowspan}
+            *{:tag => (tblsec == :head ? 'th' : 'td'), rowspan: cell.rowspan, colspan: cell.colspan}
               =cell.text

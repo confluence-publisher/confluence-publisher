@@ -389,6 +389,30 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableWithColSpan_returnsConfluencePageWithTableWithColSpan() throws Exception {
+        // arrange
+        String adocContent = "" +
+                "[cols=\"3*\", options=\"header\"]\n" +
+                "|===\n" +
+                "| A\n" +
+                "| B\n" +
+                "| C\n" +
+                "\n" +
+                "| 10\n" +
+                "2+| 11 & 12\n" +
+                "\n" +
+                "|===";
+        InputStream is = stringAsInputStream(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+        // assert
+        String expectedContent = "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>10</td><td colspan=\"2\">11 &amp; 12</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +

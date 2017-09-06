@@ -646,10 +646,11 @@ public class AsciidocConfluencePageTest {
             // arrange
             setDefaultCharset(ISO_8859_1);
 
-            InputStream adocContent = stringAsInputStream("= Title © !");
+            String adocContent = "= Title © !";
+            InputStream is = stringAsInputStream(adocContent);
 
             // act
-            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
 
             // assert
             assertThat(asciidocConfluencePage.pageTitle(), is("Title © !"));
@@ -664,10 +665,11 @@ public class AsciidocConfluencePageTest {
             // arrange
             setDefaultCharset(ISO_8859_1);
 
-            InputStream adocContent = stringAsInputStream(prependTitle("Copyrighted content © !"));
+            String adocContent = "Copyrighted content © !";
+            InputStream is = stringAsInputStream(prependTitle(adocContent));
 
             // act
-            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(is, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
 
             // assert
             assertThat(asciidocConfluencePage.content(), is("<p>Copyrighted content © !</p>"));

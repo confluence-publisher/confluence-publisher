@@ -21,10 +21,13 @@ import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Title;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -36,14 +39,15 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.DOTALL;
 import static java.util.regex.Pattern.compile;
+import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.SafeMode.UNSAFE;
-import static org.asciidoctor.internal.IOUtils.readFull;
 
 /**
  * @author Alain Sahli
@@ -86,7 +90,7 @@ public class AsciidocConfluencePage {
     public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {
         Map<String, String> attachmentCollector = new HashMap<>();
 
-        String adocContent = readFull(adoc);
+        String adocContent = readIntoString(adoc);
 
         Options options = options(templatesDir, parentFolder(pagePath), imagesOutDir);
         String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);
@@ -184,7 +188,7 @@ public class AsciidocConfluencePage {
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
-                String referencedPageContent = readFull(new FileInputStream(referencedPagePath.toFile()));
+                String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()));
                 String referencedPageTitle = pageTitle(referencedPageContent);
 
                 return "<ri:page ri:content-title=\"" + referencedPageTitle + "\"";
@@ -196,6 +200,16 @@ public class AsciidocConfluencePage {
 
     private static BinaryOperator<String> unusedCombiner() {
         return (a, b) -> a;
+    }
+
+    private static String readIntoString(InputStream input) {
+        try {
+            try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, UTF_8))) {
+                return buffer.lines().collect(joining("\n"));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read file content", e);
+        }
     }
 
 }

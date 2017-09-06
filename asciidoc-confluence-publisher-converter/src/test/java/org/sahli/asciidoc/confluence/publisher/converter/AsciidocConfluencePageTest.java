@@ -27,9 +27,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
@@ -638,6 +641,42 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInTitle_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInTitle() throws Exception {
+        try {
+            // arrange
+            setDefaultCharset(ISO_8859_1);
+
+            InputStream adocContent = stringAsInputStream("= Title © !");
+
+            // act
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+            // assert
+            assertThat(asciidocConfluencePage.pageTitle(), is("Title © !"));
+        } finally {
+            setDefaultCharset(UTF_8);
+        }
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInContent_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInContent() throws Exception {
+        try {
+            // arrange
+            setDefaultCharset(ISO_8859_1);
+
+            InputStream adocContent = stringAsInputStream(prependTitle("Copyrighted content © !"));
+
+            // act
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(adocContent, TEMPLATES_DIR, dummyOutputPath(), dummyPagePath());
+
+            // assert
+            assertThat(asciidocConfluencePage.content(), is("<p>Copyrighted content © !</p>"));
+        } finally {
+            setDefaultCharset(UTF_8);
+        }
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithLinkToAttachmentInDifferentFolder_returnsConfluencePageWithLinkToAttachmentFileNameOnly() throws Exception {
         // arrange
         String adocContent = "link:bar/foo.txt[]";
@@ -898,6 +937,16 @@ public class AsciidocConfluencePageTest {
             return TEMPORARY_FOLDER.newFolder().toPath();
         } catch (IOException e) {
             throw new IllegalStateException("unable to create temporary path", e);
+        }
+    }
+
+    private static void setDefaultCharset(Charset charset) {
+        try {
+            Field defaultCharsetField = Charset.class.getDeclaredField("defaultCharset");
+            defaultCharsetField.setAccessible(true);
+            defaultCharsetField.set(null, charset);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not set default charset", e);
         }
     }
 

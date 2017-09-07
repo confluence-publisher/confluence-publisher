@@ -24,10 +24,13 @@ import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
@@ -353,6 +356,56 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableWithRowSpan_returnsConfluencePageWithTableWithRowSpan() throws Exception {
+        // arrange
+        String adocContent = "" +
+                "[cols=\"3*\", options=\"header\"]\n" +
+                "|===\n" +
+                "| A\n" +
+                "| B\n" +
+                "| C\n" +
+                "\n" +
+                ".2+| 10\n" +
+                "| 11\n" +
+                "| 12\n" +
+                "| 13\n" +
+                "| 14\n" +
+                "|===";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+        // assert
+        String expectedContent = "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td rowspan=\"2\">10</td><td>11</td><td>12</td></tr><tr><td>13</td><td>14</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColSpan_returnsConfluencePageWithTableWithColSpan() throws Exception {
+        // arrange
+        String adocContent = "" +
+                "[cols=\"3*\", options=\"header\"]\n" +
+                "|===\n" +
+                "| A\n" +
+                "| B\n" +
+                "| C\n" +
+                "\n" +
+                "| 10\n" +
+                "2+| 11 & 12\n" +
+                "\n" +
+                "|===";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+        // assert
+        String expectedContent = "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>10</td><td colspan=\"2\">11 &amp; 12</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +
@@ -613,6 +666,44 @@ public class AsciidocConfluencePageTest {
         // assert
         assertThat(asciidocConfluencePage.content(), containsString("<p>main content</p>"));
         assertThat(asciidocConfluencePage.content(), containsString("<p>included content</p>"));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInTitle_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInTitle() throws Exception {
+        try {
+            // arrange
+            setDefaultCharset(ISO_8859_1);
+
+            String adocContent = "= Title © !";
+            AsciidocPage asciidocPage = asciidocPage(adocContent);
+
+            // act
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+            // assert
+            assertThat(asciidocConfluencePage.pageTitle(), is("Title © !"));
+        } finally {
+            setDefaultCharset(UTF_8);
+        }
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInContent_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInContent() throws Exception {
+        try {
+            // arrange
+            setDefaultCharset(ISO_8859_1);
+
+            String adocContent = "Copyrighted content © !";
+            AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+            // act
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+            // assert
+            assertThat(asciidocConfluencePage.content(), is("<p>Copyrighted content © !</p>"));
+        } finally {
+            setDefaultCharset(UTF_8);
+        }
     }
 
     @Test
@@ -932,6 +1023,16 @@ public class AsciidocConfluencePageTest {
             return emptyList();
         }
 
+    }
+
+    private static void setDefaultCharset(Charset charset) {
+        try {
+            Field defaultCharsetField = Charset.class.getDeclaredField("defaultCharset");
+            defaultCharsetField.setAccessible(true);
+            defaultCharsetField.set(null, charset);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not set default charset", e);
+        }
     }
 
 }

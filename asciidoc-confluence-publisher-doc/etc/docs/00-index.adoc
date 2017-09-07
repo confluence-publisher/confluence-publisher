@@ -47,9 +47,10 @@ is used to derive the page hierarchy in Confluence.
     +- ...
 ----
 
-Resources like images, PlantUML files, other attachment types and include files can be placed in any location within
-the documentation root folder. See <<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>>
-and <<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource file path resolution.
+AsciiDoc files are expected to be encoded in UTF-8. Resources like images, PlantUML files, other attachment types and
+include files can be placed in any location within the documentation root folder. See
+<<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>> and
+<<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource file path resolution.
 
 [NOTE]
 ====

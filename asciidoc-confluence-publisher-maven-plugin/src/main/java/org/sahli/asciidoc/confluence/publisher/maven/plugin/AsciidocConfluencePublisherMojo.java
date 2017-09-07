@@ -66,17 +66,14 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, this.confluencePublisherBuildFolder.toPath());
 
-            publish(confluencePublisherMetadata);
+            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
+
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
+            confluencePublisher.publish();
         } catch (Exception e) {
             getLog().error("Publishing to Confluence failed: " + e.getMessage());
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
-    }
-
-    private void publish(ConfluencePublisherMetadata confluencePublisherMetadata) {
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
-        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
-        confluencePublisher.publish();
     }
 
 }

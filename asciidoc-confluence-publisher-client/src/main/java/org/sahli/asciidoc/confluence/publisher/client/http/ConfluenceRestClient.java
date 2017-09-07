@@ -24,6 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -35,6 +36,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 
 import java.io.ByteArrayInputStream;
@@ -60,6 +62,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final String password;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
+
+    public ConfluenceRestClient(String rootConfluenceUrl, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(), username, password);
+    }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
@@ -411,6 +417,17 @@ public class ConfluenceRestClient implements ConfluenceClient {
             inputStream.close();
         } catch (IOException ignored) {
         }
+    }
+
+    private static CloseableHttpClient defaultHttpClient() {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(20 * 1000)
+                .setConnectTimeout(20 * 1000)
+                .build();
+
+        return HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
     }
 
 }

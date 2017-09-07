@@ -16,9 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -77,20 +74,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     }
 
     private void publish(ConfluencePublisherMetadata confluencePublisherMetadata) {
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, httpClient(), this.username, this.password);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
         ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
         confluencePublisher.publish();
-    }
-
-    private static CloseableHttpClient httpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(20 * 1000)
-                .setConnectTimeout(20 * 1000)
-                .build();
-
-        return HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
     }
 
 }

@@ -940,7 +940,7 @@ public class AsciidocConfluencePageTest {
     }
 
     private static String prependTitle(String content) {
-        if (!(content.startsWith("= "))) {
+        if (!content.startsWith("= ")) {
             content = "= Default Page Title\n\n" + content;
         }
         return content;

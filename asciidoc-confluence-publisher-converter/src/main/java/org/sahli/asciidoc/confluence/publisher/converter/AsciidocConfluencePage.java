@@ -163,11 +163,11 @@ public class AsciidocConfluencePage {
     }
 
     private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder) {
-        if (!(exists(templatesFolder))) {
+        if (!exists(templatesFolder)) {
             throw new RuntimeException("templateDir folder does not exist");
         }
 
-        if (!(isDirectory(templatesFolder))) {
+        if (!isDirectory(templatesFolder)) {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 

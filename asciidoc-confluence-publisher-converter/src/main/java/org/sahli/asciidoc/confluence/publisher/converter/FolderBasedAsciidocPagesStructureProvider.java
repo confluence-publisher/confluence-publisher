@@ -55,7 +55,7 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
 
     private static Map<Path, DefaultAsciidocPage> indexAsciidocPagesByFolderPath(Path documentationRootFolder) throws IOException {
         return walk(documentationRootFolder)
-                .filter((path) -> isAdocFile(path) && !(isIncludeFile(path)))
+                .filter((path) -> isAdocFile(path) && !isIncludeFile(path))
                 .collect(toMap((asciidocPagePath) -> removeExtension(asciidocPagePath), (asciidocPagePath) -> new DefaultAsciidocPage(asciidocPagePath)));
     }
 

@@ -250,6 +250,19 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithBr_returnsConfluencePageContentWithXhtml() throws Exception {
+        // arrange
+        String adocContent = "a +\nb +\nc";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>a<br/>\nb<br/>\nc</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithItalicText_returnsConfluencePageContentWithItalicMarkup() throws Exception {
         // arrange
         String adocContent = "_Italic phrase_ italic le__t__ter.";

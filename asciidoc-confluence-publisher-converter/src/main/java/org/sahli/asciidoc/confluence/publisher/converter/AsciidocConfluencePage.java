@@ -176,7 +176,7 @@ public class AsciidocConfluencePage {
         attributes.put("outdir", generatedAssetsTargetFolder.toString());
 
         return OptionsBuilder.options()
-                .backend("html")
+                .backend("xhtml5")
                 .safe(UNSAFE)
                 .baseDir(baseFolder.toFile())
                 .templateDirs(templatesFolder.toFile())

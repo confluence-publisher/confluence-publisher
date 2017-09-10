@@ -18,9 +18,6 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 
 import io.restassured.specification.RequestSpecification;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
@@ -159,18 +156,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", httpClient(), "confluence-publisher-it", "1234");
-    }
-
-    private static CloseableHttpClient httpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(20 * 1000)
-                .setConnectTimeout(20 * 1000)
-                .build();
-
-        return HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+        return new ConfluenceRestClient("http://localhost:8090", "confluence-publisher-it", "1234");
     }
 
 }

@@ -19,11 +19,8 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -31,23 +28,20 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
@@ -56,7 +50,6 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
  */
 public class ConfluenceRestClient implements ConfluenceClient {
 
-    private final String rootConfluenceUrl;
     private final CloseableHttpClient httpClient;
     private final String username;
     private final String password;
@@ -70,7 +63,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
-        this.rootConfluenceUrl = rootConfluenceUrl;
         this.httpClient = httpClient;
         this.username = username;
         this.password = password;
@@ -238,7 +230,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
         CloseableHttpResponse response = null;
 
         try {
-            response = this.httpClient.execute(httpRequest, httpContext());
+            httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
+            response = this.httpClient.execute(httpRequest);
 
             return responseHandler.apply(response);
         } catch (IOException e) {
@@ -250,27 +243,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
                 }
             } catch (IOException ignored) {
             }
-        }
-    }
-
-    private HttpContext httpContext() {
-        BasicCredentialsProvider basicCredentialsProvider = new BasicCredentialsProvider();
-        if (isNotBlank(this.username) && this.password != null) {
-            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(this.username, this.password);
-            HttpHost httpHost = HttpHost.create(this.rootConfluenceUrl);
-            AuthScope authScope = new AuthScope(httpHost);
-            basicCredentialsProvider.setCredentials(authScope, credentials);
-
-            BasicAuthCache basicAuthCache = new BasicAuthCache();
-            basicAuthCache.put(httpHost, new BasicScheme());
-
-            HttpClientContext httpClientContext = HttpClientContext.create();
-            httpClientContext.setCredentialsProvider(basicCredentialsProvider);
-            httpClientContext.setAuthCache(basicAuthCache);
-
-            return httpClientContext;
-        } else {
-            return null;
         }
     }
 
@@ -428,6 +400,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
         return HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+    }
+
+    private static String basicAuthorizationHeaderValue(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
     }
 
 }

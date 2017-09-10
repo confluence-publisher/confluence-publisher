@@ -383,19 +383,6 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void getSpaceContentId_withValidParameter_sendsHttpGetRequest() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"id\": \"12\"}", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        String contentId = confluenceRestClient.getSpaceContentId("~personalSpace");
-
-        // assert
-        assertThat(contentId, is("12"));
-    }
-
-    @Test
     public void sendRequest_withProvidedUsernameAndPassword_setsCredentialsProvider() throws Exception {
         // arrange
         CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();

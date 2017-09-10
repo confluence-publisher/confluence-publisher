@@ -120,7 +120,8 @@ public final class AsciidocConfluenceConverter {
                     Path attachmentTargetPath = pageAssetsFolder.resolve(relativeAttachmentPath.getFileName());
 
                     return new AttachmentMetadata(attachmentSourcePath, attachmentTargetPath);
-                }).collect(toList());
+                })
+                .collect(toList());
     }
 
     private static ConfluencePageMetadata buildConfluencePageMetadata(AsciidocConfluencePage asciidocConfluencePage, Path contentFileTargetPath, List<ConfluencePageMetadata> childConfluencePages, List<AttachmentMetadata> attachments) {

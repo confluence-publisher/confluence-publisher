@@ -16,6 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,12 +30,17 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMet
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
+import static java.nio.file.Files.newInputStream;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -59,36 +66,6 @@ public class ConfluencePublisherTest {
 
     @Rule
     public final ExpectedException expectedException = none();
-
-    @Test
-    public void metadata_withOnePageAndAncestorId_convertItCorrectlyAndIsValid() throws Exception {
-        // arrange + act
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock);
-
-        // assert
-        ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
-        assertThat(metadata.getAncestorId(), is("72189173"));
-        assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
-        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
-    }
-
-    @Test
-    public void metadata_withOnePageSpaceKey_convertItCorrectlyAndIsValid() throws Exception {
-        // arrange + act
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-space-key", confluenceRestClientMock);
-
-        // assert
-        ConfluencePublisherMetadata metadata = confluencePublisher.getMetadata();
-        assertThat(metadata.getSpaceKey(), is("~personalSpace"));
-        assertThat(metadata.getPages(), hasSize(1));
-        ConfluencePageMetadata confluencePageMetadata = metadata.getPages().get(0);
-        assertThat(confluencePageMetadata.getTitle(), is("Some Confluence Content"));
-        assertThat(confluencePageMetadata.getContentFilePath(), is("some-confluence-content.html"));
-    }
 
     @Test
     public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() throws Exception {
@@ -190,9 +167,8 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
         verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
         assertThat(contentId.getAllValues(), contains("4321", "4321"));
-        assertThat(attachmentFileName.getAllValues(), contains("attachmentOne.txt", "attachmentTwo.txt"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(0)), is("attachment1"));
-        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(1)), is("attachment2"));
+        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentOne.txt"))), is("attachment1"));
+        assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentTwo.txt"))), is("attachment2"));
     }
 
     @Test
@@ -349,7 +325,36 @@ public class ConfluencePublisherTest {
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {
-        return new ConfluencePublisher(TEST_RESOURCES + "/metadata-" + qualifier + ".json", confluenceRestClient);
+        Path metadataFilePath = Paths.get(TEST_RESOURCES + "/metadata-" + qualifier + ".json");
+        Path contentRoot = metadataFilePath.getParent().toAbsolutePath();
+
+        ConfluencePublisherMetadata metadata = readConfig(metadataFilePath);
+        resolveAbsoluteContentFileAndAttachmentsPath(metadata.getPages(), contentRoot);
+
+        return new ConfluencePublisher(metadata, confluenceRestClient);
+    }
+
+    private static ConfluencePublisherMetadata readConfig(Path metadataFile) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
+        try {
+            return objectMapper.readValue(newInputStream(metadataFile), ConfluencePublisherMetadata.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read metadata", e);
+        }
+    }
+
+    private static void resolveAbsoluteContentFileAndAttachmentsPath(List<ConfluencePageMetadata> pages, Path contentRoot) {
+        pages.forEach((page) -> {
+            page.setContentFilePath(contentRoot.resolve(page.getContentFilePath()).toString());
+            page.setAttachments(page.getAttachments().entrySet().stream().collect(toMap(
+                    (entry) -> entry.getValue(),
+                    (entry) -> contentRoot.resolve(entry.getKey()).toString()
+            )));
+
+            resolveAbsoluteContentFileAndAttachmentsPath(page.getChildren(), contentRoot);
+        });
     }
 
 }

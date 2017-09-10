@@ -18,34 +18,31 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.nio.file.FileSystems.newFileSystem;
-import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
 import static java.nio.file.Files.list;
-import static java.nio.file.Files.newInputStream;
-import static java.nio.file.Files.walkFileTree;
 import static java.nio.file.Files.write;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
@@ -56,58 +53,130 @@ public final class AsciidocConfluenceConverter {
 
     private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
 
-    private AsciidocConfluenceConverter() {
-        throw new UnsupportedOperationException("Instantiation not supported");
+    private final String spaceKey;
+    private final String ancestorId;
+
+    public AsciidocConfluenceConverter(String spaceKey, String ancestorId) {
+        this.spaceKey = spaceKey;
+        this.ancestorId = ancestorId;
     }
 
-    public static ConfluencePublisherMetadata convertAndBuildConfluencePages(String asciidocRootFolderPath, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath, String spaceKey, String ancestorId) throws IOException {
-        extractTemplatesFromClassPathTo(Paths.get(asciidocConfluenceTemplatesPath));
+    public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, Path buildFolder) {
+        try {
+            Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
+            createDirectories(templatesRootFolder);
 
-        ConfluencePublisherMetadata confluencePublisherMetadata = initializeConfluencePublisherMetadata(spaceKey, ancestorId);
+            Path assetsRootFolder = buildFolder.resolve("assets").toAbsolutePath();
+            createDirectories(assetsRootFolder);
 
-        AdocFileVisitor visitor = new AdocFileVisitor(asciidocRootFolderPath, generatedDocOutputPath, asciidocConfluenceTemplatesPath);
-        walkFileTree(Paths.get(asciidocRootFolderPath), visitor);
+            extractTemplatesFromClassPathTo(templatesRootFolder);
 
-        Map<String, List<ConfluencePageMetadata>> confluencePublisherMetadataRegistry = visitor.confluencePageMetadataRegistry();
+            AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
+            List<AsciidocPage> asciidocPages = structure.pages();
+            List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages);
 
-        List<ConfluencePageMetadata> rootPages = confluencePublisherMetadataRegistry.get(generatedDocOutputPath);
-        if (rootPages != null) {
-            confluencePublisherMetadata.getPages().addAll(rootPages);
-            buildPageTree(confluencePublisherMetadata.getPages(), confluencePublisherMetadataRegistry, generatedDocOutputPath);
+            ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
+            confluencePublisherMetadata.setSpaceKey(this.spaceKey);
+            confluencePublisherMetadata.setAncestorId(this.ancestorId);
+            confluencePublisherMetadata.setPages(confluencePages);
+
+            return confluencePublisherMetadata;
+        } catch (Exception e) {
+            throw new RuntimeException("Could not convert asciidoc pages", e);
         }
-
-        return confluencePublisherMetadata;
     }
 
-    private static void buildPageTree(List<ConfluencePageMetadata> parentPages, Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry, String generatedDocOutputPath) {
-        parentPages.forEach(page -> {
-            String childPagesFolder = resolveChildPagesFolder(generatedDocOutputPath, page);
-            List<ConfluencePageMetadata> childPages = confluencePageMetadataRegistry.get(childPagesFolder);
+    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages) {
+        List<ConfluencePageMetadata> confluencePages = new ArrayList<>();
 
-            if (childPages != null) {
-                page.getChildren().addAll(childPages);
-                buildPageTree(childPages, confluencePageMetadataRegistry, generatedDocOutputPath);
+        asciidocPages.forEach((asciidocPage) -> {
+            try {
+                Path pageAssetsFolder = determinePageAssetsFolder(assetsRootFolder, asciidocPage);
+                createDirectories(pageAssetsFolder);
+
+                AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, templatesRootFolder, pageAssetsFolder);
+                Path contentFileTargetPath = writeToTargetStructure(asciidocPage, pageAssetsFolder, asciidocConfluencePage);
+
+                List<AttachmentMetadata> attachments = buildAttachments(asciidocPage, pageAssetsFolder, asciidocConfluencePage.attachments());
+                copyAttachmentsAvailableInSourceStructureToTargetStructure(attachments);
+
+                List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children());
+                ConfluencePageMetadata confluencePageMetadata = buildConfluencePageMetadata(asciidocConfluencePage, contentFileTargetPath, childConfluencePages, attachments);
+
+                confluencePages.add(confluencePageMetadata);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not convert and build confluence page", e);
+            }
+        });
+
+        return confluencePages;
+    }
+
+    private static List<AttachmentMetadata> buildAttachments(AsciidocPage asciidocPage, Path pageAssetsFolder, Map<String, String> attachmentsWithRelativePath) {
+        return attachmentsWithRelativePath.keySet().stream()
+                .map((attachmentWithRelativePath) -> {
+                    Path relativeAttachmentPath = Paths.get(attachmentWithRelativePath);
+                    Path attachmentSourcePath = asciidocPage.path().getParent().resolve(relativeAttachmentPath);
+                    Path attachmentTargetPath = pageAssetsFolder.resolve(relativeAttachmentPath.getFileName());
+
+                    return new AttachmentMetadata(attachmentSourcePath, attachmentTargetPath);
+                })
+                .collect(toList());
+    }
+
+    private static ConfluencePageMetadata buildConfluencePageMetadata(AsciidocConfluencePage asciidocConfluencePage, Path contentFileTargetPath, List<ConfluencePageMetadata> childConfluencePages, List<AttachmentMetadata> attachments) {
+        ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
+        confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
+        confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
+        confluencePageMetadata.setChildren(childConfluencePages);
+        confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
+
+        return confluencePageMetadata;
+    }
+
+    private static Path writeToTargetStructure(AsciidocPage asciidocPage, Path pageAssetsFolder, AsciidocConfluencePage asciidocConfluencePage) throws IOException {
+        Path contentFileTargetPath = determineTargetPagePath(asciidocPage, pageAssetsFolder);
+        write(contentFileTargetPath, asciidocConfluencePage.content().getBytes("UTF-8"));
+
+        return contentFileTargetPath;
+    }
+
+    private static void copyAttachmentsAvailableInSourceStructureToTargetStructure(List<AttachmentMetadata> attachments) {
+        attachments.forEach((attachment) -> {
+            try {
+                if (exists(attachment.sourcePath())) {
+                    copy(attachment.sourcePath(), attachment.targetPath(), REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Could not copy attachment to target structure", e);
             }
         });
     }
 
-    private static String resolveChildPagesFolder(String generatedDocOutputPath, ConfluencePageMetadata page) {
-        return removeExtension(Paths.get(generatedDocOutputPath, page.getContentFilePath()).toFile().getAbsolutePath());
+    private static Map<String, String> toTargetAttachmentFileNameAndAttachmentPath(List<AttachmentMetadata> attachments) {
+        return attachments.stream().collect(toMap(
+                (attachment) -> attachment.targetPath().getFileName().toString(),
+                (attachment) -> attachment.targetPath().toString()
+        ));
     }
 
-    private static String removeExtension(String path) {
-        return path.substring(0, path.lastIndexOf('.'));
+    private static Path determineTargetPagePath(AsciidocPage asciidocPage, Path pageAssetsFolder) {
+        return replaceExtension(pageAssetsFolder.resolve(asciidocPage.path().getFileName()), ".adoc", ".html");
     }
 
-    private static ConfluencePublisherMetadata initializeConfluencePublisherMetadata(String spaceKey, String ancestorId) {
-        ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
+    private static Path determinePageAssetsFolder(Path assetsRootFolder, AsciidocPage asciidocPage) {
+        String uniquePageId = uniquePageId(asciidocPage.path());
+        Path pageAssetsFolder = assetsRootFolder.resolve(uniquePageId);
 
-        confluencePublisherMetadata.setSpaceKey(spaceKey);
-        if (ancestorId != null) {
-            confluencePublisherMetadata.setAncestorId(ancestorId);
-        }
+        return pageAssetsFolder;
+    }
 
-        return confluencePublisherMetadata;
+    static String uniquePageId(Path asciidocPagePath) {
+        return sha256Hex(asciidocPagePath.toAbsolutePath().toString());
+    }
+
+    private static Path replaceExtension(Path path, String existingExtension, String newExtension) {
+        return Paths.get(path.toString().replace(existingExtension, newExtension));
     }
 
     private static void extractTemplatesFromClassPathTo(Path targetFolder) {
@@ -170,90 +239,24 @@ public final class AsciidocConfluenceConverter {
     }
 
 
-    private static class AdocFileVisitor implements FileVisitor<Path> {
+    private static class AttachmentMetadata {
 
-        private static final String ADOC_FILE_EXTENSION = ".adoc";
-        private static final String INCLUDE_FILE_PREFIX = "_";
-        private final String asciidocRootFolder;
-        private final String generatedDocOutputPath;
-        private final String asciidocConfluenceTemplatesPath;
-        private final Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry = new HashMap<>();
+        private final Path sourcePath;
+        private final Path targetPath;
 
-        private AdocFileVisitor(String asciidocRootFolder, String generatedDocOutputPath, String asciidocConfluenceTemplatesPath) {
-            this.asciidocRootFolder = asciidocRootFolder;
-            this.generatedDocOutputPath = generatedDocOutputPath;
-            this.asciidocConfluenceTemplatesPath = asciidocConfluenceTemplatesPath;
+        AttachmentMetadata(Path sourcePath, Path targetPath) {
+            this.sourcePath = sourcePath;
+            this.targetPath = targetPath;
         }
 
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            return CONTINUE;
+        Path sourcePath() {
+            return sourcePath;
         }
 
-        @SuppressWarnings("ResultOfMethodCallIgnored")
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            String absolutePath = file.toFile().getAbsolutePath();
-            String relativePath = absolutePath.substring(this.asciidocRootFolder.length() + 1);
-            File targetFile = new File(this.generatedDocOutputPath, relativePath);
-            String imagesOutDir = targetFile.getParent();
-
-            createMissingDirectories(targetFile);
-
-            if (!isIncludeFile(file)) {
-                if (isAdocFile(file)) {
-                    File confluenceHtmlOutputFile = replaceFileExtension(targetFile, "html");
-                    confluenceHtmlOutputFile.createNewFile();
-                    AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(newInputStream(file), this.asciidocConfluenceTemplatesPath, imagesOutDir, file);
-                    write(confluenceHtmlOutputFile.toPath(), asciidocConfluencePage.content().getBytes("UTF-8"));
-
-                    ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
-                    confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
-                    confluencePageMetadata.setContentFilePath(Paths.get(this.generatedDocOutputPath).relativize(Paths.get(confluenceHtmlOutputFile.toURI())).toString());
-                    confluencePageMetadata.getAttachments().putAll(asciidocConfluencePage.attachments());
-
-                    this.confluencePageMetadataRegistry
-                            .computeIfAbsent(confluenceHtmlOutputFile.getParent(), (key) -> new ArrayList<>())
-                            .add(confluencePageMetadata);
-                } else {
-                    copy(file, targetFile.toPath());
-                }
-            }
-
-            return CONTINUE;
+        Path targetPath() {
+            return targetPath;
         }
 
-        private boolean isAdocFile(Path file) {
-            return file.toString().endsWith(ADOC_FILE_EXTENSION);
-        }
-
-        private boolean isIncludeFile(Path file) {
-            return file.getFileName().toString().startsWith(INCLUDE_FILE_PREFIX);
-        }
-
-        @SuppressWarnings("ResultOfMethodCallIgnored")
-        private void createMissingDirectories(File file) {
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
-            }
-        }
-
-        private File replaceFileExtension(File file, String fileExtension) {
-            return new File(file.getParent(), file.getName().substring(0, file.getName().lastIndexOf(".") + 1) + fileExtension);
-        }
-
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            return CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            return CONTINUE;
-        }
-
-        Map<String, List<ConfluencePageMetadata>> confluencePageMetadataRegistry() {
-            return this.confluencePageMetadataRegistry;
-        }
     }
+
 }

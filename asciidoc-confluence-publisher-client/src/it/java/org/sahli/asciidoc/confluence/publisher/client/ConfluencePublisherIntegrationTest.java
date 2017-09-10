@@ -18,13 +18,12 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 
 import io.restassured.specification.RequestSpecification;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+
+import java.nio.file.Paths;
 
 import static io.restassured.RestAssured.given;
 import static java.util.Arrays.asList;
@@ -46,10 +45,10 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_singlePage_pageIsCreatedInConfluence() {
         // arrange
         String title = uniqueTitle("Single Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
@@ -64,9 +63,9 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() throws Exception {
         // arrange
         String title = uniqueTitle("Single Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
@@ -82,21 +81,21 @@ public class ConfluencePublisherIntegrationTest {
     public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() throws Exception {
         // arrange
         String title = uniqueTitle("Invalid Markup Test Page");
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, "single-page.xhtml");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, "single-page");
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
 
         // act
         confluencePublisher.publish();
 
-        confluencePageMetadata.setContentFilePath("invalid-xhtml.xhtml");
+        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/invalid-xhtml.xhtml"));
         try {
             confluencePublisher.publish();
             fail("publish with invalid XHTML is expected to fail");
         } catch (Exception ignored) {
         }
 
-        confluencePageMetadata.setContentFilePath("single-page.xhtml");
+        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/single-page.xhtml"));
         confluencePublisher.publish();
 
         // assert
@@ -126,6 +125,10 @@ public class ConfluencePublisherIntegrationTest {
         return confluencePublisherMetadata;
     }
 
+    private static String absolutePathTo(String relativePath) {
+        return Paths.get("src/it/resources/").resolve(relativePath).toAbsolutePath().toString();
+    }
+
     private static String childPages() {
         return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
@@ -144,8 +147,8 @@ public class ConfluencePublisherIntegrationTest {
                 .then().extract().jsonPath().getString("results.find({it.title == '" + title + "'}).id");
     }
 
-    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, String contentRoot) {
-        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient(), "src/it/resources/" + contentRoot);
+    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata) {
+        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient());
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
@@ -153,18 +156,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", httpClient(), "confluence-publisher-it", "1234");
-    }
-
-    private static CloseableHttpClient httpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(20 * 1000)
-                .setConnectTimeout(20 * 1000)
-                .build();
-
-        return HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+        return new ConfluenceRestClient("http://localhost:8090", "confluence-publisher-it", "1234");
     }
 
 }

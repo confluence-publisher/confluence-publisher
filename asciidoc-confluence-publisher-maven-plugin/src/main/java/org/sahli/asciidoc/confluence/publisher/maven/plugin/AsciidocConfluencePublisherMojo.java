@@ -16,9 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -27,10 +24,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
+import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 
 import java.io.File;
-
-import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.convertAndBuildConfluencePages;
 
 /**
  * @author Alain Sahli
@@ -39,11 +37,8 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
-    @Parameter(defaultValue = "${project.build.directory}/confluence-publisher")
-    private File generatedDocOutputPath;
-
-    @Parameter(defaultValue = "${project.build.directory}/asciidoc2confluence-templates", readonly = true)
-    private File asciidocConfluenceTemplates;
+    @Parameter(defaultValue = "${project.build.directory}/asciidoc-confluence-publisher", readonly = true)
+    private File confluencePublisherBuildFolder;
 
     @Parameter
     private File asciidocRootFolder;
@@ -67,33 +62,18 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            this.generatedDocOutputPath.mkdirs();
+            AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath());
+            AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, this.confluencePublisherBuildFolder.toPath());
 
-            ConfluencePublisherMetadata confluencePublisherMetadata = convertAndBuildConfluencePages(this.asciidocRootFolder.getAbsolutePath(),
-                    this.generatedDocOutputPath.getAbsolutePath(), this.asciidocConfluenceTemplates.getAbsolutePath(), this.spaceKey, this.ancestorId);
+            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
 
-            publish(confluencePublisherMetadata);
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
+            confluencePublisher.publish();
         } catch (Exception e) {
             getLog().error("Publishing to Confluence failed: " + e.getMessage());
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
-    }
-
-    private void publish(ConfluencePublisherMetadata confluencePublisherMetadata) {
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, httpClient(), this.username, this.password);
-        ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, this.generatedDocOutputPath.getAbsolutePath());
-        confluencePublisher.publish();
-    }
-
-    private static CloseableHttpClient httpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(20 * 1000)
-                .setConnectTimeout(20 * 1000)
-                .build();
-
-        return HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
     }
 
 }

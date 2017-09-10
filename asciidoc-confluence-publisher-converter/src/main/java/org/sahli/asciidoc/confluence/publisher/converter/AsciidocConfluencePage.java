@@ -20,9 +20,9 @@ import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
 import org.asciidoctor.OptionsBuilder;
 import org.asciidoctor.ast.Title;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +40,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.newInputStream;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.DOTALL;
@@ -87,17 +90,22 @@ public class AsciidocConfluencePage {
         return unmodifiableMap(this.attachments);
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(InputStream adoc, String templatesDir, String imagesOutDir, Path pagePath) {
-        Map<String, String> attachmentCollector = new HashMap<>();
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) {
+        try {
+            Path asciidocPagePath = asciidocPage.path();
+            String asciidocContent = readIntoString(newInputStream(asciidocPagePath));
 
-        String adocContent = readIntoString(adoc);
+            Map<String, String> attachmentCollector = new HashMap<>();
 
-        Options options = options(templatesDir, parentFolder(pagePath), imagesOutDir);
-        String pageContent = convertedContent(adocContent, options, pagePath, attachmentCollector);
+            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
+            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector);
 
-        String pageTitle = pageTitle(adocContent);
+            String pageTitle = pageTitle(asciidocContent);
 
-        return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
+            return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create asciidoc confluence page", e);
+        }
     }
 
     private static String deriveAttachmentName(String path) {
@@ -154,30 +162,24 @@ public class AsciidocConfluencePage {
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static File parentFolder(Path pagePath) {
-        return pagePath.getParent().toFile();
-    }
-
-    private static Options options(String templateDir, File baseDir, String imagesOutDir) {
-        File templateDirFolder = new File(templateDir);
-
-        if (!templateDirFolder.exists()) {
+    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder) {
+        if (!exists(templatesFolder)) {
             throw new RuntimeException("templateDir folder does not exist");
         }
 
-        if (!templateDirFolder.isDirectory()) {
+        if (!isDirectory(templatesFolder)) {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("imagesoutdir", imagesOutDir);
-        attributes.put("outdir", imagesOutDir);
+        attributes.put("imagesoutdir", generatedAssetsTargetFolder.toString());
+        attributes.put("outdir", generatedAssetsTargetFolder.toString());
 
         return OptionsBuilder.options()
                 .backend("html")
                 .safe(UNSAFE)
-                .baseDir(baseDir)
-                .templateDirs(templateDirFolder)
+                .baseDir(baseFolder.toFile())
+                .templateDirs(templatesFolder.toFile())
                 .attributes(attributes)
                 .get();
     }

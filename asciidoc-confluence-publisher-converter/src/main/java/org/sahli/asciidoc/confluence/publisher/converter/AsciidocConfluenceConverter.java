@@ -101,12 +101,7 @@ public final class AsciidocConfluenceConverter {
                 copyAttachmentsAvailableInSourceStructureToTargetStructure(attachments);
 
                 List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children());
-
-                ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
-                confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
-                confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
-                confluencePageMetadata.setChildren(childConfluencePages);
-                confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
+                ConfluencePageMetadata confluencePageMetadata = buildConfluencePageMetadata(asciidocConfluencePage, contentFileTargetPath, childConfluencePages, attachments);
 
                 confluencePages.add(confluencePageMetadata);
             } catch (IOException e) {
@@ -126,6 +121,16 @@ public final class AsciidocConfluenceConverter {
 
                     return new AttachmentMetadata(attachmentSourcePath, attachmentTargetPath);
                 }).collect(toList());
+    }
+
+    private static ConfluencePageMetadata buildConfluencePageMetadata(AsciidocConfluencePage asciidocConfluencePage, Path contentFileTargetPath, List<ConfluencePageMetadata> childConfluencePages, List<AttachmentMetadata> attachments) {
+        ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
+        confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
+        confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
+        confluencePageMetadata.setChildren(childConfluencePages);
+        confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
+
+        return confluencePageMetadata;
     }
 
     private static Path writeToTargetStructure(AsciidocPage asciidocPage, Path pageAssetsFolder, AsciidocConfluencePage asciidocConfluencePage) throws IOException {

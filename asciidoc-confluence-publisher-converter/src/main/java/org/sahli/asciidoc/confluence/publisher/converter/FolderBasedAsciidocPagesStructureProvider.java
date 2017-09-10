@@ -83,7 +83,6 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
         private final Path path;
         private final List<AsciidocPage> children;
 
-
         DefaultAsciidocPage(Path path) {
             this.path = path;
             this.children = new ArrayList<>();

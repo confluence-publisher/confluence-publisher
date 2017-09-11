@@ -242,12 +242,6 @@ class HttpRequestFactory {
         return new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
     }
 
-    public HttpGet getSpaceContentIdRequest(String spaceKey) {
-        assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
-
-        return new HttpGet(this.confluenceRestApiEndpoint + "/space/" + spaceKey);
-    }
-
     public HttpGet getPropertyByKeyRequest(String contentId, String key) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(key), "key");

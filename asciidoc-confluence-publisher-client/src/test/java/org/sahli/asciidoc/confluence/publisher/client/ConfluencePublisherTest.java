@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.Files.newInputStream;
@@ -89,21 +88,6 @@ public class ConfluencePublisherTest {
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         ConfluencePublisher confluencePublisher = confluencePublisher("without-ancestor-id", confluenceRestClientMock);
         confluencePublisher.publish();
-    }
-
-    @Test
-    public void publish_withSpaceRootAncestorId_shouldPublishUnderSpaceId() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        ConfluencePublisher confluencePublisher = confluencePublisher("with-space-root-ancestor-id", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
     }
 
     @Test
@@ -257,52 +241,6 @@ public class ConfluencePublisherTest {
         // assert
         verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
         verify(confluenceRestClientMock, never()).updateAttachmentContent(anyString(), anyString(), any(InputStream.class));
-    }
-
-    @Test
-    public void publish_metadataWithTreeHierarchyContainingDeletedPageUnderSpaceRoot_deletesPagesWithDepthFirstThatDoNotExistAnymore() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
-        ConfluencePage parentDeletedPage = new ConfluencePage("1", "Existing Page", "<h1>Existing Page</1>", 1);
-        ConfluencePage childDeletedPage = new ConfluencePage("2", "Deleted Page", 1);
-        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(parentDeletedPage));
-        when(confluenceRestClientMock.getChildPages("1")).thenReturn(singletonList(childDeletedPage));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("deleted-page-space-key", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        ArgumentCaptor<String> deletePageContentIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(confluenceRestClientMock, times(2)).deletePage(deletePageContentIdArgumentCaptor.capture());
-        assertThat(deletePageContentIdArgumentCaptor.getAllValues(), contains("2", "1"));
-    }
-
-    @Test
-    public void publish_metadataWithTreeContainingDeletedAttachmentsUnderSpaceRoot_deletesAttachmentsThatDoNotExistAnymore() throws Exception {
-        // arrange
-        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getSpaceContentId("~personalSpace")).thenReturn("1234");
-        ConfluencePage existingPage = new ConfluencePage("12", "Existing Page", "<h1>Some Confluence Content</1>", 1);
-        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingPage));
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("12");
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("12")).thenReturn(existingPage);
-        when(confluenceRestClientMock.getPropertyByKey("12", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
-        ConfluenceAttachment existingAttachment = new ConfluenceAttachment("1", "attachmentOne.txt", "/download/attachmentOne.txt", 1);
-        ConfluenceAttachment deletedAttachment = new ConfluenceAttachment("2", "deleteAttachment.txt", "/download/deletedAttachment.txt", 1);
-        when(confluenceRestClientMock.getAttachments("12")).thenReturn(Arrays.asList(existingAttachment, deletedAttachment));
-        when(confluenceRestClientMock.getAttachmentByFileName("12", "attachmentOne.txt")).thenReturn(existingAttachment);
-        when(confluenceRestClientMock.getAttachmentContent("/download/attachmentOne.txt")).thenReturn(new ByteArrayInputStream("attachment1".getBytes()));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("deleted-attachment-space-key", confluenceRestClientMock);
-
-        // act
-        confluencePublisher.publish();
-
-        // assert
-        verify(confluenceRestClientMock, times(1)).deleteAttachment("2");
     }
 
     @Test

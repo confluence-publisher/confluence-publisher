@@ -538,28 +538,6 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getSpaceContentIdRequest_withValidSpaceKey_returnsHttpGetRequest() throws Exception {
-        // arrange
-        String spaceKey = "~alsa";
-
-        // act
-        HttpGet getSpaceContentIdRequest = this.httpRequestFactory.getSpaceContentIdRequest(spaceKey);
-
-        // assert
-        assertThat(getSpaceContentIdRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/space/" + spaceKey));
-    }
-
-    @Test
-    public void getSpaceContentIdRequest_withBlankSpaceKey_throwsIllegalArgumentException() throws Exception {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("spaceKey must be set");
-
-        // arrange + act
-        this.httpRequestFactory.getSpaceContentIdRequest("");
-    }
-
-    @Test
     public void getAttachmentContentRequest_withValidParameters_returnsHttpGetRequest() throws Exception {
         // arrange
         String relativeDownloadLink = "/download/attachment.txt";

@@ -100,8 +100,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | ancestorId
 | The id of the ancestor page under which the pages are appended.
 
-  Use `SPACE_ROOT` to publish to the space root directly. Be aware that publishing to the space root directly will
-  remove all pages that are not part of the published documentation.
+  Be aware that publishing will remove all pages under the configured ancestor id that are not part of the published
+  documentation.
 
 | username
 | The username of the user to use for publishing.

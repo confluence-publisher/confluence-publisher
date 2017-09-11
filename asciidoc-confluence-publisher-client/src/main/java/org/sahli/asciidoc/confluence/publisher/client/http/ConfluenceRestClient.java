@@ -307,17 +307,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public String getSpaceContentId(String spaceKey) {
-        HttpGet getSpaceContentIdRequest = this.httpRequestFactory.getSpaceContentIdRequest(spaceKey);
-
-        return sendRequestAndFailIfNot20x(getSpaceContentIdRequest, (response) -> {
-            String spaceContentId = extractIdFromJsonNode(parseJsonResponse(response));
-
-            return spaceContentId;
-        });
-    }
-
-    @Override
     public void setPropertyByKey(String contentId, String key, String value) {
         HttpPost setPropertyByKeyRequest = this.httpRequestFactory.setPropertyByKeyRequest(contentId, key, value);
         sendRequestAndFailIfNot20x(setPropertyByKeyRequest);

@@ -19,9 +19,12 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
+import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
@@ -67,13 +70,40 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, this.confluencePublisherBuildFolder.toPath());
 
             ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
+            ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient);
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient, confluencePublisherListener);
             confluencePublisher.publish();
         } catch (Exception e) {
             getLog().error("Publishing to Confluence failed: " + e.getMessage());
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
+    }
+
+
+    private static class LoggingConfluencePublisherListener implements ConfluencePublisherListener {
+
+        private Log log;
+
+        LoggingConfluencePublisherListener(Log log) {
+            this.log = log;
+        }
+
+        @Override
+        public void pageAdded(ConfluencePage addedPage) {
+            log.info("Added page '" + addedPage.getTitle() + "' (id " + addedPage.getContentId() + ")");
+        }
+
+        @Override
+        public void pageUpdated(ConfluencePage existingPage, ConfluencePage updatedPage) {
+            log.info("Updated page '" + updatedPage.getTitle() + "' (id " + updatedPage.getContentId() + ", version " + existingPage.getVersion() + " -> " + updatedPage.getVersion() + ")");
+        }
+
+        @Override
+        public void pageDeleted(ConfluencePage deletedPage) {
+            log.info("Deleted page '" + deletedPage.getTitle() + "' (id " + deletedPage.getContentId() + ")");
+        }
+
     }
 
 }

@@ -13,4 +13,6 @@ public interface ConfluencePublisherListener {
 
     void pageDeleted(ConfluencePage deletedPage);
 
+    void publishCompleted();
+
 }

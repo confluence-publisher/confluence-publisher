@@ -104,6 +104,10 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             log.info("Deleted page '" + deletedPage.getTitle() + "' (id " + deletedPage.getContentId() + ")");
         }
 
+        @Override
+        public void publishCompleted() {
+        }
+
     }
 
 }

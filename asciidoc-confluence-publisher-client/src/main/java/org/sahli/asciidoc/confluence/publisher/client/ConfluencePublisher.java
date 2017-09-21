@@ -67,6 +67,7 @@ public class ConfluencePublisher {
         assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
         startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+        this.confluencePublisherListener.publishCompleted();
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
@@ -206,6 +207,10 @@ public class ConfluencePublisher {
 
         @Override
         public void pageDeleted(ConfluencePage deletedPage) {
+        }
+
+        @Override
+        public void publishCompleted() {
         }
 
     }

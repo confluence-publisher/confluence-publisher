@@ -202,6 +202,24 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithRegularExpressionSymbols_returnsConfluencePageContentWithRegularExpressionSymbolsEscaped() throws Exception {
+        // arrange
+        String adocContent = "[source]\n" +
+                "----\n" +
+                "[0-9][0-9]\\.[0-9][0-9]\\.[0-9]{4}$\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:plain-text-body><![CDATA[[0-9][0-9]\\.[0-9][0-9]\\.[0-9]{4}$]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() throws Exception {
         // arrange
         String adocContent = "= Title level 0\n\n" +

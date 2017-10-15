@@ -45,6 +45,7 @@ import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.newInputStream;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.regex.Matcher.quoteReplacement;
 import static java.util.regex.Pattern.DOTALL;
 import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.joining;
@@ -147,7 +148,7 @@ public class AsciidocConfluencePage {
         Matcher matcher = pattern.matcher(content);
 
         while (matcher.find()) {
-            matcher.appendReplacement(replacedContent, replacer.apply(matcher.toMatchResult()));
+            matcher.appendReplacement(replacedContent, quoteReplacement(replacer.apply(matcher.toMatchResult())));
         }
 
         matcher.appendTail(replacedContent);

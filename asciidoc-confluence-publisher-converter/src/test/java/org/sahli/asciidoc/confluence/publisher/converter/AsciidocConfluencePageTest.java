@@ -45,6 +45,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
@@ -96,6 +98,36 @@ public class AsciidocConfluencePageTest {
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (meta)"));
+    }
+
+    @Test
+    public void render_asciidocWithTopLevelHeaderAndMetaInformationAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitleFromTitleMetaInformation() throws Exception {
+        // arrange
+        String adoc = ":title: Page title (meta)\n" +
+                "= Page Title (header)";
+
+        PageTitlePostProcessor pageTitlePostProcessor = mock(PageTitlePostProcessor.class);
+        when(pageTitlePostProcessor.process("Page title (meta)")).thenReturn("Post-Processed Page Title");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), TEMPLATES_FOLDER, dummyAssetsTargetPath(), pageTitlePostProcessor);
+
+        // assert
+        assertThat(asciidocConfluencePage.pageTitle(), is("Post-Processed Page Title"));
+    }
+
+    @Test
+    public void render_asciidocWithPageTitleAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitle() throws Exception {
+        // arrange
+        String adoc = "= Page Title";
+        PageTitlePostProcessor pageTitlePostProcessor = mock(PageTitlePostProcessor.class);
+        when(pageTitlePostProcessor.process("Page Title")).thenReturn("Post-Processed Page Title");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), TEMPLATES_FOLDER, dummyAssetsTargetPath(), pageTitlePostProcessor);
+
+        // assert
+        assertThat(asciidocConfluencePage.pageTitle(), is("Post-Processed Page Title"));
     }
 
     @Test

@@ -80,14 +80,26 @@ public class AsciidocConfluenceConverterTest {
         assertAttachmentFilePath(subPageMetadata, "embedded-diagram.png", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram.png"));
     }
 
-    private void assertContentFilePath(ConfluencePageMetadata confluencePageMetadata, String targetFilePath) {
-        assertThat(confluencePageMetadata.getContentFilePath(), is(targetFilePath));
-        assertThat(exists(Paths.get(confluencePageMetadata.getContentFilePath())), is(true));
-    }
+    @Test
+    public void convertAndBuildConfluencePages_withPageTitlePostProcessor_convertsTemplatesAndReturnsMetadata() throws Exception {
+        // arrange
+        Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
+        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-    private void assertAttachmentFilePath(ConfluencePageMetadata confluencePageMetadata, String attachmentFileName, String targetFilePath) {
-        assertThat(confluencePageMetadata.getAttachments().get(attachmentFileName), is(targetFilePath));
-        assertThat(exists(Paths.get(confluencePageMetadata.getAttachments().get(attachmentFileName))), is(true));
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
+        PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("(Doc) ", " (1.0)");
+
+        // act
+        AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
+
+        // assert
+        assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
+        assertThat(confluencePublisherMetadata.getAncestorId(), is("1234"));
+        assertThat(confluencePublisherMetadata.getPages().size(), is(1));
+
+        ConfluencePageMetadata indexPageMetadata = confluencePublisherMetadata.getPages().get(0);
+        assertThat(indexPageMetadata.getTitle(), is("(Doc) Test Document (1.0)"));
     }
 
     @Test
@@ -111,6 +123,16 @@ public class AsciidocConfluenceConverterTest {
         Path targetFilePath = buildFolder.resolve("assets").resolve(uniquePageId(sourceFilePath)).resolve(targetFileName);
 
         return targetFilePath.toAbsolutePath().toString();
+    }
+
+    private void assertContentFilePath(ConfluencePageMetadata confluencePageMetadata, String targetFilePath) {
+        assertThat(confluencePageMetadata.getContentFilePath(), is(targetFilePath));
+        assertThat(exists(Paths.get(confluencePageMetadata.getContentFilePath())), is(true));
+    }
+
+    private void assertAttachmentFilePath(ConfluencePageMetadata confluencePageMetadata, String attachmentFileName, String targetFilePath) {
+        assertThat(confluencePageMetadata.getAttachments().get(attachmentFileName), is(targetFilePath));
+        assertThat(exists(Paths.get(confluencePageMetadata.getAttachments().get(attachmentFileName))), is(true));
     }
 
 }

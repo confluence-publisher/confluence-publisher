@@ -27,6 +27,8 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublish
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
+import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
+import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
 
 import java.io.File;
 
@@ -58,13 +60,21 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private String password;
 
+    @Parameter
+    private String pageTitlePrefix;
+
+    @Parameter
+    private String pageTitleSuffix;
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(this.pageTitlePrefix, this.pageTitleSuffix);
+
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath());
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, this.confluencePublisherBuildFolder.toPath());
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath());
 
             ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
 

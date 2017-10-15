@@ -91,6 +91,10 @@ public class AsciidocConfluencePage {
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) {
+        return newAsciidocConfluencePage(asciidocPage, templatesDir, pageAssetsFolder, new NoOpPageTitlePostProcessor());
+    }
+
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor) {
         try {
             Path asciidocPagePath = asciidocPage.path();
             String asciidocContent = readIntoString(newInputStream(asciidocPagePath));
@@ -98,9 +102,9 @@ public class AsciidocConfluencePage {
             Map<String, String> attachmentCollector = new HashMap<>();
 
             Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
-            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector);
+            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor);
 
-            String pageTitle = pageTitle(asciidocContent);
+            String pageTitle = pageTitle(asciidocContent, pageTitlePostProcessor);
 
             return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector);
         } catch (IOException e) {
@@ -112,10 +116,10 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector) {
+    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, PageTitlePostProcessor pageTitlePostProcessor) {
         String content = ASCIIDOCTOR.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
-                replaceCrossReferenceTargets(pagePath),
+                replaceCrossReferenceTargets(pagePath, pageTitlePostProcessor),
                 collectAndReplaceAttachmentFileNames(attachmentCollector),
                 unescapeCdataHtmlContent()
         );
@@ -156,9 +160,10 @@ public class AsciidocConfluencePage {
         return stream(postProcessors).reduce(initialContent, (accumulator, postProcessor) -> postProcessor.apply(accumulator), unusedCombiner());
     }
 
-    private static String pageTitle(String pageContent) {
+    private static String pageTitle(String pageContent, PageTitlePostProcessor pageTitlePostProcessor) {
         return Optional.ofNullable(ASCIIDOCTOR.readDocumentHeader(pageContent).getDocumentTitle())
                 .map(Title::getMain)
+                .map((pageTitle) -> pageTitlePostProcessor.process(pageTitle))
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
@@ -184,14 +189,14 @@ public class AsciidocConfluencePage {
                 .get();
     }
 
-    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath) {
+    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, PageTitlePostProcessor pageTitlePostProcessor) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
                 String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()));
-                String referencedPageTitle = pageTitle(referencedPageContent);
+                String referencedPageTitle = pageTitle(referencedPageContent, pageTitlePostProcessor);
 
                 return "<ri:page ri:content-title=\"" + referencedPageTitle + "\"";
             } catch (FileNotFoundException e) {

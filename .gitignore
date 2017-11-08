@@ -1,3 +1,10 @@
 *.iml
 target/
-/.idea
+!.idea/
+.idea/*
+!.idea/copyright/
+.idea/copyright/*
+!.idea/copyright/Confluence_Publisher_Copyright.xml
+!.idea/scopes/
+.idea/scopes/*
+!.idea/scopes/Copyrighted_Sources.xml

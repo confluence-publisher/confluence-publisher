@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Copyrighted Sources" pattern="file[*]:src/main/java//*||file[*]:src/test/java//*||file[*]:pom.xml" />
+</component>

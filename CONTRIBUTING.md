@@ -36,5 +36,5 @@ Once the Confluence instance is running, perform the following steps:
 1. publish the documentation using 
   `./mvnw org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish -f asciidoc-confluence-publisher-doc/pom.xml`
  
- Thank you for your contribution!
- The Confluence Publisher Team
+
+Thank you for your contribution!

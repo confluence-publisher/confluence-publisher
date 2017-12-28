@@ -48,6 +48,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private File asciidocRootFolder;
 
+    @Parameter(defaultValue = "UTF-8")
+    private String sourceEncoding;
+
     @Parameter
     private String rootConfluenceUrl;
 
@@ -68,9 +71,6 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     @Parameter
     private String pageTitleSuffix;
-
-    @Parameter(defaultValue = "UTF-8")
-    private String sourceEncoding;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override

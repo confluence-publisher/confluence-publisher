@@ -33,6 +33,7 @@ import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 /**
  * @author Alain Sahli
@@ -68,13 +69,17 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private String pageTitleSuffix;
 
+    @Parameter(defaultValue = "UTF-8")
+    private String sourceEncoding;
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void execute() throws MojoExecutionException {
         try {
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(this.pageTitlePrefix, this.pageTitleSuffix);
 
-            AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath());
+            AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath(), Charset.forName(this.sourceEncoding));
+
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath());
 

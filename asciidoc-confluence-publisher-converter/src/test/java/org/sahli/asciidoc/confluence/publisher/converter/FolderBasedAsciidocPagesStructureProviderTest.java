@@ -19,10 +19,13 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -37,7 +40,7 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
     public void structure_nestedStructure_returnsAsciidocPagesStructureWithAllNonIncludeAdocFiles() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get("src/test/resources/folder-based-asciidoc-page-structure");
-        FolderBasedAsciidocPagesStructureProvider folderBasedAsciidocSourceStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
+        FolderBasedAsciidocPagesStructureProvider folderBasedAsciidocSourceStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // act
         AsciidocPagesStructureProvider.AsciidocPagesStructure structure = folderBasedAsciidocSourceStructureProvider.structure();
@@ -60,6 +63,19 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
         AsciidocPage subSubPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one/sub-sub-page-one.adoc"));
         assertThat(subSubPageOne, is(not(nullValue())));
         assertThat(subSubPageOne.children().size(), is(0));
+    }
+
+    @Test
+    public void sourceEncoding_sourceEncodingProvided_returnsProvidedSourceEncoding() {
+        // arrange
+        Path documentationRootFolder = Paths.get("src/test/resources/folder-based-asciidoc-page-structure");
+        FolderBasedAsciidocPagesStructureProvider folderBasedAsciidocSourceStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+
+        // act
+        Charset sourceEncoding = folderBasedAsciidocSourceStructureProvider.sourceEncoding();
+
+        // assert
+        assertThat(sourceEncoding, is(UTF_8));
     }
 
     private AsciidocPage asciidocPageByPath(List<AsciidocPage> asciidocPages, Path asciidocPagePath) {

@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,14 +35,21 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
     private static final String INCLUDE_FILE_PREFIX = "_";
 
     private final AsciidocPagesStructure structure;
+    private final Charset sourceEncoding;
 
-    public FolderBasedAsciidocPagesStructureProvider(Path documentationRootFolder) {
+    public FolderBasedAsciidocPagesStructureProvider(Path documentationRootFolder, Charset sourceEncoding) {
         this.structure = buildStructure(documentationRootFolder);
+        this.sourceEncoding = sourceEncoding;
     }
 
     @Override
     public AsciidocPagesStructure structure() {
         return this.structure;
+    }
+
+    @Override
+    public Charset sourceEncoding() {
+        return this.sourceEncoding;
     }
 
     private AsciidocPagesStructure buildStructure(Path documentationRootFolder) {

@@ -121,9 +121,10 @@ public class ConfluencePublisher {
 
             if (notSameContentHash(existingContentHash, newContentHash)) {
                 this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
-                this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, existingPage.getVersion() + 1);
+                int newPageVersion = existingPage.getVersion() + 1;
+                this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion);
                 this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
-                this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, existingPage.getVersion() + 1));
+                this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, newPageVersion));
             }
         } catch (NotFoundException e) {
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
@@ -195,7 +196,7 @@ public class ConfluencePublisher {
     }
 
 
-    static class NoOpConfluencePublisherListener implements ConfluencePublisherListener {
+    private static class NoOpConfluencePublisherListener implements ConfluencePublisherListener {
 
         @Override
         public void pageAdded(ConfluencePage addedPage) {

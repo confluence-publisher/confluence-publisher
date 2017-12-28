@@ -133,11 +133,13 @@ As usually with Maven, configuration properties can either be defined directly i
 configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
 help of `-D` prefix when invoking Maven.
 
+
 == Maven Plugin Execution
 
 The Confluence Publisher Maven plugin goal `publish` can be bound to a specific lifecycle, if it should be executed
 automatically when building the project, e.g. for execution during the `site` phase:
 
+[source,xml]
 ----
 <!-- ... -->
 <executions>
@@ -156,4 +158,37 @@ Alternatively, the Confluence Publisher Maven plugin can also be executed manual
 
 ----
 mvn org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish
+----
+
+
+== Using Snapshot Version
+
+The code on master is automatically published as version `0.0.0-SNAPSHOT` to the Sonatype Maven snapshot repository. Use
+the following configuration in your `pom.xml` in order to use the latest snapshot version:
+
+[source,xml]
+----
+<pluginRepository>
+  <id>sonatype-snapshot-repo</id>
+  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  <releases>
+    <enabled>false</enabled>
+  </releases>
+  <snapshots>
+    <enabled>true</enabled>
+  </snapshots>
+</pluginRepository>
+
+<!-- ... -->
+
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+      <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
+      <version>0.0.0-SNAPSHOT</version>
+      <!-- ... -->
+    </plugin>
+  </plugins>
+</build>
 ----

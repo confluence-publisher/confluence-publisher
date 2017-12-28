@@ -10,4 +10,7 @@ It converts the resulting AsciiDoc HTML output to XHTML compatible with
 Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last
 publication is again re-published.
 
-The documentation can be found https://confluence-publisher.atlassian.net/wiki/spaces/CPD/overview[here].
+
+== Documentation
+
+The documentation of the current release version is published to https://confluence-publisher.atlassian.net/[].

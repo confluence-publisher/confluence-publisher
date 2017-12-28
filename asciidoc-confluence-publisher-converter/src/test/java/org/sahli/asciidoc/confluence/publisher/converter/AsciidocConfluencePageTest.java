@@ -64,7 +64,7 @@ public class AsciidocConfluencePageTest {
     public final ExpectedException expectedException = none();
 
     @Test
-    public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() throws Exception {
+    public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() {
         // arrange
         String adoc = "= Page title";
 
@@ -76,7 +76,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() throws Exception {
+    public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() {
         // arrange
         String adoc = "= Page title";
 
@@ -88,7 +88,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithTopLevelHeaderAndMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() throws Exception {
+    public void render_asciidocWithTopLevelHeaderAndMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() {
         // arrange
         String adoc = ":title: Page title (meta)\n" +
                 "= Page Title (header)";
@@ -101,7 +101,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithTopLevelHeaderAndMetaInformationAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitleFromTitleMetaInformation() throws Exception {
+    public void render_asciidocWithTopLevelHeaderAndMetaInformationAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitleFromTitleMetaInformation() {
         // arrange
         String adoc = ":title: Page title (meta)\n" +
                 "= Page Title (header)";
@@ -117,7 +117,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithPageTitleAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitle() throws Exception {
+    public void render_asciidocWithPageTitleAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitle() {
         // arrange
         String adoc = "= Page Title";
         PageTitlePostProcessor pageTitlePostProcessor = mock(PageTitlePostProcessor.class);
@@ -131,7 +131,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithNeitherTopLevelHeaderNorTitleMetaInformation_returnsConfluencePageWithPageTitleFromMetaInformation() throws Exception {
+    public void render_asciidocWithNeitherTopLevelHeaderNorTitleMetaInformation_returnsConfluencePageWithPageTitleFromMetaInformation() {
         // arrange
         String adoc = "Content";
 
@@ -144,7 +144,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoFormat() throws Exception {
+    public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoFormat() {
         // arrange
         String adocContent = "----\n" +
                 "import java.util.List;\n" +
@@ -161,7 +161,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithSourceListing_returnsConfluencePageContentWithMacroWithNameCode() throws Exception {
+    public void renderConfluencePage_asciiDocWithSourceListing_returnsConfluencePageContentWithMacroWithNameCode() {
         // arrange
         String adocContent = "[source]\n" +
                 "----\n" +
@@ -179,7 +179,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithJavaSourceListing_returnsConfluencePageContentWithMacroWithNameCodeAndParameterJava() throws Exception {
+    public void renderConfluencePage_asciiDocWithJavaSourceListing_returnsConfluencePageContentWithMacroWithNameCodeAndParameterJava() {
         // arrange
         String adocContent = "[source,java]\n" +
                 "----\n" +
@@ -198,7 +198,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithListingWithHtmlMarkup_returnsConfluencePageContentWithMacroWithoutHtmlEscape() throws Exception {
+    public void renderConfluencePage_asciiDocWithListingWithHtmlMarkup_returnsConfluencePageContentWithMacroWithoutHtmlEscape() {
         // arrange
         String adocContent = "----\n" +
                 "<b>line one</b>\n" +
@@ -216,7 +216,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithSourceListingWithHtmlContent_returnsConfluencePageContentWithoutHtmlEscape() throws Exception {
+    public void renderConfluencePage_asciiDocWithSourceListingWithHtmlContent_returnsConfluencePageContentWithoutHtmlEscape() {
         // arrange
         String adocContent = "[source]\n" +
                 "----\n" +
@@ -234,7 +234,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithSourceListingWithRegularExpressionSymbols_returnsConfluencePageContentWithRegularExpressionSymbolsEscaped() throws Exception {
+    public void renderConfluencePage_asciiDocWithSourceListingWithRegularExpressionSymbols_returnsConfluencePageContentWithRegularExpressionSymbolsEscaped() {
         // arrange
         String adocContent = "[source]\n" +
                 "----\n" +
@@ -252,7 +252,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() throws Exception {
+    public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() {
         // arrange
         String adocContent = "= Title level 0\n\n" +
                 "== Title level 1\n" +
@@ -274,7 +274,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithParagraph_returnsConfluencePageContentHavingCorrectParagraphMarkup() throws Exception {
+    public void renderConfluencePage_asciiDocWithParagraph_returnsConfluencePageContentHavingCorrectParagraphMarkup() {
         // arrange
         String adoc = "some paragraph";
 
@@ -287,7 +287,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithBoldText_returnsConfluencePageContentWithBoldMarkup() throws Exception {
+    public void renderConfluencePage_asciiDocWithBoldText_returnsConfluencePageContentWithBoldMarkup() {
         // arrange
         String adocContent = "*Bold phrase.* bold le**t**ter.";
 
@@ -300,7 +300,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithBr_returnsConfluencePageContentWithXhtml() throws Exception {
+    public void renderConfluencePage_asciiDocWithBr_returnsConfluencePageContentWithXhtml() {
         // arrange
         String adocContent = "a +\nb +\nc";
 
@@ -313,7 +313,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithItalicText_returnsConfluencePageContentWithItalicMarkup() throws Exception {
+    public void renderConfluencePage_asciiDocWithItalicText_returnsConfluencePageContentWithItalicMarkup() {
         // arrange
         String adocContent = "_Italic phrase_ italic le__t__ter.";
 
@@ -326,7 +326,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithImageWithHeightAttributeMacroWrappedInLink() throws Exception {
+    public void renderConfluencePage_asciiDocWithImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithImageWithHeightAttributeMacroWrappedInLink() {
         // arrange
         String adocContent = "image::sunset.jpg[Sunset, 300, 200, link=\"http://www.foo.ch\"]";
 
@@ -339,7 +339,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImage_returnsConfluencePageContentWithImage() throws Exception {
+    public void renderConfluencePage_asciiDocWithImage_returnsConfluencePageContentWithImage() {
         // arrange
         String adocContent = "image::sunset.jpg[]";
 
@@ -352,7 +352,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImageInDifferentFolder_returnsConfluencePageContentWithImageAttachmentFileNameOnly() throws Exception {
+    public void renderConfluencePage_asciiDocWithImageInDifferentFolder_returnsConfluencePageContentWithImageAttachmentFileNameOnly() {
         // arrange
         String adocContent = "image::sub-folder/sunset.jpg[]";
 
@@ -365,7 +365,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithoutTableWithHeader_returnsConfluencePageContentWithTableWithoutHeader() throws Exception {
+    public void renderConfluencePage_asciiDocWithoutTableWithHeader_returnsConfluencePageContentWithTableWithoutHeader() {
         // arrange
         String adocContent = "" +
                 "[cols=\"3*\"]\n" +
@@ -392,7 +392,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTableWithHeader_returnsConfluencePageContentWithTableWithHeader() throws Exception {
+    public void renderConfluencePage_asciiDocWithTableWithHeader_returnsConfluencePageContentWithTableWithHeader() {
         // arrange
         String adocContent = "" +
                 "[cols=\"3*\", options=\"header\"]\n" +
@@ -419,7 +419,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTableWithRowSpan_returnsConfluencePageWithTableWithRowSpan() throws Exception {
+    public void renderConfluencePage_asciiDocWithTableWithRowSpan_returnsConfluencePageWithTableWithRowSpan() {
         // arrange
         String adocContent = "" +
                 "[cols=\"3*\", options=\"header\"]\n" +
@@ -445,7 +445,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTableWithColSpan_returnsConfluencePageWithTableWithColSpan() throws Exception {
+    public void renderConfluencePage_asciiDocWithTableWithColSpan_returnsConfluencePageWithTableWithColSpan() {
         // arrange
         String adocContent = "" +
                 "[cols=\"3*\", options=\"header\"]\n" +
@@ -487,7 +487,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithNoteContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithNoteContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[NOTE]\n" +
                 ".Note Title\n" +
@@ -525,7 +525,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTipContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithTipContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[TIP]\n" +
                 ".Tip Title\n" +
@@ -545,7 +545,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithCautionContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+    public void renderConfluencePage_asciiDocWithCautionContent_returnsConfluencePageContentWithNoteMacroWithContent() {
         // arrange
         String adocContent = "[CAUTION]\n" +
                 "====\n" +
@@ -563,7 +563,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithCautionContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithCautionContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[CAUTION]\n" +
                 ".Caution Title\n" +
@@ -583,7 +583,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithWarningContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+    public void renderConfluencePage_asciiDocWithWarningContent_returnsConfluencePageContentWithNoteMacroWithContent() {
         // arrange
         String adocContent = "[WARNING]\n" +
                 "====\n" +
@@ -601,7 +601,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithWarningContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithWarningContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[WARNING]\n" +
                 ".Warning Title\n" +
@@ -621,7 +621,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImportantContent_returnsConfluencePageContentWithNoteMacroWithContent() throws Exception {
+    public void renderConfluencePage_asciiDocWithImportantContent_returnsConfluencePageContentWithNoteMacroWithContent() {
         // arrange
         String adocContent = "[IMPORTANT]\n" +
                 "====\n" +
@@ -639,7 +639,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImportantContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithImportantContentAndTitle_returnsConfluencePageContentWithNoteMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[IMPORTANT]\n" +
                 ".Important Title\n" +
@@ -659,7 +659,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitle() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
         AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page.adoc");
@@ -675,7 +675,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithCircularInterDocumentCrossReference_returnsConfluencePagesWithLinkToReferencedPageByPageTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithCircularInterDocumentCrossReference_returnsConfluencePagesWithLinkToReferencedPageByPageTitle() {
         // arrange
         AsciidocPage asciidocPageOne = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-one.adoc"));
         AsciidocPage asciidocPageTwo = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-two.adoc"));
@@ -690,7 +690,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithoutLinkText_returnsConfluencePageWithLinkToAttachmentAndAttachmentNameAsLinkText() throws Exception {
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithoutLinkText_returnsConfluencePageWithLinkToAttachmentAndAttachmentNameAsLinkText() {
         // arrange
         String adocContent = "link:foo.txt[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -704,7 +704,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithLinkText_returnsConfluencePageWithLinkToAttachmentAndSpecifiedLinkText() throws Exception {
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentWithLinkText_returnsConfluencePageWithLinkToAttachmentAndSpecifiedLinkText() {
         // arrange
         String adocContent = "link:foo.txt[Bar]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -718,7 +718,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithInclude_returnsConfluencePageWithContentFromIncludedPage() throws Exception {
+    public void renderConfluencePage_asciiDocWithInclude_returnsConfluencePageWithContentFromIncludedPage() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/includes");
         AsciidocPage asciidocPage = asciidocPage(rootFolder, "page.adoc");
@@ -732,7 +732,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithUtf8CharacterInTitle_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInTitle() throws Exception {
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInTitle_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInTitle() {
         try {
             // arrange
             setDefaultCharset(ISO_8859_1);
@@ -751,7 +751,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithUtf8CharacterInContent_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInContent() throws Exception {
+    public void renderConfluencePage_asciiDocWithUtf8CharacterInContent_returnsConfluencePageWithCorrectlyEncodedUtf8CharacterInContent() {
         try {
             // arrange
             setDefaultCharset(ISO_8859_1);
@@ -770,7 +770,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithLinkToAttachmentInDifferentFolder_returnsConfluencePageWithLinkToAttachmentFileNameOnly() throws Exception {
+    public void renderConfluencePage_asciiDocWithLinkToAttachmentInDifferentFolder_returnsConfluencePageWithLinkToAttachmentFileNameOnly() {
         // arrange
         String adocContent = "link:bar/foo.txt[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -784,7 +784,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithExplicitExternalLinkAndLinkText_returnsConfluencePageWithLinkToExternalPageAndSpecifiedLinkText() throws Exception {
+    public void renderConfluencePage_asciiDocWithExplicitExternalLinkAndLinkText_returnsConfluencePageWithLinkToExternalPageAndSpecifiedLinkText() {
         // arrange
         String adocContent = "link:http://www.google.com[Google]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -798,7 +798,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithExternalLinkWithoutLinkText_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() throws Exception {
+    public void renderConfluencePage_asciiDocWithExternalLinkWithoutLinkText_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() {
         // arrange
         String adocContent = "link:http://www.google.com[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -812,7 +812,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithImplicitExternalLink_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() throws Exception {
+    public void renderConfluencePage_asciiDocWithImplicitExternalLink_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() {
         // arrange
         String adocContent = "http://www.google.com";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -826,7 +826,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
+    public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() {
         // arrange
         String adocContent = "[plantuml, embedded-diagram, png]\n" +
                 "....\n" +
@@ -845,7 +845,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() throws Exception {
+    public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/plantuml");
         AsciidocPage asciidocPage = asciidocPage(rootFolder, "page.adoc");
@@ -897,7 +897,47 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() throws Exception {
+    public void renderConfluencePage_asciiDocWithInlineImage_returnsConfluencePageWithInlineImage() {
+        // arrange
+        String adocContent = "Some text image:sunset.jpg[] with inline image";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInlineImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithInlineImageWithHeightAttributeMacroWrappedInLink() {
+        // arrange
+        String adocContent = "Some text image:sunset.jpg[Sunset, 16, 20, link=\"http://www.foo.ch\"] with inline image";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><ac:image ac:height=\"20\" ac:width=\"16\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInlineImageInDifferentFolder_returnsConfluencePageContentWithInlineImageAttachmentFileNameOnly() {
+        // arrange
+        String adocContent = "Some text image:sub-folder/sunset.jpg[] with inline image";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";
 
@@ -912,7 +952,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithImageInDifferentFolder_returnsImageAsAttachmentWithPathAndFileNameOnly() throws Exception {
+    public void attachments_asciiDocWithImageInDifferentFolder_returnsImageAsAttachmentWithPathAndFileNameOnly() {
         // arrange
         String adocContent = "image::sub-folder/sunset.jpg[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -926,7 +966,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithMultipleLevelsAndImages_returnsAllAttachments() throws Exception {
+    public void attachments_asciiDocWithMultipleLevelsAndImages_returnsAllAttachments() {
         // arrange
         String adocContent = "= Title 1\n\n" +
                 "image::sunset.jpg[]\n" +
@@ -944,7 +984,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithMultipleTimesSameImage_returnsNoDuplicateAttachments() throws Exception {
+    public void attachments_asciiDocWithMultipleTimesSameImage_returnsNoDuplicateAttachments() {
         // arrange
         String adocContent = "image::sunrise.jpg[]\n" +
                 "image::sunrise.jpg[]";
@@ -959,7 +999,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithLinkToAttachment_returnsAttachmentWithPathAndName() throws Exception {
+    public void attachments_asciiDocWithLinkToAttachment_returnsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "link:foo.txt[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -973,7 +1013,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithLinkToAttachmentInDifferentFolder_returnsAttachmentWithPathAndFileNameOnly() throws Exception {
+    public void attachments_asciiDocWithLinkToAttachmentInDifferentFolder_returnsAttachmentWithPathAndFileNameOnly() {
         // arrange
         String adocContent = "link:sub-folder/foo.txt[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -987,7 +1027,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void attachments_asciiDocWithImageAndLinkToAttachment_returnsAllAttachments() throws Exception {
+    public void attachments_asciiDocWithImageAndLinkToAttachment_returnsAllAttachments() {
         // arrange
         String adocContent = "image::sunrise.jpg[]\n" +
                 "link:foo.txt[]";

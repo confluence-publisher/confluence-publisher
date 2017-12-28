@@ -46,13 +46,20 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 public class ConfluencePublisher {
 
     static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
+    static final int INITIAL_PAGE_VERSION = 1;
 
     private final ConfluencePublisherMetadata metadata;
     private final ConfluenceClient confluenceClient;
+    private final ConfluencePublisherListener confluencePublisherListener;
 
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient) {
+        this(metadata, confluenceClient, new NoOpConfluencePublisherListener());
+    }
+
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener) {
         this.metadata = metadata;
         this.confluenceClient = confluenceClient;
+        this.confluencePublisherListener = confluencePublisherListener;
     }
 
     public void publish() {
@@ -60,6 +67,7 @@ public class ConfluencePublisher {
         assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
         startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+        this.confluencePublisherListener.publishCompleted();
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
@@ -78,15 +86,15 @@ public class ConfluencePublisher {
     private void deleteConfluencePagesNotPresentUnderAncestor(List<ConfluencePageMetadata> pagesToKeep, String ancestorId) {
         List<ConfluencePage> childPagesOnConfluence = this.confluenceClient.getChildPages(ancestorId);
 
-        List<String> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
+        List<ConfluencePage> childPagesOnConfluenceToDelete = childPagesOnConfluence.stream()
                 .filter(childPageOnConfluence -> pagesToKeep.stream().noneMatch(page -> page.getTitle().equals(childPageOnConfluence.getTitle())))
-                .map(ConfluencePage::getContentId)
                 .collect(toList());
 
         childPagesOnConfluenceToDelete.forEach(pageToDelete -> {
-            List<ConfluencePage> pageScheduledForDeletionChildPagesOnConfluence = this.confluenceClient.getChildPages(pageToDelete);
-            pageScheduledForDeletionChildPagesOnConfluence.forEach(parentPageToDelete -> this.deleteConfluencePagesNotPresentUnderAncestor(emptyList(), pageToDelete));
-            this.confluenceClient.deletePage(pageToDelete);
+            List<ConfluencePage> pageScheduledForDeletionChildPagesOnConfluence = this.confluenceClient.getChildPages(pageToDelete.getContentId());
+            pageScheduledForDeletionChildPagesOnConfluence.forEach(parentPageToDelete -> this.deleteConfluencePagesNotPresentUnderAncestor(emptyList(), pageToDelete.getContentId()));
+            this.confluenceClient.deletePage(pageToDelete.getContentId());
+            this.confluencePublisherListener.pageDeleted(pageToDelete);
         });
     }
 
@@ -113,12 +121,15 @@ public class ConfluencePublisher {
 
             if (notSameContentHash(existingContentHash, newContentHash)) {
                 this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
-                this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, existingPage.getVersion() + 1);
+                int newPageVersion = existingPage.getVersion() + 1;
+                this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion);
                 this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
+                this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, newPageVersion));
             }
         } catch (NotFoundException e) {
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
             this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
+            this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
         }
 
         return contentId;
@@ -182,6 +193,27 @@ public class ConfluencePublisher {
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Could not find attachment ", e);
         }
+    }
+
+
+    private static class NoOpConfluencePublisherListener implements ConfluencePublisherListener {
+
+        @Override
+        public void pageAdded(ConfluencePage addedPage) {
+        }
+
+        @Override
+        public void pageUpdated(ConfluencePage existingPage, ConfluencePage updatedPage) {
+        }
+
+        @Override
+        public void pageDeleted(ConfluencePage deletedPage) {
+        }
+
+        @Override
+        public void publishCompleted() {
+        }
+
     }
 
 }

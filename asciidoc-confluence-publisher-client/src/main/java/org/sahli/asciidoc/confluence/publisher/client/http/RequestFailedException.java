@@ -19,6 +19,9 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
 
 /**
@@ -44,7 +47,10 @@ public class RequestFailedException extends RuntimeException {
 
     private static String failedResponseContent(HttpResponse response) {
         try {
-            return inputStreamAsString(response.getEntity().getContent());
+            InputStream content = response.getEntity().getContent();
+            Charset encoding = Charset.forName(response.getEntity().getContentEncoding().getValue());
+
+            return inputStreamAsString(content, encoding);
         } catch (Exception ignored) {
             return "";
         }

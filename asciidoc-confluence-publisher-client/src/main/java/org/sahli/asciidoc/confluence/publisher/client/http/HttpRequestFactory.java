@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.http.entity.ContentType.APPLICATION_OCTET_STREAM;
 import static org.sahli.asciidoc.confluence.publisher.client.http.HttpRequestFactory.PagePayloadBuilder.pagePayloadBuilder;
@@ -283,7 +284,7 @@ class HttpRequestFactory {
     private static BasicHttpEntity httpEntityWithJsonPayload(Object payload) {
         String jsonPayload = toJsonString(payload);
         BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes()));
+        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes(UTF_8)));
 
         return entity;
     }

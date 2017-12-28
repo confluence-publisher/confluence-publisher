@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -85,8 +86,8 @@ public class HttpRequestFactoryTest {
         assertThat(addPageUnderAncestorRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content"));
         assertThat(addPageUnderAncestorRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
 
-        String jsonPayload = inputStreamAsString(addPageUnderAncestorRequest.getEntity().getContent());
-        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-ancestor-id.json").toString());
+        String jsonPayload = inputStreamAsString(addPageUnderAncestorRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-ancestor-id.json").toString(), UTF_8);
         assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
@@ -127,8 +128,8 @@ public class HttpRequestFactoryTest {
         assertThat(updatePageRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId));
         assertThat(updatePageRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
 
-        String jsonPayload = inputStreamAsString(updatePageRequest.getEntity().getContent());
-        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request.json").toString());
+        String jsonPayload = inputStreamAsString(updatePageRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request.json").toString(), UTF_8);
         assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
@@ -573,8 +574,8 @@ public class HttpRequestFactoryTest {
         assertThat(setPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property"));
         assertThat(setPropertyByKeyRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
 
-        String jsonPayload = inputStreamAsString(setPropertyByKeyRequest.getEntity().getContent());
-        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "set-property-by-key-request-payload.json").toString());
+        String jsonPayload = inputStreamAsString(setPropertyByKeyRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "set-property-by-key-request-payload.json").toString(), UTF_8);
         assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 

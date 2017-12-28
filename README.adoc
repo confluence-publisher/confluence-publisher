@@ -13,4 +13,4 @@ publication is again re-published.
 
 == Documentation
 
-The documentation of the current release version is published to https://confluence-publisher.atlassian.net/wiki/spaces/CPD[].
+The documentation of the current release version is published to https://confluence-publisher.atlassian.net/[].

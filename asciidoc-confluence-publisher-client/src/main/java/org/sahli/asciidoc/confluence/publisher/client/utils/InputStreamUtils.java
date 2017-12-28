@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
 /**
@@ -33,17 +34,17 @@ public final class InputStreamUtils {
         throw new UnsupportedOperationException("Utils class cannot be instantiated");
     }
 
-    public static String inputStreamAsString(InputStream is) {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is))) {
+    public static String inputStreamAsString(InputStream is, Charset encoding) {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is, encoding))) {
             return buffer.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             throw new RuntimeException("Could not convert InputStream to String ", e);
         }
     }
 
-    public static String fileContent(String filePath) {
+    public static String fileContent(String filePath, Charset encoding) {
         try (FileInputStream fileInputStream = new FileInputStream(new File(filePath))) {
-            return inputStreamAsString(fileInputStream);
+            return inputStreamAsString(fileInputStream, encoding);
         } catch (IOException e) {
             throw new RuntimeException("Could not read file", e);
         }

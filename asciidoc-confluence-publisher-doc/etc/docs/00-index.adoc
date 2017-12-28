@@ -47,9 +47,9 @@ is used to derive the page hierarchy in Confluence.
     +- ...
 ----
 
-AsciiDoc files are expected to be encoded in UTF-8. Resources like images, PlantUML files, other attachment types and
-include files can be placed in any location within the documentation root folder. See
-<<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>> and
+AsciiDoc files are expected to be encoded in UTF-8, unless explicitly configured to a different encoding. Resources like
+images, PlantUML files, other attachment types and include files can be placed in any location within the documentation
+root folder. See <<00-index/02-includes.adoc#, Includes>>, <<00-index/06-images.adoc#, Images>> and
 <<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource file path resolution.
 
 [NOTE]
@@ -74,6 +74,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
       <version><!-- insert version here --></version>
       <configuration>
         <asciidocRootFolder>etc/docs</asciidocRootFolder>
+        <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
         <spaceKey>SPACE</spaceKey>
         <ancestorId>327706</ancestorId>
@@ -92,6 +93,9 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | asciidocRootFolder
 | The documentation root folder with the AsciiDoc file structure.
+
+| sourceEncoding
+| The encoding of the AsciiDoc files (optional, defaults to UTF-8).
 
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.

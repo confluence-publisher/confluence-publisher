@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
@@ -74,7 +75,7 @@ public class ConfluencePublisher {
         deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
 
         pages.forEach(page -> {
-            String content = fileContent(page.getContentFilePath());
+            String content = fileContent(page.getContentFilePath(), UTF_8);
             String contentId = addOrUpdatePage(spaceKey, ancestorId, page, content);
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());

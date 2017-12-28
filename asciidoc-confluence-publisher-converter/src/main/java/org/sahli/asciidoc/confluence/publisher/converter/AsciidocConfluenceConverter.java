@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -77,7 +78,8 @@ public final class AsciidocConfluenceConverter {
 
             AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
             List<AsciidocPage> asciidocPages = structure.pages();
-            List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, pageTitlePostProcessor);
+            Charset sourceEncoding = asciidocPagesStructureProvider.sourceEncoding();
+            List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, sourceEncoding, pageTitlePostProcessor);
 
             ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
             confluencePublisherMetadata.setSpaceKey(this.spaceKey);
@@ -90,7 +92,7 @@ public final class AsciidocConfluenceConverter {
         }
     }
 
-    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages, PageTitlePostProcessor pageTitlePostProcessor) {
+    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor) {
         List<ConfluencePageMetadata> confluencePages = new ArrayList<>();
 
         asciidocPages.forEach((asciidocPage) -> {
@@ -98,13 +100,13 @@ public final class AsciidocConfluenceConverter {
                 Path pageAssetsFolder = determinePageAssetsFolder(assetsRootFolder, asciidocPage);
                 createDirectories(pageAssetsFolder);
 
-                AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, templatesRootFolder, pageAssetsFolder, pageTitlePostProcessor);
+                AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesRootFolder, pageAssetsFolder, pageTitlePostProcessor);
                 Path contentFileTargetPath = writeToTargetStructure(asciidocPage, pageAssetsFolder, asciidocConfluencePage);
 
                 List<AttachmentMetadata> attachments = buildAttachments(asciidocPage, pageAssetsFolder, asciidocConfluencePage.attachments());
                 copyAttachmentsAvailableInSourceStructureToTargetStructure(attachments);
 
-                List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children(), pageTitlePostProcessor);
+                List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children(), sourceEncoding, pageTitlePostProcessor);
                 ConfluencePageMetadata confluencePageMetadata = buildConfluencePageMetadata(asciidocConfluencePage, contentFileTargetPath, childConfluencePages, attachments);
 
                 confluencePages.add(confluencePageMetadata);
@@ -213,7 +215,7 @@ public final class AsciidocConfluenceConverter {
     }
 
     private static void withTemplatesFromFileSystem(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
-        list(Paths.get(templatePathUri)).forEach((template) -> templateConsumer.accept(template));
+        list(Paths.get(templatePathUri)).forEach(templateConsumer);
     }
 
     private static void withTemplatesFromJar(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
@@ -221,7 +223,7 @@ public final class AsciidocConfluenceConverter {
 
         try (FileSystem jarFileSystem = newFileSystem(jarFileUri, emptyMap())) {
             Path templateRootFolder = jarFileSystem.getPath("/" + TEMPLATE_ROOT_CLASS_PATH_LOCATION);
-            list(templateRootFolder).forEach((template) -> templateConsumer.accept(template));
+            list(templateRootFolder).forEach(templateConsumer);
         }
     }
 

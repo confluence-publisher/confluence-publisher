@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
@@ -240,7 +242,7 @@ public class ConfluenceRestClientTest {
     public void getPageById_withExistingContentId_returnsPageContent() throws Exception {
         // arrange
         String responseFilePath = "src/test/resources/org/sahli/asciidoc/confluence/publisher/client/http/page-content.json";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode(fileContent(responseFilePath), 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode(fileContent(responseFilePath, UTF_8), 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
@@ -486,7 +488,7 @@ public class ConfluenceRestClientTest {
         InputStream attachmentContent = confluenceRestClient.getAttachmentContent("/download/file.txt?v=2");
 
         // assert
-        assertThat(inputStreamAsString(attachmentContent), is("Attachment content"));
+        assertThat(inputStreamAsString(attachmentContent, UTF_8), is("Attachment content"));
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {
@@ -538,6 +540,7 @@ public class ConfluenceRestClientTest {
         HttpEntity httpEntityMock = mock(HttpEntity.class);
         try {
             when(httpEntityMock.getContent()).thenReturn(new ByteArrayInputStream(content.getBytes()));
+            when(httpEntityMock.getContentEncoding()).thenReturn(new BasicHeader("Content-Encoding", "UTF-8"));
         } catch (IOException e) {
             fail(e.getMessage());
         }

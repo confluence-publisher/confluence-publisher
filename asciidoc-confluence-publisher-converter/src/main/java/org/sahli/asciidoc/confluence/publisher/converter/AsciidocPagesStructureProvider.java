@@ -16,12 +16,15 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
 public interface AsciidocPagesStructureProvider {
 
     AsciidocPagesStructure structure();
+
+    Charset sourceEncoding();
 
 
     interface AsciidocPagesStructure {

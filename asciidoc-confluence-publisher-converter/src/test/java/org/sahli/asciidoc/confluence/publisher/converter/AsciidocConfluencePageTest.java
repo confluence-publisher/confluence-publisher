@@ -911,6 +911,32 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInlineImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithInlineImageWithHeightAttributeMacroWrappedInLink() {
+        // arrange
+        String adocContent = "Some text image:sunset.jpg[Sunset, 16, 20, link=\"http://www.foo.ch\"] with inline image";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><ac:image ac:height=\"20\" ac:width=\"16\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInlineImageInDifferentFolder_returnsConfluencePageContentWithInlineImageAttachmentFileNameOnly() {
+        // arrange
+        String adocContent = "Some text image:sub-folder/sunset.jpg[] with inline image";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

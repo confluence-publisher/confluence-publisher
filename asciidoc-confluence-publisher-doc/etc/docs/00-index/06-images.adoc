@@ -12,6 +12,8 @@ image::../images/frisbee.png[]
 image::../images/frisbee.png[]
 
 
+== Image Size
+
 In addition, width and/or height can be specified explicitly and are respected when inserting the image into the
 Confluence page:
 
@@ -29,6 +31,31 @@ image::../images/frisbee.png[height=75]
 ....
 
 image::../images/frisbee.png[height=75]
+
+
+== Inline Images
+
+Inline images are supported as well:
+
+[listing]
+....
+This line has an inline image image:../images/frisbee.png[width=16, height=16].
+....
+
+This line has an inline image image:../images/frisbee.png[width=16, height=16] within a text block.
+
+
+== Links
+
+All images (block and inline) can have an external link:
+
+[listing]
+....
+This image has a link image:../images/frisbee.png[width=16, height=16, link=https://en.wikipedia.org/wiki/Frisbee].
+....
+
+This image has a link image:../images/frisbee.png[width=16, height=16, link=https://en.wikipedia.org/wiki/Frisbee].
+
 
 [WARNING]
 ====

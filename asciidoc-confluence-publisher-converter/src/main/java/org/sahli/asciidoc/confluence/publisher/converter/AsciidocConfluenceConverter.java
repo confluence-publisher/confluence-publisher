@@ -215,7 +215,7 @@ public final class AsciidocConfluenceConverter {
     }
 
     private static void withTemplatesFromFileSystem(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
-        list(Paths.get(templatePathUri)).forEach((template) -> templateConsumer.accept(template));
+        list(Paths.get(templatePathUri)).forEach(templateConsumer);
     }
 
     private static void withTemplatesFromJar(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
@@ -223,7 +223,7 @@ public final class AsciidocConfluenceConverter {
 
         try (FileSystem jarFileSystem = newFileSystem(jarFileUri, emptyMap())) {
             Path templateRootFolder = jarFileSystem.getPath("/" + TEMPLATE_ROOT_CLASS_PATH_LOCATION);
-            list(templateRootFolder).forEach((template) -> templateConsumer.accept(template));
+            list(templateRootFolder).forEach(templateConsumer);
         }
     }
 

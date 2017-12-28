@@ -2,9 +2,9 @@
 
 AsciiDoc admonitions are converted to info, note or warning blocks in Confluence.
 
-== Notes / Tips
+== Notes
 
-Notes and tips are displayed using the "info" macro.
+Notes are displayed using the "info" macro.
 
 [listing]
 ....
@@ -17,6 +17,24 @@ this is a note
 [NOTE]
 ====
 this is a note
+====
+
+
+== Tips
+
+Tips are displayed using the "tip" macro.
+
+[listing]
+....
+[TIP]
+====
+this is a tip
+====
+....
+
+[TIP]
+====
+this is a tip
 ====
 
 

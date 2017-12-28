@@ -507,7 +507,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTipContent_returnsConfluencePageContentWithInfoMacroWithContent() {
+    public void renderConfluencePage_asciiDocWithTipContent_returnsConfluencePageContentWithTipMacroWithContent() {
         // arrange
         String adocContent = "[TIP]\n" +
                 "====\n" +
@@ -518,14 +518,14 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+        String expectedContent = "<ac:structured-macro ac:name=\"tip\">" +
                 "<ac:rich-text-body><p>Some tip.</p></ac:rich-text-body>" +
                 "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTipContentAndTitle_returnsConfluencePageContentWithInfoMacroWithContentAndTitle() {
+    public void renderConfluencePage_asciiDocWithTipContentAndTitle_returnsConfluencePageContentWithTipMacroWithContentAndTitle() {
         // arrange
         String adocContent = "[TIP]\n" +
                 ".Tip Title\n" +
@@ -537,7 +537,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:structured-macro ac:name=\"info\">" +
+        String expectedContent = "<ac:structured-macro ac:name=\"tip\">" +
                 "<ac:parameter ac:name=\"title\">Tip Title</ac:parameter>" +
                 "<ac:rich-text-body><p>Some tip.</p></ac:rich-text-body>" +
                 "</ac:structured-macro>";

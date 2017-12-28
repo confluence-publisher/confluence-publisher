@@ -56,12 +56,12 @@ public class HttpRequestFactoryTest {
     private HttpRequestFactory httpRequestFactory;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         this.httpRequestFactory = new HttpRequestFactory(ROOT_CONFLUENCE_URL);
     }
 
     @Test
-    public void instantiation_withEmptyConfluenceRestApiEndpoint_throwsIllegalArgumentException() throws Exception {
+    public void instantiation_withEmptyConfluenceRestApiEndpoint_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("rootConfluenceUrl must be set");
@@ -92,7 +92,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void addPageUnderAncestorRequest_withBlankTitle_throwsIllegalArgumentException() throws Exception {
+    public void addPageUnderAncestorRequest_withBlankTitle_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("title must be set");
@@ -102,7 +102,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void addPageUnderAncestorRequest_withoutAncestorId_throwsIllegalArgumentException() throws Exception {
+    public void addPageUnderAncestorRequest_withoutAncestorId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("ancestorId must be set");
@@ -134,7 +134,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updatePageRequest_withEmptyContentId_throwsIllegalArgumentException() throws Exception {
+    public void updatePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("contentId must be set");
@@ -144,7 +144,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updatePageRequest_withEmptyAncestorId_throwsIllegalArgumentException() throws Exception {
+    public void updatePageRequest_withEmptyAncestorId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("ancestorId must be set");
@@ -154,7 +154,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updatePageRequest_withEmptyTitle_throwsIllegalArgumentException() throws Exception {
+    public void updatePageRequest_withEmptyTitle_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("title must be set");
@@ -164,7 +164,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void deletePageRequest_withValidParameters_returnsValidHttpDeleteRequest() throws Exception {
+    public void deletePageRequest_withValidParameters_returnsValidHttpDeleteRequest() {
         // arrange
         String contentId = "1234";
 
@@ -177,7 +177,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void deletePageRequest_withEmptyContentId_throwsIllegalArgumentException() throws Exception {
+    public void deletePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("contentId must be set");
@@ -209,7 +209,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void addAttachmentRequest_withEmptyContentId_throwsIllegalArgumentException() throws Exception {
+    public void addAttachmentRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("contentId must be set");
@@ -219,7 +219,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void addAttachmentRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() throws Exception {
+    public void addAttachmentRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentFileName");
@@ -229,7 +229,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void addAttachmentRequest_withNullAttachmentContent_throwsIllegalArgumentException() throws Exception {
+    public void addAttachmentRequest_withNullAttachmentContent_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentContent");
@@ -260,7 +260,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withEmptyContentId_throwsIllegalArgumentException() throws Exception {
+    public void updateAttachmentContentRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("contentId must be set");
@@ -270,7 +270,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() throws Exception {
+    public void updateAttachmentContentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentId must be set");
@@ -280,7 +280,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withNullAttachmentContent_throwsIllegalArgumentException() throws Exception {
+    public void updateAttachmentContentRequest_withNullAttachmentContent_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentContent");
@@ -290,7 +290,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void deleteAttachmentRequest_withValidParameters_returnsValidHttpDelete() throws Exception {
+    public void deleteAttachmentRequest_withValidParameters_returnsValidHttpDelete() {
         // arrange
         String attachmentId = "att1234";
 
@@ -303,7 +303,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void deleteAttachmentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() throws Exception {
+    public void deleteAttachmentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentId must be set");
@@ -313,7 +313,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getPageByTitleRequest_withValidParameters_returnsValidHttpGet() throws Exception {
+    public void getPageByTitleRequest_withValidParameters_returnsValidHttpGet() {
         // arrange
         String spaceKey = "~personalSpace";
         String title = "Some page";
@@ -328,7 +328,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getPageByTitleRequest_withEmptySpaceKey_throwsIllegalArgumentException() throws Exception {
+    public void getPageByTitleRequest_withEmptySpaceKey_throwsIllegalArgumentException() {
         // arrange
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("spaceKey must be set");
@@ -338,7 +338,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getPageByTitleRequest_withEmptyTitle_throwsIllegalArgumentException() throws Exception {
+    public void getPageByTitleRequest_withEmptyTitle_throwsIllegalArgumentException() {
         // arrange
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("title must be set");
@@ -348,7 +348,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentByFileNameRequest_withMinimalParameters_returnsValidHttpGet() throws Exception {
+    public void getAttachmentByFileNameRequest_withMinimalParameters_returnsValidHttpGet() {
         // arrange
         String contentId = "1234";
         String attachmentFileName = "file.txt";
@@ -361,7 +361,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentByFileNameRequest_withExpandOptions_returnsValidHttpGetWithExpandOptions() throws Exception {
+    public void getAttachmentByFileNameRequest_withExpandOptions_returnsValidHttpGetWithExpandOptions() {
         // arrange
         String contentId = "1234";
         String attachmentFileName = "file.txt";
@@ -376,7 +376,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentByFileNameRequest_withEmptyContentId_throwsIllegalArgumentException() throws Exception {
+    public void getAttachmentByFileNameRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("contentId must be set");
@@ -386,7 +386,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentByFileNameRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() throws Exception {
+    public void getAttachmentByFileNameRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("attachmentFileName must be set");
@@ -396,7 +396,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getPageByIdRequest_withValidParameter_returnsValidHttpGet() throws Exception {
+    public void getPageByIdRequest_withValidParameter_returnsValidHttpGet() {
         // arrange
         String contentId = "1234";
 
@@ -408,7 +408,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withMinimalParameters_returnsValidHttpGet() throws Exception {
+    public void getChildPagesByIdRequest_withMinimalParameters_returnsValidHttpGet() {
         // arrange
         String parentContentId = "1234";
 
@@ -420,7 +420,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withBlankParentContentId_throwsIllegalArgumentException() throws Exception {
+    public void getChildPagesByIdRequest_withBlankParentContentId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("parentContentId must be set");
@@ -430,7 +430,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withLimit_returnsHttpGetWithLimit() throws Exception {
+    public void getChildPagesByIdRequest_withLimit_returnsHttpGetWithLimit() {
         // arrange
         String parentContentId = "1234";
         int limit = 5;
@@ -443,7 +443,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withPageNumber_returnsHttpGetWithLimit() throws Exception {
+    public void getChildPagesByIdRequest_withPageNumber_returnsHttpGetWithLimit() {
         // arrange
         String parentContentId = "1234";
         int start = 5;
@@ -456,7 +456,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withExpandOptions_returnsHttpGetWithExpandOption() throws Exception {
+    public void getChildPagesByIdRequest_withExpandOptions_returnsHttpGetWithExpandOption() {
         // arrange
         String parentContentId = "1234";
         String expandOptions = "version";
@@ -469,7 +469,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getChildPagesByIdRequest_withLimitAndPageNumber_returnsHttpGetWithPageNumberAndLimit() throws Exception {
+    public void getChildPagesByIdRequest_withLimitAndPageNumber_returnsHttpGetWithPageNumberAndLimit() {
         // arrange
         String parentContentId = "1234";
         int limit = 10;
@@ -484,7 +484,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentsRequest_withMinimalParameters_returnsValidHttpGetRequest() throws Exception {
+    public void getAttachmentsRequest_withMinimalParameters_returnsValidHttpGetRequest() {
         // arrange
         String contentId = "1234";
 
@@ -496,7 +496,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentsRequest_withLimit_returnsHttpGetWithLimit() throws Exception {
+    public void getAttachmentsRequest_withLimit_returnsHttpGetWithLimit() {
         // arrange
         String contentId = "1234";
         int limit = 5;
@@ -509,7 +509,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentsRequest_withPageNumber_returnsHttpGetWithPage() throws Exception {
+    public void getAttachmentsRequest_withPageNumber_returnsHttpGetWithPage() {
         // arrange
         String contentId = "1234";
         int start = 1;
@@ -522,7 +522,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentsRequest_withLimitAndPageNumberAndExpandOptions_returnsHttpGetWithLimitAndPage() throws Exception {
+    public void getAttachmentsRequest_withLimitAndPageNumberAndExpandOptions_returnsHttpGetWithLimitAndPage() {
         // arrange
         String contentId = "1234";
         int limit = 5;
@@ -539,7 +539,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentContentRequest_withValidParameters_returnsHttpGetRequest() throws Exception {
+    public void getAttachmentContentRequest_withValidParameters_returnsHttpGetRequest() {
         // arrange
         String relativeDownloadLink = "/download/attachment.txt";
 
@@ -551,7 +551,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() throws Exception {
+    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("relativeDownloadLink must be set");
@@ -593,7 +593,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void deletePropertyByKeyRequest_withValidParameters_returnsHttpDeleteRequest() throws Exception {
+    public void deletePropertyByKeyRequest_withValidParameters_returnsHttpDeleteRequest() {
         // arrange
         String contentId = "1234";
         String key = "content-hash";

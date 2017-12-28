@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -39,7 +40,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.newInputStream;
@@ -91,19 +91,19 @@ public class AsciidocConfluencePage {
         return unmodifiableMap(this.attachments);
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder) {
-        return newAsciidocConfluencePage(asciidocPage, templatesDir, pageAssetsFolder, new NoOpPageTitlePostProcessor());
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder) {
+        return newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesDir, pageAssetsFolder, new NoOpPageTitlePostProcessor());
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor) {
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor) {
         try {
             Path asciidocPagePath = asciidocPage.path();
-            String asciidocContent = readIntoString(newInputStream(asciidocPagePath));
+            String asciidocContent = readIntoString(newInputStream(asciidocPagePath), sourceEncoding);
 
             Map<String, String> attachmentCollector = new HashMap<>();
 
             Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
-            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor);
+            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor, sourceEncoding);
 
             String pageTitle = pageTitle(asciidocContent, pageTitlePostProcessor);
 
@@ -117,10 +117,10 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, PageTitlePostProcessor pageTitlePostProcessor) {
+    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
         String content = ASCIIDOCTOR.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
-                replaceCrossReferenceTargets(pagePath, pageTitlePostProcessor),
+                replaceCrossReferenceTargets(pagePath, pageTitlePostProcessor, sourceEncoding),
                 collectAndReplaceAttachmentFileNames(attachmentCollector),
                 unescapeCdataHtmlContent()
         );
@@ -190,13 +190,13 @@ public class AsciidocConfluencePage {
                 .get();
     }
 
-    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, PageTitlePostProcessor pageTitlePostProcessor) {
+    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
-                String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()));
+                String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()), sourceEncoding);
                 String referencedPageTitle = pageTitle(referencedPageContent, pageTitlePostProcessor);
 
                 return "<ri:page ri:content-title=\"" + referencedPageTitle + "\"";
@@ -210,9 +210,9 @@ public class AsciidocConfluencePage {
         return (a, b) -> a;
     }
 
-    private static String readIntoString(InputStream input) {
+    private static String readIntoString(InputStream input, Charset encoding) {
         try {
-            try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, UTF_8))) {
+            try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, encoding))) {
                 return buffer.lines().collect(joining("\n"));
             }
         } catch (IOException e) {

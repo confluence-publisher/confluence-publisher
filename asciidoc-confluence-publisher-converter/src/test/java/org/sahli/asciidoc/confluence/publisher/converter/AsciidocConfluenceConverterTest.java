@@ -25,6 +25,7 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublish
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -47,7 +48,7 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
@@ -86,7 +87,7 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("(Doc) ", " (1.0)");
 
         // act
@@ -108,7 +109,7 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder);
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
 
         // act

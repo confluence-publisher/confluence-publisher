@@ -16,27 +16,27 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import java.nio.file.Path;
-import java.util.List;
+import java.util.Optional;
 
-public interface AsciidocPagesStructureProvider {
+/**
+ * @author Christian Stettler
+ */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+public class PrefixAndSuffixPageTitlePostProcessor implements PageTitlePostProcessor {
 
-    AsciidocPagesStructure structure();
+    private final Optional<String> prefix;
+    private final Optional<String> suffix;
 
-
-    interface AsciidocPagesStructure {
-
-        List<AsciidocPage> pages();
-
+    public PrefixAndSuffixPageTitlePostProcessor(String prefix, String suffix) {
+        this.prefix = Optional.ofNullable(prefix);
+        this.suffix = Optional.ofNullable(suffix);
     }
 
-
-    interface AsciidocPage {
-
-        Path path();
-
-        List<AsciidocPage> children();
-
+    @Override
+    public String process(String pageTitle) {
+        return this.prefix.orElse("")
+                .concat(pageTitle)
+                .concat(this.suffix.orElse(""));
     }
 
 }

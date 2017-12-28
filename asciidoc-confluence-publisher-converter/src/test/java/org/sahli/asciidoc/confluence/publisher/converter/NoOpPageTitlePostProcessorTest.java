@@ -14,35 +14,28 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.client.http.payloads;
+package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
+import org.junit.Test;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
- * @author Alain Sahli
  * @author Christian Stettler
  */
-public class PropertyPayload {
+public class NoOpPageTitlePostProcessorTest {
 
-    private String key;
-    private String value;
+    @Test
+    public void process_default_doesNotModifyPageTitle() throws Exception {
+        // arrange
+        NoOpPageTitlePostProcessor noOpPageTitlePostProcessor = new NoOpPageTitlePostProcessor();
 
-    @RuntimeUse
-    public String getKey() {
-        return key;
-    }
+        // act
+        String pageTitle = noOpPageTitlePostProcessor.process("page-title");
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    @RuntimeUse
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+        // assert
+        assertThat(pageTitle, is("page-title"));
     }
 
 }

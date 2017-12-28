@@ -79,6 +79,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
         <password>password</password> <!-- or read from property -->
+        <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
+        <pageTitleSuffix xml:space="preserve"> [1.0]</pageTitleSuffix>
       </configuration>
     </plugin>
   </plugins>
@@ -108,6 +110,18 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | password
 | The password of the user to use for publishing.
+
+| pageTitlePrefix
+| The prefix to be prepended to every page title (optional).
+
+  Note: in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
+  has to be added to the `pageTitlePrefix` element.
+
+| pageTitleSuffix
+| The suffix to be appended to every page title (optional).
+
+  Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
+  has to be added to the `pageTitleSuffix` element.
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin

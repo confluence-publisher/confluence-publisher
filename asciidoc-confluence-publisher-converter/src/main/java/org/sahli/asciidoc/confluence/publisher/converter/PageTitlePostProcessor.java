@@ -14,35 +14,13 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.client.http.payloads;
-
-import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
+package org.sahli.asciidoc.confluence.publisher.converter;
 
 /**
- * @author Alain Sahli
  * @author Christian Stettler
  */
-public class PropertyPayload {
+public interface PageTitlePostProcessor {
 
-    private String key;
-    private String value;
-
-    @RuntimeUse
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    @RuntimeUse
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
+    String process(String pageTitle);
 
 }

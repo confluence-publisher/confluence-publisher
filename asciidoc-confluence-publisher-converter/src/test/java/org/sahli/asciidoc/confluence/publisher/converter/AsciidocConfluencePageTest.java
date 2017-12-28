@@ -45,6 +45,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 
 /**
@@ -96,6 +98,36 @@ public class AsciidocConfluencePageTest {
 
         // assert
         assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (meta)"));
+    }
+
+    @Test
+    public void render_asciidocWithTopLevelHeaderAndMetaInformationAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitleFromTitleMetaInformation() throws Exception {
+        // arrange
+        String adoc = ":title: Page title (meta)\n" +
+                "= Page Title (header)";
+
+        PageTitlePostProcessor pageTitlePostProcessor = mock(PageTitlePostProcessor.class);
+        when(pageTitlePostProcessor.process("Page title (meta)")).thenReturn("Post-Processed Page Title");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), TEMPLATES_FOLDER, dummyAssetsTargetPath(), pageTitlePostProcessor);
+
+        // assert
+        assertThat(asciidocConfluencePage.pageTitle(), is("Post-Processed Page Title"));
+    }
+
+    @Test
+    public void render_asciidocWithPageTitleAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitle() throws Exception {
+        // arrange
+        String adoc = "= Page Title";
+        PageTitlePostProcessor pageTitlePostProcessor = mock(PageTitlePostProcessor.class);
+        when(pageTitlePostProcessor.process("Page Title")).thenReturn("Post-Processed Page Title");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), TEMPLATES_FOLDER, dummyAssetsTargetPath(), pageTitlePostProcessor);
+
+        // assert
+        assertThat(asciidocConfluencePage.pageTitle(), is("Post-Processed Page Title"));
     }
 
     @Test
@@ -197,6 +229,24 @@ public class AsciidocConfluencePageTest {
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
                 "<ac:plain-text-body><![CDATA[<b>content with html</b>]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithRegularExpressionSymbols_returnsConfluencePageContentWithRegularExpressionSymbolsEscaped() throws Exception {
+        // arrange
+        String adocContent = "[source]\n" +
+                "----\n" +
+                "[0-9][0-9]\\.[0-9][0-9]\\.[0-9]{4}$\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:plain-text-body><![CDATA[[0-9][0-9]\\.[0-9][0-9]\\.[0-9]{4}$]]></ac:plain-text-body>" +
                 "</ac:structured-macro>";
         assertThat(asciiDocConfluencePage.content(), is(expectedContent));
     }

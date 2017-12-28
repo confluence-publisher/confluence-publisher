@@ -13,7 +13,7 @@ Include files must be prefixed with an underscore.
 
 [listing]
 ....
-\include::_included-page.adoc[]
-\include::includes/_included-page.adoc[]
-\include::../includes/_included-page.adoc[]
+\include::_included-content.adoc[]
 ....
+
+include::_included-content.adoc[]

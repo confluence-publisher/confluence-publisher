@@ -4,8 +4,7 @@ AsciiDoc files can include other AsciiDoc files. Included AsciiDoc files do not 
 instead get included in the corresponding referencing page. This allows for structuring the AsciiDoc files without
 impacting the resulting Confluence page tree.
 
-Included AsciiDoc files are resolved relative to the location of the referencing AsciiDoc file and may reside in any
-directory within the configured documentation content root.
+Included AsciiDoc files are resolved relative to the location of the referencing AsciiDoc file.
 
 [NOTE]
 ====
@@ -14,7 +13,7 @@ Include files must be prefixed with an underscore.
 
 [listing]
 ....
-\include::_included-page.adoc[]
-\include::includes/_included-page.adoc[]
-\include::../includes/_included-page.adoc[]
+\include::_included-content.adoc[]
 ....
+
+include::_included-content.adoc[]

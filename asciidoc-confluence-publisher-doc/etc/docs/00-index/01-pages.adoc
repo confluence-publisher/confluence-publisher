@@ -15,7 +15,7 @@ documentation is published to. The AsciiDoc file name itself is not reflected in
 
 Links between pages in Confluence are supported using AsciiDoc inter-document cross references. Target pages are
 referenced via the path to the corresponding AsciiDoc file. Paths are resolved relative to the location of the
-referencing AsciiDoc file.
+referencing AsciiDoc file. All referenced AsciiDoc files must be placed below the documentation root folder.
 
 [listing]
 ....

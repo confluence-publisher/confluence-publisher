@@ -66,6 +66,7 @@
     </properties>
 
     <modules>
+        <module>asciidoc-confluence-publisher-cli</module>
         <module>asciidoc-confluence-publisher-client</module>
         <module>asciidoc-confluence-publisher-converter</module>
         <module>asciidoc-confluence-publisher-doc</module>
@@ -75,6 +76,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+                <artifactId>asciidoc-confluence-publisher-cli</artifactId>
+                <version>${project.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <dependency>
                 <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
                 <artifactId>asciidoc-confluence-publisher-client</artifactId>

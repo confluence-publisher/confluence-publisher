@@ -69,7 +69,7 @@ public class ConfluenceRestClientTest {
     public final ExpectedException expectedException = none();
 
     @Test
-    public void instantiation_withEmptyRootConfluenceUrl_throwsIllegalArgumentException() throws Exception {
+    public void instantiation_withEmptyRootConfluenceUrl_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("rootConfluenceUrl must be set");
@@ -79,7 +79,7 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void instantiation_withNullHttpClient_throwsIllegalArgumentException() throws Exception {
+    public void instantiation_withNullHttpClient_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("httpClient must be set");

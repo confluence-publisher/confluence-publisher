@@ -27,7 +27,7 @@ import static org.junit.Assert.assertThat;
 public class PrefixAndSuffixPageTitlePostProcessorTest {
 
     @Test
-    public void process_pageTitlePostProcessorWithPrefixAndSuffix_returnsPageTitleWithPrefixAndSuffix() throws Exception {
+    public void process_pageTitlePostProcessorWithPrefixAndSuffix_returnsPageTitleWithPrefixAndSuffix() {
         // arrange
         PrefixAndSuffixPageTitlePostProcessor prefixAndSuffixPageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("prefix-", "-suffix");
 
@@ -39,7 +39,7 @@ public class PrefixAndSuffixPageTitlePostProcessorTest {
     }
 
     @Test
-    public void process_pageTitlePostProcessorWithOnlyPrefix_returnsPageTitleWithPrefix() throws Exception {
+    public void process_pageTitlePostProcessorWithOnlyPrefix_returnsPageTitleWithPrefix() {
         // arrange
         PrefixAndSuffixPageTitlePostProcessor prefixAndSuffixPageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("prefix-", null);
 
@@ -51,7 +51,7 @@ public class PrefixAndSuffixPageTitlePostProcessorTest {
     }
 
     @Test
-    public void process_pageTitlePostProcessorWithOnlySuffix_returnsPageTitleWithSuffix() throws Exception {
+    public void process_pageTitlePostProcessorWithOnlySuffix_returnsPageTitleWithSuffix() {
         // arrange
         PrefixAndSuffixPageTitlePostProcessor prefixAndSuffixPageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(null, "-suffix");
 
@@ -63,7 +63,7 @@ public class PrefixAndSuffixPageTitlePostProcessorTest {
     }
 
     @Test
-    public void process_pageTitlePostProcessorWithoutPrefixAndSuffix_returnsPageTitleWithoutPrefixOrSuffix() throws Exception {
+    public void process_pageTitlePostProcessorWithoutPrefixAndSuffix_returnsPageTitleWithoutPrefixOrSuffix() {
         // arrange
         PrefixAndSuffixPageTitlePostProcessor prefixAndSuffixPageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(null, null);
 

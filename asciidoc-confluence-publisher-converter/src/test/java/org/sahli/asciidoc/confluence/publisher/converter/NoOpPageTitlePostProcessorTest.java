@@ -27,7 +27,7 @@ import static org.junit.Assert.assertThat;
 public class NoOpPageTitlePostProcessorTest {
 
     @Test
-    public void process_default_doesNotModifyPageTitle() throws Exception {
+    public void process_default_doesNotModifyPageTitle() {
         // arrange
         NoOpPageTitlePostProcessor noOpPageTitlePostProcessor = new NoOpPageTitlePostProcessor();
 

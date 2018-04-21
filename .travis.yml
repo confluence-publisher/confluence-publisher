@@ -22,7 +22,7 @@ script:
   - if ( [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ); then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
   - if ( [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] ); then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
   - if ( [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] ) || [ -n "$TRAVIS_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi
-  - ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+  - if [ -n "$TRAVIS_TAG" ]; then ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
 
 before_cache:
   - rm -rf $HOME/.m2/repository/org/sahli/asciidoc/confluence/publisher

@@ -60,7 +60,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     @Test
-    public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() throws Exception {
+    public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() {
         // arrange
         String title = uniqueTitle("Single Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
@@ -78,7 +78,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     @Test
-    public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() throws Exception {
+    public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() {
         // arrange
         String title = uniqueTitle("Invalid Markup Test Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));

@@ -70,7 +70,7 @@ public class ConfluencePublisherTest {
     public final ExpectedException expectedException = none();
 
     @Test
-    public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() throws Exception {
+    public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("spaceKey must be set");
@@ -82,7 +82,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_withMetadataMissingAncestorId_throwsIllegalArgumentException() throws Exception {
+    public void publish_withMetadataMissingAncestorId_throwsIllegalArgumentException() {
         // assert
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("ancestorId must be set");
@@ -94,7 +94,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_oneNewPageWithAncestorId_delegatesToConfluenceRestClient() throws Exception {
+    public void publish_oneNewPageWithAncestorId_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
@@ -115,7 +115,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_multiplePagesInHierarchyWithAncestorIdAsRoot_delegatesToConfluenceRestClient() throws Exception {
+    public void publish_multiplePagesInHierarchyWithAncestorIdAsRoot_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("1234", "2345");
@@ -146,7 +146,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() throws Exception {
+    public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
@@ -171,7 +171,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithExistingPageWithDifferentContentUnderRootAncestor_sendsUpdateRequest() throws Exception {
+    public void publish_metadataWithExistingPageWithDifferentContentUnderRootAncestor_sendsUpdateRequest() {
         // arrange
         ConfluencePage existingPage = new ConfluencePage("3456", "Existing Page", "<h1>Some Other Confluence Content</h1>", 1);
 
@@ -197,7 +197,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithExistingPageWithSameContentButDifferentFormattingUnderRootAncestor_sendsNoAddOrUpdateRequest() throws Exception {
+    public void publish_metadataWithExistingPageWithSameContentButDifferentFormattingUnderRootAncestor_sendsNoAddOrUpdateRequest() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
@@ -220,7 +220,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithExistingPageAndAttachmentWithDifferentAttachmentContentUnderRootSpace_sendsUpdateAttachmentRequest() throws Exception {
+    public void publish_metadataWithExistingPageAndAttachmentWithDifferentAttachmentContentUnderRootSpace_sendsUpdateAttachmentRequest() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
@@ -247,7 +247,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithExistingPageAndAttachmentWithSameAttachmentContentUnderRootSpace_sendsNoAddOrUpdateAttachmentRequest() throws Exception {
+    public void publish_metadataWithExistingPageAndAttachmentWithSameAttachmentContentUnderRootSpace_sendsNoAddOrUpdateAttachmentRequest() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
@@ -272,7 +272,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithOneExistingPageButConfluencePageHasMissingHashPropertyValue_pageIsUpdatedAndHashPropertyIsSet() throws Exception {
+    public void publish_metadataWithOneExistingPageButConfluencePageHasMissingHashPropertyValue_pageIsUpdatedAndHashPropertyIsSet() {
         // arrange
         ConfluencePage existingPage = new ConfluencePage("12", "Some Confluence Content", "<h1>Some Confluence Content</1>", 1);
 
@@ -292,7 +292,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithMultipleRemovedPagesInHierarchy_sendsDeletePageRequestForEachRemovedPage() throws Exception {
+    public void publish_metadataWithMultipleRemovedPagesInHierarchy_sendsDeletePageRequestForEachRemovedPage() {
         // arrange
         ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2);
         ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</1>", 3);

@@ -37,7 +37,7 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
     private static AsciidocPage NON_EXISTING_ASCIIDOC_PAGE = mock(AsciidocPage.class);
 
     @Test
-    public void structure_nestedStructure_returnsAsciidocPagesStructureWithAllNonIncludeAdocFiles() throws Exception {
+    public void structure_nestedStructure_returnsAsciidocPagesStructureWithAllNonIncludeAdocFiles() {
         // arrange
         Path documentationRootFolder = Paths.get("src/test/resources/folder-based-asciidoc-page-structure");
         FolderBasedAsciidocPagesStructureProvider folderBasedAsciidocSourceStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);

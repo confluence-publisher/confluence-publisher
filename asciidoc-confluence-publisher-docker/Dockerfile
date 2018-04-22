@@ -2,6 +2,8 @@ FROM openjdk:8-jre-alpine
 
 ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
 
+RUN apk add --update graphviz ttf-dejavu
+
 VOLUME /var/asciidoc-root-folder
 
 ENV SOURCE_ENCODING="" \

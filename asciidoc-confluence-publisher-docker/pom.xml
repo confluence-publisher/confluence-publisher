@@ -75,6 +75,7 @@
                 </executions>
                 <configuration>
                     <repository>confluencepublisher/confluence-publisher</repository>
+                    <tag>${project.version}</tag>
                 </configuration>
             </plugin>
         </plugins>

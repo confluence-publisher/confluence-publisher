@@ -75,13 +75,14 @@ public class AsciidocConfluencePublisherCommandLineClient {
 
     private static String mandatoryArgument(String key, String[] args) {
         return optionalArgument(key, args)
-                .orElseThrow(() -> new IllegalArgumentException("mandatory parameter '" + key + "' not provided"));
+                .orElseThrow(() -> new IllegalArgumentException("mandatory argument '" + key + "' is missing"));
     }
 
     private static Optional<String> optionalArgument(String key, String[] args) {
         return stream(args)
                 .filter((keyAndValue) -> keyAndValue.startsWith(key + "="))
                 .map((keyAndValue) -> keyAndValue.substring(keyAndValue.indexOf('=') + 1))
+                .filter((value) -> !value.isEmpty())
                 .findFirst();
     }
 

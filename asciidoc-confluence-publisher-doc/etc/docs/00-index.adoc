@@ -90,43 +90,52 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 ----
 
 |===
-| Configuration Property | Description
+| Configuration Property | Description | Constraint
 
 | asciidocRootFolder
 | The documentation root folder with the AsciiDoc file structure.
+| mandatory
 
 | sourceEncoding
-| The encoding of the AsciiDoc files (optional, defaults to UTF-8).
+| The encoding of the AsciiDoc files.
+| optional (defaults to UTF-8)
 
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
+| mandatory
 
 | spaceKey
 | The key of the Confluence space to publish to.
+| mandatory
 
 | ancestorId
 | The id of the ancestor page under which the pages are appended.
 
   Be aware that publishing will remove all pages under the configured ancestor id that are not part of the published
   documentation.
+| mandatory
 
 | username
 | The username of the user to use for publishing.
+| mandatory
 
 | password
 | The password of the user to use for publishing.
+| mandatory
 
 | pageTitlePrefix
-| The prefix to be prepended to every page title (optional).
+| The prefix to be prepended to every page title.
 
   Note: in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitlePrefix` element.
+| optional (defaults to empty)
 
 | pageTitleSuffix
-| The suffix to be appended to every page title (optional).
+| The suffix to be appended to every page title.
 
   Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitleSuffix` element.
+| optional (defaults to empty)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
@@ -191,4 +200,36 @@ the following configuration in your `pom.xml` in order to use the latest snapsho
     </plugin>
   </plugins>
 </build>
+----
+
+== Docker Image
+
+The Confluence Publisher supports publishing documentation via the `confluencepublisher/confluence-publisher` Docker
+image. The Docker image does not provide a `latest` tag, but uses the Confluence Publisher version number as the tag.
+The Docker image for the code on master is automatically published as version `0.0.0-SNAPSHOT` to Docker Hub.
+
+Instead of providing the `asciidocRootFolder` configuration property as with the Maven plugin, the AsciiDoc sources
+have to be mounted to the `/var/asciidoc-root-folder` volume.
+
+All other mandatory and optional configuration properties from the Maven plugin have to be / can be specified as
+environment variable in all-uppercase writing, e.g. `ROOT_CONFLUENCE_URL` for `rootConfluenceUrl`.
+
+[NOTE]
+====
+When specifying the `ROOT_CONFLUENCE_URL` environment variable, be sure to provide the host as it is resolvable from
+within the Docker container.
+====
+
+The following command shows an example for publishing AsciiDoc sources via the Confluence Publisher Docker image:
+
+----
+docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
+   -e USERNAME=username \
+   -e PASSWORD=1234 \
+   -e SPACE_KEY=XYZ \
+   -e ANCESTOR_ID=012345 \
+   -e PAGE_TITLE_PREFIX="Draft - " \
+   -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
+   -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
+   confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

@@ -74,7 +74,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>confluence-publisher/confluence-publisher</repository>
+                    <repository>confluencepublisher/confluence-publisher</repository>
                 </configuration>
             </plugin>
         </plugins>

@@ -76,6 +76,7 @@
                 <configuration>
                     <repository>confluencepublisher/confluence-publisher</repository>
                     <tag>${project.version}</tag>
+                    <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
                 </configuration>
             </plugin>
         </plugins>

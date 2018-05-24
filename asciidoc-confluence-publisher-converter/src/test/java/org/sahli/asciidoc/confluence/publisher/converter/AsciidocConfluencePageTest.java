@@ -469,6 +469,31 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableWithAsciiDocCell_returnsConfluencePageWithTableWithAsciiDocCell() {
+        // arrange
+        String adocContent = "" +
+            "|===\n" +
+            "| A " +
+            "| B\n" +
+            "\n" +
+            "| 10 " +
+            "a|11\n" +
+            "\n" +
+            "* 12 \n" +
+            "* 13 \n" +
+            "\n" +
+            "|===";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+        // assert
+        String expectedContent = "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>10</td><td><div><p>11</p>\n<ul><li>12</li><li>13</li></ul></div></td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +

@@ -165,3 +165,30 @@ Currently, only simple formattings, but no nested tables or lists are supported.
 | B1
 | B2
 |===
+
+== Table with asciidoc cell
+
+[listing]
+....
+|===
+| Column 1 | Column 2
+
+|A1 a|A2
+
+* A3
+* A4
+* A5
+
+|===
+....
+
+|===
+| Column 1 | Column 2
+
+|A1 a|A2
+
+* A3
+* A4
+* A5
+
+|===

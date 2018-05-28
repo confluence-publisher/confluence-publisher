@@ -1,8 +1,25 @@
 table
-  - [:head, :foot, :body].select {|tblsec| !@rows[tblsec].empty? }.each do |tblsec|
-    *{:tag=>"t#{tblsec}"}
-      - @rows[tblsec].each do |row|
-        tr
-          - row.each do |cell|
-            *{:tag => (tblsec == :head ? 'th' : 'td'), rowspan: cell.rowspan, colspan: cell.colspan}
-              =cell.text
+  - if title?
+    caption.title =captioned_title
+  - unless (attr :rowcount).zero?
+    - [:head, :foot, :body].reject { |tblsec| rows[tblsec].empty? }.each do |tblsec|
+      *{tag: %(t#{tblsec})}
+        - rows[tblsec].each do |row|
+          tr
+            - row.each do |cell|
+              *{tag: (tblsec == :head || cell.style == :header ? 'th' : 'td'),
+                  colspan: cell.colspan,
+                  rowspan: cell.rowspan}
+                - if tblsec == :head
+                  =cell.text
+                - else
+                  - case cell.style
+                  - when :asciidoc
+                    div =cell.content
+                  - when :verse
+                    .verse =cell.text
+                  - when :literal
+                    .literal: pre =cell.text
+                  - else
+                    - cell.content.each do |text|
+                      =text

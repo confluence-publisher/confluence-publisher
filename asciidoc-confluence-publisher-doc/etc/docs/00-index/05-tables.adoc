@@ -168,6 +168,8 @@ Currently, only simple formattings, but no nested tables or lists are supported.
 
 == Table with AsciiDoc Cell
 
+Table cells may also contain structured content, e.g. bullet lists:
+
 [listing]
 ....
 [cols="2", options="header"]
@@ -176,12 +178,10 @@ Currently, only simple formattings, but no nested tables or lists are supported.
 | Column 2
 
 |A1
-a|A2
-
+a|
+* A2
 * A3
 * A4
-* A5
-
 |===
 ....
 
@@ -191,10 +191,8 @@ a|A2
 | Column 2
 
 |A1
-a|A2
-
+a|
+* A2
 * A3
 * A4
-* A5
-
 |===

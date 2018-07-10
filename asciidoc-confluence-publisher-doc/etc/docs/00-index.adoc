@@ -123,6 +123,14 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The password of the user to use for publishing.
 | mandatory
 
+| strategy
+| Which strategy to use when publishing to confluence. Possible values:
+
+* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and clean up all other existing pages under the ancestor
+* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the root page. It enforces a constraint on the source documentation structure since only a single root page is allowed. Passing more will result in an error. Existing pages under the ancestor will be cleaned up and replaced by the children pages of the single root page.
+
+| optional (defaults to `APPEND_TO_ANCESTOR`)
+
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
 

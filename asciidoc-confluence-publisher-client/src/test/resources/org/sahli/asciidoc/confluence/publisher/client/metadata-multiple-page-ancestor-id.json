@@ -1,0 +1,14 @@
+{
+  "spaceKey": "~personalSpace",
+  "ancestorId": "72189173",
+  "pages": [
+    {
+      "title": "Some Confluence Content",
+      "contentFilePath": "some-confluence-content.html"
+    },
+    {
+      "title": "Some Other Confluence Content",
+      "contentFilePath": "some-confluence-content.html"
+    }
+  ]
+}

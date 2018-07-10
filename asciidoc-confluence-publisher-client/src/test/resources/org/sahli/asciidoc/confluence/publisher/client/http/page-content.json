@@ -8,5 +8,13 @@
     "storage": {
       "value": "Some content"
     }
-  }
+  },
+  "ancestors": [
+    {
+      "id": "2345"
+    },
+    {
+      "id": "3456"
+    }
+  ]
 }

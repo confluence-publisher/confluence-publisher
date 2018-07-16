@@ -238,6 +238,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e ANCESTOR_ID=012345 \
    -e PAGE_TITLE_PREFIX="Draft - " \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
+   -e STRATEGY=REPLACE_ANCESTOR \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

@@ -16,6 +16,9 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 
@@ -33,27 +36,40 @@ public class RequestFailedException extends RuntimeException {
 
     RequestFailedException(HttpRequest request, HttpResponse response) {
         super(""
-                + response.getStatusLine().getStatusCode()
-                + " "
-                + response.getStatusLine().getReasonPhrase()
-                + " "
-                + request.getRequestLine().getMethod()
-                + " "
-                + request.getRequestLine().getUri()
-                + " "
-                + failedResponseContent(response)
+            + response.getStatusLine().getStatusCode()
+            + " "
+            + response.getStatusLine().getReasonPhrase()
+            + " "
+            + request.getRequestLine().getMethod()
+            + " "
+            + request.getRequestLine().getUri()
+            + " "
+            + failedRequestContent(request)
+            + " "
+            + failedResponseContent(response)
         );
     }
 
-    private static String failedResponseContent(HttpResponse response) {
-        try {
-            InputStream content = response.getEntity().getContent();
-            Charset encoding = Charset.forName(response.getEntity().getContentEncoding().getValue());
+    private static String failedRequestContent(HttpRequest request) {
+        return request instanceof HttpEntityEnclosingRequest ?
+            entityAsString(((HttpEntityEnclosingRequest) request).getEntity(), "request") : "";
+    }
 
-            return inputStreamAsString(content, encoding);
+    private static String failedResponseContent(HttpResponse response) {
+        return entityAsString(response.getEntity(), "response");
+    }
+
+    private static String entityAsString(HttpEntity entity, String prefix) {
+        try {
+            InputStream content = entity.getContent();
+            Charset encoding = entity.getContentEncoding() == null ?
+                    Charset.defaultCharset() :
+                    Charset.forName(entity.getContentEncoding().getValue());
+
+            String contentString = inputStreamAsString(content, encoding);
+            return StringUtils.isBlank(contentString) ? "" : "\n" + prefix + ": " + contentString;
         } catch (Exception ignored) {
             return "";
         }
     }
-
 }

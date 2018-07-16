@@ -472,7 +472,9 @@ public class ConfluenceRestClientTest {
 
         // assert
         this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content {\"some\": \"json\"}");
+        this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content \n" +
+            "request: {\"title\":\"Hello\",\"space\":{\"key\":\"~personalSpace\"},\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}},\"ancestors\":[{\"id\":\"123\"}],\"type\":\"page\"} \n" +
+            "response: {\"some\": \"json\"}");
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");

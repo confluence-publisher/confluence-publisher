@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.cli;
 
+import org.asciidoctor.Attributes;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
@@ -34,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Optional;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
@@ -43,6 +45,8 @@ import static java.nio.file.Files.walkFileTree;
 import static java.util.Arrays.stream;
 
 public class AsciidocConfluencePublisherCommandLineClient {
+
+    private final static String ATTR_PREFIX = "attr:";
 
     public static void main(String[] args) throws Exception {
         String rootConfluenceUrl = mandatoryArgument("rootConfluenceUrl", args);
@@ -58,12 +62,19 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String prefix = optionalArgument("pageTitlePrefix", args).orElse(null);
         String suffix = optionalArgument("pageTitleSuffix", args).orElse(null);
 
+        String attrs = stream(args)
+            .filter(attribute -> attribute.startsWith(ATTR_PREFIX))
+            .map(attribute -> attribute.substring(ATTR_PREFIX.length()))
+            .filter((value) -> !value.isEmpty() && value.contains("="))
+            .reduce("", (identity, b) -> b, (a, b) -> a + " " + b);
+
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
+            Attributes attributes = new Attributes(attrs);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceClient, new SystemOutLoggingConfluencePublisherListener());

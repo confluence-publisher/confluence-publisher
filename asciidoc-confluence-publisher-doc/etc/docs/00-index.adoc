@@ -83,6 +83,9 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <password>password</password> <!-- or read from property -->
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
         <pageTitleSuffix xml:space="preserve"> [1.0]</pageTitleSuffix>
+        <attributes>
+            <key>value</key>
+        </attributes>
       </configuration>
     </plugin>
   </plugins>
@@ -122,6 +125,10 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | password
 | The password of the user to use for publishing.
 | mandatory
+
+| attributes
+| Attributes used during AsciiDoctor processing.
+| optional (default to empty)
 
 | pageTitlePrefix
 | The prefix to be prepended to every page title.

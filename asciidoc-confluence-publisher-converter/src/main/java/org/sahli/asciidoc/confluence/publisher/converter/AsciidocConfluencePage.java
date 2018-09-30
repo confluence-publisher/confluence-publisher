@@ -102,7 +102,7 @@ public class AsciidocConfluencePage {
 
             Map<String, String> attachmentCollector = new HashMap<>();
 
-            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
+            Options options = options(templatesDir, pageAssetsFolder, asciidocPage.baseDir());
             String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor, sourceEncoding);
 
             String pageTitle = pageTitle(asciidocContent, pageTitlePostProcessor);
@@ -168,7 +168,7 @@ public class AsciidocConfluencePage {
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder) {
+    private static Options options(Path templatesFolder, Path generatedAssetsTargetFolder, Path baseDirPath) {
         if (!exists(templatesFolder)) {
             throw new RuntimeException("templateDir folder does not exist");
         }
@@ -184,7 +184,7 @@ public class AsciidocConfluencePage {
         return OptionsBuilder.options()
                 .backend("xhtml5")
                 .safe(UNSAFE)
-                .baseDir(baseFolder.toFile())
+                .baseDir(baseDirPath.toFile())
                 .templateDirs(templatesFolder.toFile())
                 .attributes(attributes)
                 .get();

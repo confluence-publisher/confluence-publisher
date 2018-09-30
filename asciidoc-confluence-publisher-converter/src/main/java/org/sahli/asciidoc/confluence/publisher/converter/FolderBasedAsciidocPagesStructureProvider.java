@@ -122,6 +122,11 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
         }
 
         @Override
+        public Path baseDir() {
+            return this.path.getParent();
+        }
+
+        @Override
         public List<AsciidocPage> children() {
             return unmodifiableList(this.children);
         }

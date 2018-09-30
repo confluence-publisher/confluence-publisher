@@ -1159,6 +1159,11 @@ public class AsciidocConfluencePageTest {
         }
 
         @Override
+        public Path baseDir() {
+            return this.path.getParent();
+        }
+
+        @Override
         public List<AsciidocPage> children() {
             return emptyList();
         }

@@ -39,7 +39,7 @@ files are resolved relative to the location of the referencing AsciiDoc file.
 
 [listing]
 ....
-plantuml::../files/included-diagram.puml[]
+plantuml::files/included-diagram.puml[]
 ....
 
-plantuml::../files/included-diagram.puml[]
+plantuml::files/included-diagram.puml[]

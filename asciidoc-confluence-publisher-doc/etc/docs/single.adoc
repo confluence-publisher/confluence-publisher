@@ -1,0 +1,14 @@
+= Confluence Publisher Documentation
+
+include::00-index.adoc[leveloffset=+1]
+include::00-index/01-pages.adoc[leveloffset=+1]
+include::00-index/02-includes.adoc[leveloffset=+1]
+include::00-index/03-sections.adoc[leveloffset=+1]
+include::00-index/04-paragraphs.adoc[leveloffset=+1]
+include::00-index/05-tables.adoc[leveloffset=+1]
+include::00-index/06-images.adoc[leveloffset=+1]
+include::00-index/07-listings.adoc[leveloffset=+1]
+include::00-index/08-admonitions.adoc[leveloffset=+1]
+include::00-index/09-external-links.adoc[leveloffset=+1]
+include::00-index/10-plantuml.adoc[leveloffset=+1]
+include::00-index/11-attachments.adoc[leveloffset=+1]

@@ -8,17 +8,17 @@ Attachment links may specify a label.
 
 [listing]
 ....
-link:../files/attachment.txt[Attachment]
+link:files/attachment.txt[Attachment]
 ....
 
-link:../files/attachment.txt[Attachment]
+link:files/attachment.txt[Attachment]
 
 
 If no label is specified, the attachment filename is used as the label.
 
 [listing]
 ....
-link:../files/attachment.txt[]
+link:files/attachment.txt[]
 ....
 
-link:../files/attachment.txt[]
+link:files/attachment.txt[]

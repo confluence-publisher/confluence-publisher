@@ -38,6 +38,8 @@ public interface AsciidocPagesStructureProvider {
 
         Path path();
 
+        Path baseDir();
+
         List<AsciidocPage> children();
 
     }

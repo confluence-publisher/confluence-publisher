@@ -122,7 +122,7 @@ public final class AsciidocConfluenceConverter {
         return attachmentsWithRelativePath.keySet().stream()
                 .map((attachmentWithRelativePath) -> {
                     Path relativeAttachmentPath = Paths.get(attachmentWithRelativePath);
-                    Path attachmentSourcePath = asciidocPage.path().getParent().resolve(relativeAttachmentPath);
+                    Path attachmentSourcePath = asciidocPage.baseDir().resolve(relativeAttachmentPath);
                     Path attachmentTargetPath = pageAssetsFolder.resolve(relativeAttachmentPath.getFileName());
 
                     return new AttachmentMetadata(attachmentSourcePath, attachmentTargetPath);

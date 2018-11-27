@@ -1,9 +1,18 @@
 - case type
 - when :xref
-  ac:link
-    ri:page ri:content-title=target
-    ac:plain-text-link-body
-      <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
+  - if cross_page_xref? target
+    ac:link
+      ri:page ri:content-title=target
+      ac:plain-text-link-body
+        <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
+  - else
+    ac:link ac:anchor=(anchor_name @target)
+      ac:plain-text-link-body
+        <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
+- when :ref
+  ac:structured-macro ac:name="anchor"
+    ac:parameter ac:name=""
+     =(anchor_name target)
 - when :link
   - if uriish? target
     a href=target

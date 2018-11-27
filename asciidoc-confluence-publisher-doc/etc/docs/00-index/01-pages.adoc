@@ -11,6 +11,7 @@ must contain a top-level document title which will be used as the Confluence pag
 According to the restrictions of Confluence, document titles must be unique within the Confluence space the
 documentation is published to. The AsciiDoc file name itself is not reflected in Confluence.
 
+
 == Links between Pages
 
 Links between pages in Confluence are supported using AsciiDoc inter-document cross references. Target pages are
@@ -26,7 +27,24 @@ referencing AsciiDoc file. All referenced AsciiDoc files must be placed below th
 <<01-pages.adoc#, Link to Pages>>
 <<../00-index/06-images.adoc#, Link to Images>>
 
+
+== Links within Pages
+
+Links within pages in Confluence are supported using AsciiDoc inline anchors and internal cross references:
+
+[listing]
+....
+[[paragraph-a]]Paragraph with inline anchor
+
+Another paragraph with internal cross-reference to <<paragraph-a>>
+....
+
+[[paragraph-a]]Paragraph with inline anchor
+
+Another paragraph with internal cross-reference to <<paragraph-a>>
+
+
 [WARNING]
 ====
-Links within the same page are currently not supported.
+Links from one page to an inline anchor within another page are currently not supported.
 ====

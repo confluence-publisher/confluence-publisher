@@ -155,4 +155,18 @@ module Slim::Helpers
     (str.include? ':') && str =~ UriSniffRx
   end
 
+  # checks if xref is referring to adoc (internal cross references not yet supported)
+  def cross_page_xref? str
+    str.end_with? ".html"
+  end
+
+  # removes leading hash from anchor targets
+  def anchor_name str
+    if str.start_with? "#"
+      str[1..str.length]
+    else
+      str
+    end
+  end
+
 end

@@ -974,6 +974,74 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSection_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingSectionTitle() {
+        // arrange
+        String adocContent = "" +
+                "== Section 1 [[section1]]\n" +
+                "Cross reference to <<section1>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<h1>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionAndCustomLabel_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingCustomLabel() {
+        // arrange
+        String adocContent = "" +
+                "== Section 1 [[section1]]\n" +
+                "Cross reference to <<section1,section 1>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<h1>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section1\"><ac:plain-text-link-body><![CDATA[section 1]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToParagraph_returnsConfluencePageContentWithInternalCrossReferenceToParagraphUsingAnchorId() {
+        // arrange
+        String adocContent = "" +
+                "[[paragraph1]]Paragraph\n\n" +
+                "Cross reference to <<paragraph1>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
+                "<p>Cross reference to <ac:link ac:anchor=\"paragraph1\"><ac:plain-text-link-body><![CDATA[[paragraph1]]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToParagraphAndCustomLabel_returnsConfluencePageContentWithInternalCrossReferenceToParagraphUsingCustomLabel() {
+        // arrange
+        String adocContent = "" +
+                "[[paragraph1]]Paragraph\n\n" +
+                "Cross reference to <<paragraph1,Paragraph>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
+                "<p>Cross reference to <ac:link ac:anchor=\"paragraph1\"><ac:plain-text-link-body><![CDATA[Paragraph]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

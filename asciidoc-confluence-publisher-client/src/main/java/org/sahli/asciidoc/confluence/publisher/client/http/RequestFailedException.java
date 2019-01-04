@@ -16,7 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
@@ -25,49 +24,48 @@ import org.apache.http.HttpResponse;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import static java.nio.charset.Charset.defaultCharset;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
 
 /**
  * @author Alain Sahli
  * @author Christian Stettler
+ * @author Laurent Verbruggen
  */
 @SuppressWarnings("WeakerAccess")
 public class RequestFailedException extends RuntimeException {
 
     RequestFailedException(HttpRequest request, HttpResponse response) {
-        super(""
-            + response.getStatusLine().getStatusCode()
-            + " "
-            + response.getStatusLine().getReasonPhrase()
-            + " "
-            + request.getRequestLine().getMethod()
-            + " "
-            + request.getRequestLine().getUri()
-            + " "
-            + failedRequestContent(request)
-            + " "
-            + failedResponseContent(response)
+        super("" +
+                response.getStatusLine().getStatusCode() +
+                " " +
+                response.getStatusLine().getReasonPhrase() +
+                " " +
+                request.getRequestLine().getMethod() +
+                " " +
+                request.getRequestLine().getUri() +
+                "\n" +
+                "request: '" + failedRequestContent(request) + "'" +
+                "\n" +
+                "response: '" + failedResponseContent(response) + "'"
         );
     }
 
     private static String failedRequestContent(HttpRequest request) {
-        return request instanceof HttpEntityEnclosingRequest ?
-            entityAsString(((HttpEntityEnclosingRequest) request).getEntity(), "request") : "";
+        return request instanceof HttpEntityEnclosingRequest ? entityAsString(((HttpEntityEnclosingRequest) request).getEntity()) : "";
     }
 
     private static String failedResponseContent(HttpResponse response) {
-        return entityAsString(response.getEntity(), "response");
+        return entityAsString(response.getEntity());
     }
 
-    private static String entityAsString(HttpEntity entity, String prefix) {
+    private static String entityAsString(HttpEntity entity) {
         try {
             InputStream content = entity.getContent();
-            Charset encoding = entity.getContentEncoding() == null ?
-                    Charset.defaultCharset() :
-                    Charset.forName(entity.getContentEncoding().getValue());
-
+            Charset encoding = entity.getContentEncoding() == null ? defaultCharset() : Charset.forName(entity.getContentEncoding().getValue());
             String contentString = inputStreamAsString(content, encoding);
-            return StringUtils.isBlank(contentString) ? "" : "\n" + prefix + ": " + contentString;
+
+            return contentString;
         } catch (Exception ignored) {
             return "";
         }

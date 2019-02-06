@@ -112,7 +112,7 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updatePageRequest_withValidParameters_returnsValidHttpPutRequest() throws Exception {
+    public void updatePageRequest_withValidParametersWithAncestorId_returnsValidHttpPutRequest() throws Exception {
         // arrange
         String contentId = "1234";
         String ancestorId = "1";
@@ -129,7 +129,29 @@ public class HttpRequestFactoryTest {
         assertThat(updatePageRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
 
         String jsonPayload = inputStreamAsString(updatePageRequest.getEntity().getContent(), UTF_8);
-        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request.json").toString(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request-with-ancestor-id.json").toString(), UTF_8);
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
+    }
+
+    @Test
+    public void updatePageRequest_withValidParametersWithoutAncestorId_returnsValidHttpPutRequest() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String ancestorId = null;
+        String title = "title";
+        String content = "content";
+        Integer version = 2;
+
+        // act
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version);
+
+        // assert
+        assertThat(updatePageRequest.getMethod(), is("PUT"));
+        assertThat(updatePageRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId));
+        assertThat(updatePageRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
+
+        String jsonPayload = inputStreamAsString(updatePageRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "update-page-request-without-ancestor-id.json").toString(), UTF_8);
         assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
@@ -141,16 +163,6 @@ public class HttpRequestFactoryTest {
 
         // arrange + act
         this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2);
-    }
-
-    @Test
-    public void updatePageRequest_withEmptyAncestorId_throwsIllegalArgumentException() {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("ancestorId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.updatePageRequest("1234", "", "title", "content", 2);
     }
 
     @Test

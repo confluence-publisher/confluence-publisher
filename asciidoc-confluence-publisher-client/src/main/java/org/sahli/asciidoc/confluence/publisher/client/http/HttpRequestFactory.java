@@ -86,7 +86,6 @@ class HttpRequestFactory {
 
     HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
-        assertMandatoryParameter(isNotBlank(ancestorId), "ancestorId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
         PagePayload pagePayload = pagePayloadBuilder()

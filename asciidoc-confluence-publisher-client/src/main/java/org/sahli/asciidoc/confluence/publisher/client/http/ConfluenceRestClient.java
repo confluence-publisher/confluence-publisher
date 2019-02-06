@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
@@ -171,7 +170,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     @Override
     public ConfluencePage getPageWithContentAndVersionById(String contentId) {
-        HttpGet pageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version,ancestors");
+        HttpGet pageByIdRequest = this.httpRequestFactory.getPageByIdRequest(contentId, "body.storage,version");
 
         return sendRequestAndFailIfNot20x(pageByIdRequest, (response) -> {
             ConfluencePage confluencePage = extractConfluencePageWithContent(parseJsonResponse(response));
@@ -228,10 +227,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
-        // add authorization header
         httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
 
-        // execute
         try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);
         } catch (IOException e) {
@@ -277,7 +274,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     private List<ConfluencePage> getNextChildPages(String contentId, int limit, int start) {
         List<ConfluencePage> pages = new ArrayList<>(limit);
-        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start, "version,ancestors");
+        HttpGet getChildPagesByIdRequest = this.httpRequestFactory.getChildPagesByIdRequest(contentId, limit, start, "version");
 
         return sendRequestAndFailIfNot20x(getChildPagesByIdRequest, (response) -> {
             JsonNode jsonNode = parseJsonResponse(response);
@@ -325,22 +322,20 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {
-        String ancestorId = extractAncestorIdFromJsonNode(jsonNode);
         String id = extractIdFromJsonNode(jsonNode);
         String title = extractTitleFromJsonNode(jsonNode);
         String content = jsonNode.path("body").path("storage").get("value").asText();
         int version = extractVersionFromJsonNode(jsonNode);
 
-        return new ConfluencePage(ancestorId, id, title, content, version);
+        return new ConfluencePage(id, title, content, version);
     }
 
     private static ConfluencePage extractConfluencePageWithoutContent(JsonNode jsonNode) {
-        String ancestorId = extractAncestorIdFromJsonNode(jsonNode);
         String id = extractIdFromJsonNode(jsonNode);
         String title = extractTitleFromJsonNode(jsonNode);
         int version = extractVersionFromJsonNode(jsonNode);
 
-        return new ConfluencePage(ancestorId, id, title, version);
+        return new ConfluencePage(id, title, version);
     }
 
     private static ConfluenceAttachment extractConfluenceAttachment(JsonNode jsonNode) {
@@ -350,16 +345,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
         String relativeDownloadLink = jsonNode.path("_links").get("download").asText();
 
         return new ConfluenceAttachment(id, title, relativeDownloadLink, version);
-    }
-
-    private static String extractAncestorIdFromJsonNode(JsonNode jsonNode) {
-        String ancestorId = null;
-        // last item in ancestors array if actual ancestor
-        Iterator<JsonNode> it = jsonNode.get("ancestors").elements();
-        while (it.hasNext()) {
-            ancestorId = it.next().get("id").asText();
-        }
-        return ancestorId;
     }
 
     private static String extractIdFromJsonNode(JsonNode jsonNode) {

@@ -11,5 +11,5 @@
       "contentFilePath": "some-confluence-content.html"
     }
   ],
-  "publishStrategy": "REPLACE_ANCESTOR"
+  "publishingStrategy": "REPLACE_ANCESTOR"
 }

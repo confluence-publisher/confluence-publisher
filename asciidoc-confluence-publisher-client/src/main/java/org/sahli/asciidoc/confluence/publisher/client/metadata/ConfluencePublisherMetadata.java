@@ -29,7 +29,7 @@ public class ConfluencePublisherMetadata {
     private String spaceKey;
     private String ancestorId;
     private List<ConfluencePageMetadata> pages = new ArrayList<>();
-    private ConfluencePublisherPublishStrategy publishStrategy = ConfluencePublisherPublishStrategy.APPEND_TO_ANCESTOR;
+    private PublishingStrategy publishingStrategy = PublishingStrategy.APPEND_TO_ANCESTOR;
 
     public String getSpaceKey() {
         return this.spaceKey;
@@ -58,12 +58,12 @@ public class ConfluencePublisherMetadata {
         this.pages = pages;
     }
 
-    public ConfluencePublisherPublishStrategy getPublishStrategy() {
-        return publishStrategy;
+    public PublishingStrategy getPublishingStrategy() {
+        return publishingStrategy;
     }
 
     @RuntimeUse
-    public void setPublishStrategy(ConfluencePublisherPublishStrategy publishStrategy) {
-        this.publishStrategy = publishStrategy;
+    public void setPublishingStrategy(PublishingStrategy publishingStrategy) {
+        this.publishingStrategy = publishingStrategy;
     }
 }

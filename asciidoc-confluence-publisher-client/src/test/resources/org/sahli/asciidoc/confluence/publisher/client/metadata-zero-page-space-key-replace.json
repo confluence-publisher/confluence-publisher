@@ -2,5 +2,5 @@
   "spaceKey": "~personalSpace",
   "ancestorId": "1234",
   "pages": [],
-  "publishStrategy": "REPLACE_ANCESTOR"
+  "publishingStrategy": "REPLACE_ANCESTOR"
 }

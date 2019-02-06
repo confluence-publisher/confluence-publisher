@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy;
 
 import java.nio.file.Paths;
 
@@ -33,6 +34,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
 import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.APPEND_TO_ANCESTOR;
+import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.REPLACE_ANCESTOR;
 
 /**
  * @author Alain Sahli
@@ -43,13 +45,13 @@ public class ConfluencePublisherIntegrationTest {
     private static final String ANCESTOR_ID = "327706";
 
     @Test
-    public void publish_singlePage_pageIsCreatedInConfluence() {
+    public void publish_singlePageAndAppendToAncestorPublishingStrategy_pageIsCreatedInConfluence() {
         // arrange
         String title = uniqueTitle("Single Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR);
 
         // act
         confluencePublisher.publish();
@@ -61,12 +63,30 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     @Test
+    public void publish_singlePageAndReplaceAncestorPublishingStrategy_pageIsUpdatedInConfluence() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPage())
+                .then().body("title", is(title));
+    }
+
+    @Test
     public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() {
         // arrange
         String title = uniqueTitle("Single Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR);
 
         // act
         confluencePublisher.publish();
@@ -84,7 +104,7 @@ public class ConfluencePublisherIntegrationTest {
         String title = uniqueTitle("Invalid Markup Test Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR);
 
         // act
         confluencePublisher.publish();
@@ -134,6 +154,10 @@ public class ConfluencePublisherIntegrationTest {
         return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
 
+    private static String rootPage() {
+        return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID;
+    }
+
     private static String pageVersionOf(String contentId) {
         return "http://localhost:8090/rest/api/content/" + contentId + "?expand=version";
     }
@@ -148,8 +172,8 @@ public class ConfluencePublisherIntegrationTest {
                 .then().extract().jsonPath().getString("results.find({it.title == '" + title + "'}).id");
     }
 
-    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata) {
-        return new ConfluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR, confluenceRestClient());
+    private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceRestClient());
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

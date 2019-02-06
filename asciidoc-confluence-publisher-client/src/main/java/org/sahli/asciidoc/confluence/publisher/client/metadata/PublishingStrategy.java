@@ -6,5 +6,6 @@ package org.sahli.asciidoc.confluence.publisher.client.metadata;
 public enum PublishingStrategy {
 
     APPEND_TO_ANCESTOR,
-    REPLACE_ANCESTOR;
+    REPLACE_ANCESTOR
+
 }

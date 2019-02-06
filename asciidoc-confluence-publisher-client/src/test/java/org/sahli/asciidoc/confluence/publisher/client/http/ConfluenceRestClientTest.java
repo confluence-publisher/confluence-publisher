@@ -26,7 +26,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -568,7 +567,7 @@ public class ConfluenceRestClientTest {
                         "\"title\": \"Page " + pageNumber + "\", " +
                         "\"version\": {\"number\": 1}," +
                         "\"ancestors\": [{\"id\": \"ancestor\"}]" +
-                    "}")
+                        "}")
                 .collect(Collectors.joining(",\n"));
     }
 

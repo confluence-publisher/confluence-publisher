@@ -62,7 +62,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     private String ancestorId;
 
     @Parameter(defaultValue = "APPEND_TO_ANCESTOR")
-    private PublishingStrategy strategy;
+    private PublishingStrategy publishingStrategy;
 
     @Parameter
     private String username;
@@ -90,7 +90,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.username, this.password);
             ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.strategy, confluenceRestClient, confluencePublisherListener);
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener);
             confluencePublisher.publish();
         } catch (Exception e) {
             getLog().error("Publishing to Confluence failed: " + e.getMessage());

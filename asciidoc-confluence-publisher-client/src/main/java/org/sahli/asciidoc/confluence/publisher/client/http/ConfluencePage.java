@@ -21,20 +21,26 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
  */
 public class ConfluencePage {
 
+    private final String ancestorId;
     private final String contentId;
     private final String title;
     private final String content;
     private final int version;
 
-    public ConfluencePage(String contentId, String title, int version) {
-        this(contentId, title, null, version);
+    public ConfluencePage(String ancestorId, String contentId, String title, int version) {
+        this(ancestorId, contentId, title, null, version);
     }
 
-    public ConfluencePage(String contentId, String title, String content, int version) {
+    public ConfluencePage(String ancestorId, String contentId, String title, String content, int version) {
+        this.ancestorId = ancestorId;
         this.contentId = contentId;
         this.title = title;
         this.content = content;
         this.version = version;
+    }
+
+    public String getAncestorId() {
+        return this.ancestorId;
     }
 
     public String getContentId() {
@@ -61,6 +67,7 @@ public class ConfluencePage {
         ConfluencePage that = (ConfluencePage) o;
 
         if (this.version != that.version) return false;
+        if (!this.ancestorId.equals(that.ancestorId)) return false;
         if (!this.contentId.equals(that.contentId)) return false;
         //noinspection SimplifiableIfStatement
         if (!this.title.equals(that.title)) return false;
@@ -70,7 +77,8 @@ public class ConfluencePage {
 
     @Override
     public int hashCode() {
-        int result = this.contentId.hashCode();
+        int result = this.ancestorId.hashCode();
+        result = 31 * result + this.contentId.hashCode();
         result = 31 * result + this.title.hashCode();
         result = 31 * result + (this.content != null ? this.content.hashCode() : 0);
         result = 31 * result + this.version;
@@ -80,7 +88,8 @@ public class ConfluencePage {
     @Override
     public String toString() {
         return "ConfluencePage{" +
-                "contentId='" + this.contentId + '\'' +
+                "ancestorId='" + this.ancestorId + '\'' +
+                ", contentId='" + this.contentId + '\'' +
                 ", title='" + this.title + '\'' +
                 ", content='" + this.content + '\'' +
                 ", version=" + this.version +

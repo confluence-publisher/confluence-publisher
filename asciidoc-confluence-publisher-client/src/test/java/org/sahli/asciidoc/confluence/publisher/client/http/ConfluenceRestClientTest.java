@@ -253,6 +253,7 @@ public class ConfluenceRestClientTest {
         assertThat(confluencePage.getTitle(), is("Some title"));
         assertThat(confluencePage.getContent(), is("Some content"));
         assertThat(confluencePage.getVersion(), is(1));
+        assertThat(confluencePage.getAncestorId(), is("3456"));
     }
 
     @Test
@@ -267,8 +268,8 @@ public class ConfluenceRestClientTest {
         List<ConfluencePage> childPages = confluenceRestClient.getChildPages(contentId);
 
         // assert
-        ConfluencePage childOne = new ConfluencePage("1", "Page 1", 1);
-        ConfluencePage childTwo = new ConfluencePage("2", "Page 2", 1);
+        ConfluencePage childOne = new ConfluencePage("ancestor", "1", "Page 1", 1);
+        ConfluencePage childTwo = new ConfluencePage("ancestor", "2", "Page 2", 1);
         assertThat(childPages, Matchers.contains(childOne, childTwo));
     }
 
@@ -563,7 +564,12 @@ public class ConfluenceRestClientTest {
     private static String generateJsonPageResults(int numberOfPages) {
         return IntStream.range(1, numberOfPages + 1)
                 .boxed()
-                .map(pageNumber -> "{\"id\": \"" + pageNumber + "\", \"title\": \"Page " + pageNumber + "\", \"version\": {\"number\": 1}}")
+                .map(pageNumber -> "{" +
+                        "\"id\": \"" + pageNumber + "\", " +
+                        "\"title\": \"Page " + pageNumber + "\", " +
+                        "\"version\": {\"number\": 1}," +
+                        "\"ancestors\": [{\"id\": \"ancestor\"}]" +
+                    "}")
                 .collect(Collectors.joining(",\n"));
     }
 

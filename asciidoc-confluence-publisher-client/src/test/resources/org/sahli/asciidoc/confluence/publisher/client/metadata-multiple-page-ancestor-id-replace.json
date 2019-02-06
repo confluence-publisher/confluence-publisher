@@ -10,6 +10,5 @@
       "title": "Some Other Confluence Content",
       "contentFilePath": "some-confluence-content.html"
     }
-  ],
-  "publishingStrategy": "REPLACE_ANCESTOR"
+  ]
 }

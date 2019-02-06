@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
+import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.APPEND_TO_ANCESTOR;
 
 /**
  * @author Alain Sahli
@@ -148,7 +149,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata) {
-        return new ConfluencePublisher(confluencePublisherMetadata, confluenceRestClient());
+        return new ConfluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR, confluenceRestClient());
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

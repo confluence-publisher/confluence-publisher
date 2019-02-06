@@ -68,10 +68,9 @@ public class AsciidocConfluencePublisherCommandLineClient {
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
-            confluencePublisherMetadata.setPublishingStrategy(publishingStrategy);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, confluenceClient, new SystemOutLoggingConfluencePublisherListener());
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener());
             confluencePublisher.publish();
         } finally {
             deleteDirectory(buildFolder);

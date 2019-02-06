@@ -22,6 +22,7 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,15 +53,17 @@ public class ConfluencePublisher {
     static final int INITIAL_PAGE_VERSION = 1;
 
     private final ConfluencePublisherMetadata metadata;
+    private final PublishingStrategy publishingStrategy;
     private final ConfluenceClient confluenceClient;
     private final ConfluencePublisherListener confluencePublisherListener;
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient) {
-        this(metadata, confluenceClient, new NoOpConfluencePublisherListener());
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient) {
+        this(metadata, publishingStrategy, confluenceClient, new NoOpConfluencePublisherListener());
     }
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener) {
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener) {
         this.metadata = metadata;
+        this.publishingStrategy = publishingStrategy;
         this.confluenceClient = confluenceClient;
         this.confluencePublisherListener = confluencePublisherListener;
     }
@@ -69,7 +72,7 @@ public class ConfluencePublisher {
         assertMandatoryParameter(isNotBlank(this.metadata.getSpaceKey()), "spaceKey");
         assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
-        switch (this.metadata.getPublishingStrategy()) {
+        switch (this.publishingStrategy) {
             case APPEND_TO_ANCESTOR:
                 startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 break;
@@ -90,7 +93,7 @@ public class ConfluencePublisher {
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Invalid publishing strategy '" + this.metadata.getPublishingStrategy() + "'");
+                throw new IllegalArgumentException("Invalid publishing strategy '" + this.publishingStrategy + "'");
         }
 
         this.confluencePublisherListener.publishCompleted();

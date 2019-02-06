@@ -6,6 +6,5 @@
       "title": "Existing Page",
       "contentFilePath": "some-confluence-content.html"
     }
-  ],
-  "publishingStrategy": "REPLACE_ANCESTOR"
+  ]
 }

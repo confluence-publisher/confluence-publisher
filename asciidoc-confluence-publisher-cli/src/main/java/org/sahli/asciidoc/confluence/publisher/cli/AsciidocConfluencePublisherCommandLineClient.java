@@ -42,6 +42,7 @@ import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.walkFileTree;
 import static java.util.Arrays.stream;
+import static org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherPublishStrategy.APPEND_TO_ANCESTOR;
 
 public class AsciidocConfluencePublisherCommandLineClient {
 
@@ -52,8 +53,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String spaceKey = mandatoryArgument("spaceKey", args);
         String ancestorId = mandatoryArgument("ancestorId", args);
 
-        String publishStrategyParam = optionalArgument("strategy", args).orElse(null);
-        ConfluencePublisherPublishStrategy publishStrategy = publishStrategyParam == null ? ConfluencePublisherPublishStrategy.APPEND_TO_ANCESTOR : ConfluencePublisherPublishStrategy.valueOf(publishStrategyParam);
+        ConfluencePublisherPublishStrategy publishStrategy = ConfluencePublisherPublishStrategy.valueOf(optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
         Path documentationRootFolder = Paths.get(mandatoryArgument("asciidocRootFolder", args));
         Path buildFolder = createTempDirectory("confluence-publisher");

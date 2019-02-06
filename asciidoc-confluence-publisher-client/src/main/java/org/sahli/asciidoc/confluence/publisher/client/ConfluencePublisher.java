@@ -23,7 +23,6 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,6 +39,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.REPLACE_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
 
@@ -70,7 +70,7 @@ public class ConfluencePublisher {
         assertMandatoryParameter(isNotBlank(this.metadata.getSpaceKey()), "spaceKey");
         assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
-        switch(this.metadata.getPublishingStrategy()) {
+        switch (this.metadata.getPublishingStrategy()) {
             case APPEND_TO_ANCESTOR:
                 startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 break;
@@ -78,9 +78,9 @@ public class ConfluencePublisher {
                 // verify that only a single root exists
                 if (this.metadata.getPages().size() > 1) {
                     throw new IllegalArgumentException(String.format("Multiple root pages detected: %s. " +
-                        "Publishing to confluence with the %s strategy only allows a single root to be defined.",
-                        StringUtils.join(this.metadata.getPages().stream().map(page -> "'" + page.getTitle() + "'").collect(Collectors.toList()), ", "),
-                        PublishingStrategy.REPLACE_ANCESTOR.name())
+                                    "Publishing to confluence with the %s strategy only allows a single root to be defined.",
+                            StringUtils.join(this.metadata.getPages().stream().map(page -> "'" + page.getTitle() + "'").collect(Collectors.toList()), ", "),
+                            REPLACE_ANCESTOR.name())
                     );
                 }
 

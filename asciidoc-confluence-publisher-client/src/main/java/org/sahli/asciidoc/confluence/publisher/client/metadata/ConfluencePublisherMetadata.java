@@ -21,6 +21,8 @@ import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.APPEND_TO_ANCESTOR;
+
 /**
  * @author Alain Sahli
  */
@@ -29,7 +31,7 @@ public class ConfluencePublisherMetadata {
     private String spaceKey;
     private String ancestorId;
     private List<ConfluencePageMetadata> pages = new ArrayList<>();
-    private PublishingStrategy publishingStrategy = PublishingStrategy.APPEND_TO_ANCESTOR;
+    private PublishingStrategy publishingStrategy = APPEND_TO_ANCESTOR;
 
     public String getSpaceKey() {
         return this.spaceKey;

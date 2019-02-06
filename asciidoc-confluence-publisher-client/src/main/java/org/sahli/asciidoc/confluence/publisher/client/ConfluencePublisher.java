@@ -16,7 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.client;
 
-import org.apache.commons.lang.StringUtils;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
@@ -32,10 +31,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -77,11 +76,8 @@ public class ConfluencePublisher {
             case REPLACE_ANCESTOR:
                 // verify that only a single root exists
                 if (this.metadata.getPages().size() > 1) {
-                    throw new IllegalArgumentException(String.format("Multiple root pages detected: %s. " +
-                                    "Publishing to confluence with the %s strategy only allows a single root to be defined.",
-                            StringUtils.join(this.metadata.getPages().stream().map(page -> "'" + page.getTitle() + "'").collect(Collectors.toList()), ", "),
-                            REPLACE_ANCESTOR.name())
-                    );
+                    String rootPageTitles = this.metadata.getPages().stream().map(page -> "'" + page.getTitle() + "'").collect(joining(", "));
+                    throw new IllegalArgumentException("Multiple root pages detected: " + rootPageTitles + ", but '" + REPLACE_ANCESTOR + "' publishing strategy only supports one single root page");
                 }
 
                 if (this.metadata.getPages().size() > 0) {
@@ -94,8 +90,9 @@ public class ConfluencePublisher {
                 }
                 break;
             default:
-                throw new IllegalStateException("Invalid publish strategy defined: " + this.metadata.getPublishingStrategy());
+                throw new IllegalArgumentException("Invalid publishing strategy '" + this.metadata.getPublishingStrategy() + "'");
         }
+
         this.confluencePublisherListener.publishCompleted();
     }
 

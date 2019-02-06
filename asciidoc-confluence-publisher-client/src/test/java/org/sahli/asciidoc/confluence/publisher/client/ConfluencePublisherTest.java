@@ -140,8 +140,7 @@ public class ConfluencePublisherTest {
     @Test
     public void publish_multiplePageWithAncestorIdReplaceStrategy_delegatesToConfluenceRestClient() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content'. " +
-            "Publishing to confluence with the REPLACE_ANCESTOR strategy only allows a single root to be defined.");
+        expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content', but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
 
         ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id-replace", null, null);
         confluencePublisher.publish();

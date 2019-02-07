@@ -77,18 +77,10 @@ public class ConfluencePublisher {
                 startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 break;
             case REPLACE_ANCESTOR:
-                // verify that only a single root exists
-                if (this.metadata.getPages().size() > 1) {
-                    String rootPageTitles = this.metadata.getPages().stream().map(page -> "'" + page.getTitle() + "'").collect(joining(", "));
-                    throw new IllegalArgumentException("Multiple root pages detected: " + rootPageTitles + ", but '" + REPLACE_ANCESTOR + "' publishing strategy only supports one single root page");
-                }
+                ConfluencePageMetadata rootPageMetaData = singleRootPageMetadata(this.metadata);
 
-                if (this.metadata.getPages().size() > 0) {
-                    // replace ancestor title with single root page title
-                    ConfluencePageMetadata rootPageMetaData = this.metadata.getPages().get(0);
+                if (rootPageMetaData != null) {
                     updatePage(this.metadata.getAncestorId(), null, rootPageMetaData);
-
-                    // publish children under root page
                     startPublishingUnderAncestorId(rootPageMetaData.getChildren(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 }
                 break;
@@ -97,6 +89,24 @@ public class ConfluencePublisher {
         }
 
         this.confluencePublisherListener.publishCompleted();
+    }
+
+    private static ConfluencePageMetadata singleRootPageMetadata(ConfluencePublisherMetadata metadata) {
+        List<ConfluencePageMetadata> rootPages = metadata.getPages();
+
+        if (rootPages.size() > 1) {
+            String rootPageTitles = rootPages.stream()
+                    .map(page -> "'" + page.getTitle() + "'")
+                    .collect(joining(", "));
+
+            throw new IllegalArgumentException("Multiple root pages detected: " + rootPageTitles + ", but '" + REPLACE_ANCESTOR + "' publishing strategy only supports one single root page");
+        }
+
+        if (rootPages.size() == 1) {
+            return rootPages.get(0);
+        }
+
+        return null;
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {

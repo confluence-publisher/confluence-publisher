@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy;
 
 import java.nio.file.Paths;
 
@@ -33,8 +32,8 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
-import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.APPEND_TO_ANCESTOR;
-import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.REPLACE_ANCESTOR;
+import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
+import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
 
 /**
  * @author Alain Sahli

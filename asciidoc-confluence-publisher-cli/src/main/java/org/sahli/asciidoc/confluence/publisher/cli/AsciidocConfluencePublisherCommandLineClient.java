@@ -21,7 +21,7 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListene
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy;
+import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
@@ -42,7 +42,7 @@ import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.walkFileTree;
 import static java.util.Arrays.stream;
-import static org.sahli.asciidoc.confluence.publisher.client.metadata.PublishingStrategy.APPEND_TO_ANCESTOR;
+import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 
 public class AsciidocConfluencePublisherCommandLineClient {
 

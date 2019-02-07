@@ -26,7 +26,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -269,7 +268,7 @@ public class ConfluenceRestClientTest {
         // assert
         ConfluencePage childOne = new ConfluencePage("1", "Page 1", 1);
         ConfluencePage childTwo = new ConfluencePage("2", "Page 2", 1);
-        assertThat(childPages, Matchers.contains(childOne, childTwo));
+        assertThat(childPages, contains(childOne, childTwo));
     }
 
     @Test
@@ -565,7 +564,12 @@ public class ConfluenceRestClientTest {
     private static String generateJsonPageResults(int numberOfPages) {
         return IntStream.range(1, numberOfPages + 1)
                 .boxed()
-                .map(pageNumber -> "{\"id\": \"" + pageNumber + "\", \"title\": \"Page " + pageNumber + "\", \"version\": {\"number\": 1}}")
+                .map(pageNumber -> "{" +
+                        "\"id\": \"" + pageNumber + "\", " +
+                        "\"title\": \"Page " + pageNumber + "\", " +
+                        "\"version\": {\"number\": 1}," +
+                        "\"ancestors\": [{\"id\": \"ancestor\"}]" +
+                        "}")
                 .collect(Collectors.joining(",\n"));
     }
 

@@ -112,7 +112,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The id of the ancestor page under which the pages are appended.
 
   Be aware that publishing will remove all pages under the configured ancestor id that are not part of the published
-  documentation.
+  documentation ("orphaned pages").
 | mandatory
 
 | username
@@ -122,6 +122,15 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | password
 | The password of the user to use for publishing.
 | mandatory
+
+| publishingStrategy
+a| The strategy to use when publishing to confluence. Possible values:
+
+* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and remove all orphaned pages
+* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page and
+remove all orphaned pages (requires the documentation source structure to contain exactly one single root page)
+
+| optional (defaults to `APPEND_TO_ANCESTOR`)
 
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
@@ -230,6 +239,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e ANCESTOR_ID=012345 \
    -e PAGE_TITLE_PREFIX="Draft - " \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
+   -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

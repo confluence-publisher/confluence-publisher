@@ -1,0 +1,13 @@
+{
+  "type": "page",
+  "title": "title",
+  "version": {
+    "number": 2
+  },
+  "body": {
+    "storage": {
+      "value": "content",
+      "representation": "storage"
+    }
+  }
+}

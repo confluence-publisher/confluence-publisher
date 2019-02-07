@@ -227,22 +227,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
-        CloseableHttpResponse response = null;
+        httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
 
-        try {
-            httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
-            response = this.httpClient.execute(httpRequest);
-
+        try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);
         } catch (IOException e) {
             throw new RuntimeException("Request could not be sent" + httpRequest, e);
-        } finally {
-            try {
-                if (response != null) {
-                    response.close();
-                }
-            } catch (IOException ignored) {
-            }
         }
     }
 

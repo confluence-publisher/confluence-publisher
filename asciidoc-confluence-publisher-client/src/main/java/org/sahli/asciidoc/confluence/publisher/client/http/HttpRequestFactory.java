@@ -59,6 +59,7 @@ class HttpRequestFactory {
 
     private final static Header APPLICATION_JSON_UTF8_HEADER = new BasicHeader("Content-Type", "application/json;charset=utf-8");
     private static final String REST_API_CONTEXT = "/rest/api";
+    private static final int INITAL_VERSION = 1;
     private final String rootConfluenceUrl;
     private final String confluenceRestApiEndpoint;
 
@@ -69,7 +70,7 @@ class HttpRequestFactory {
         this.confluenceRestApiEndpoint = rootConfluenceUrl + REST_API_CONTEXT;
     }
 
-    HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content) {
+    HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content, String versionMessage) {
         assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
         assertMandatoryParameter(isNotBlank(ancestorId), "ancestorId");
         assertMandatoryParameter(isNotBlank(title), "title");
@@ -79,12 +80,14 @@ class HttpRequestFactory {
                 .ancestorId(ancestorId)
                 .title(title)
                 .content(content)
+                .version(INITAL_VERSION)
+                .versionMessage(versionMessage)
                 .build();
 
         return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
     }
 
-    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion) {
+    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
@@ -93,6 +96,7 @@ class HttpRequestFactory {
                 .title(title)
                 .content(content)
                 .version(newVersion)
+                .versionMessage(versionMessage)
                 .build();
 
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
@@ -324,6 +328,7 @@ class HttpRequestFactory {
         private String spaceKey;
         private String ancestorId;
         private Integer version;
+        private String versionMessage;
 
         public PagePayloadBuilder title(String title) {
             this.title = title;
@@ -355,6 +360,12 @@ class HttpRequestFactory {
             return this;
         }
 
+        public PagePayloadBuilder versionMessage(String versionMessage) {
+            this.versionMessage = versionMessage;
+
+            return this;
+        }
+
         private PagePayload build() {
             Storage storage = new Storage();
             storage.setValue(this.content);
@@ -381,6 +392,9 @@ class HttpRequestFactory {
             if (this.version != null) {
                 Version versionContainer = new Version();
                 versionContainer.setNumber(this.version);
+                if (this.versionMessage != null) {
+                    versionContainer.setMessage(this.versionMessage);
+                }
                 pagePayload.setVersion(versionContainer);
             }
 
@@ -390,7 +404,6 @@ class HttpRequestFactory {
         static PagePayloadBuilder pagePayloadBuilder() {
             return new PagePayloadBuilder();
         }
-
     }
 
 }

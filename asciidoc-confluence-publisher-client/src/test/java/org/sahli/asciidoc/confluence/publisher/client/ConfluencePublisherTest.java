@@ -67,6 +67,7 @@ public class ConfluencePublisherTest {
 
     private static final String TEST_RESOURCES = "src/test/resources/org/sahli/asciidoc/confluence/publisher/client";
     private static final String SOME_CONFLUENCE_CONTENT_SHA256_HASH = "7a901829ba6a0b6f7f084ae4313bdb5d83bc2c4ea21b452ba7073c0b0c60faae";
+    private static final String VERSIONED_MESSAGE = "versioned message";
 
     @Rule
     public final ExpectedException expectedException = none();
@@ -100,17 +101,17 @@ public class ConfluencePublisherTest {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("2345");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("2345");
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
         verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", INITIAL_PAGE_VERSION)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
         verifyNoMoreInteractions(confluencePublisherListenerMock);
@@ -121,18 +122,18 @@ public class ConfluencePublisherTest {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("2345", "3456");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("2345", "3456");
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Other Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Other Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
         verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", INITIAL_PAGE_VERSION)));
         verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("3456", "Some Other Confluence Content", "<h1>Some Confluence Content</h1>", INITIAL_PAGE_VERSION)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
@@ -144,7 +145,7 @@ public class ConfluencePublisherTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content', but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id-replace", REPLACE_ANCESTOR, null, null);
+        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id-replace", REPLACE_ANCESTOR, null, null, VERSIONED_MESSAGE);
         confluencePublisher.publish();
     }
 
@@ -152,12 +153,12 @@ public class ConfluencePublisherTest {
     public void publish_multiplePagesInHierarchyWithAncestorIdAsRoot_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("1234", "2345");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("1234", "2345");
         when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-multiple-pages", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-multiple-pages", confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
@@ -167,11 +168,13 @@ public class ConfluencePublisherTest {
         ArgumentCaptor<String> ancestorIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> titleArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> contentArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(confluenceRestClientMock, times(2)).addPageUnderAncestor(spaceKeyArgumentCaptor.capture(), ancestorIdArgumentCaptor.capture(), titleArgumentCaptor.capture(), contentArgumentCaptor.capture());
+        ArgumentCaptor<String> messageArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(confluenceRestClientMock, times(2)).addPageUnderAncestor(spaceKeyArgumentCaptor.capture(), ancestorIdArgumentCaptor.capture(), titleArgumentCaptor.capture(), contentArgumentCaptor.capture(), messageArgumentCaptor.capture());
         assertThat(spaceKeyArgumentCaptor.getAllValues(), contains("~personalSpace", "~personalSpace"));
         assertThat(ancestorIdArgumentCaptor.getAllValues(), contains("72189173", "1234"));
         assertThat(titleArgumentCaptor.getAllValues(), contains("Some Confluence Content", "Some Child Content"));
         assertThat(contentArgumentCaptor.getAllValues(), contains("<h1>Some Confluence Content</h1>", "<h1>Some Child Content</h1>"));
+        assertThat(messageArgumentCaptor.getAllValues(), contains(VERSIONED_MESSAGE, VERSIONED_MESSAGE));
 
         verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("1234", "Some Confluence Content", "<h1>Some Confluence Content</h1>", INITIAL_PAGE_VERSION)));
         verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("2345", "Some Child Content", "<h1>Some Child Content</h1>", INITIAL_PAGE_VERSION)));
@@ -183,7 +186,7 @@ public class ConfluencePublisherTest {
     public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
         when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
         when(confluenceRestClientMock.getAttachmentByFileName(anyString(), anyString())).thenThrow(new NotFoundException());
 
@@ -197,7 +200,7 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"));
+        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(null));
         verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
         assertThat(contentId.getAllValues(), contains("4321", "4321"));
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentOne.txt")), UTF_8), is("attachment1"));
@@ -216,14 +219,14 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).updatePage(eq("3456"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2));
+        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
+        verify(confluenceRestClientMock, times(1)).updatePage(eq("3456"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(VERSIONED_MESSAGE));
 
         verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(existingPage), eq(new ConfluencePage("3456", "Existing Page", "<h1>Some Confluence Content</h1>", 2)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
@@ -241,14 +244,14 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).updatePage(eq("1234"), eq(null), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2));
+        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
+        verify(confluenceRestClientMock, times(1)).updatePage(eq("1234"), eq(null), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(VERSIONED_MESSAGE));
 
         verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(existingPage), eq(new ConfluencePage("1234", "Existing Page", "<h1>Some Confluence Content</h1>", 2)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
@@ -266,14 +269,14 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"));
-        verify(confluenceRestClientMock, times(1)).updatePage(eq("1234"), eq(null), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2));
+        verify(confluenceRestClientMock, never()).addPageUnderAncestor(eq("~personalSpace"), eq("1234"), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(VERSIONED_MESSAGE));
+        verify(confluenceRestClientMock, times(1)).updatePage(eq("1234"), eq(null), eq("Existing Page"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(VERSIONED_MESSAGE));
 
         verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(existingPage), eq(new ConfluencePage("1234", "Existing Page", "<h1>Some Confluence Content</h1>", 2)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
@@ -364,7 +367,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key", confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
@@ -390,7 +393,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key-replace", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, VERSIONED_MESSAGE);
 
         // act
         confluencePublisher.publish();
@@ -404,18 +407,18 @@ public class ConfluencePublisherTest {
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {
-        return confluencePublisher(qualifier, confluenceRestClient, null);
+        return confluencePublisher(qualifier, confluenceRestClient, null, null);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener) {
-        return confluencePublisher(qualifier, confluenceRestClient, confluencePublisherListener, APPEND_TO_ANCESTOR);
+    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionedMessage) {
+        return confluencePublisher(qualifier, confluenceRestClient, confluencePublisherListener, APPEND_TO_ANCESTOR, versionedMessage);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, PublishingStrategy publishingStrategy) {
-        return confluencePublisher(qualifier, publishingStrategy, confluenceRestClient, confluencePublisherListener);
+    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, PublishingStrategy publishingStrategy, String versionMessage) {
+        return confluencePublisher(qualifier, publishingStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener) {
+    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionMessage) {
         Path metadataFilePath = Paths.get(TEST_RESOURCES + "/metadata-" + qualifier + ".json");
         Path contentRoot = metadataFilePath.getParent().toAbsolutePath();
 
@@ -423,7 +426,7 @@ public class ConfluencePublisherTest {
         resolveAbsoluteContentFileAndAttachmentsPath(metadata.getPages(), contentRoot);
 
         if (confluencePublisherListener != null) {
-            return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient, confluencePublisherListener);
+            return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
         }
 
         return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient);

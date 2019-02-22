@@ -24,9 +24,9 @@ import java.util.List;
  */
 public interface ConfluenceClient {
 
-    String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content);
+    String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content, String versionMessage);
 
-    void updatePage(String contentId, String ancestorId, String title, String content, int newVersion);
+    void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage);
 
     void deletePage(String contentId);
 

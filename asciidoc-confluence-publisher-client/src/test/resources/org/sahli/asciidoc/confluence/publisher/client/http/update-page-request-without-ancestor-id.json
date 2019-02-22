@@ -2,7 +2,8 @@
   "type": "page",
   "title": "title",
   "version": {
-    "number": 2
+    "number": 2,
+    "message": "test message"
   },
   "body": {
     "storage": {

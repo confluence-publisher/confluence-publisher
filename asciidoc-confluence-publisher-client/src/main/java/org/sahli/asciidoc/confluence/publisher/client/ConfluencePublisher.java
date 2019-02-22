@@ -55,16 +55,20 @@ public class ConfluencePublisher {
     private final PublishingStrategy publishingStrategy;
     private final ConfluenceClient confluenceClient;
     private final ConfluencePublisherListener confluencePublisherListener;
+    private final String versionMessage;
 
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient) {
-        this(metadata, publishingStrategy, confluenceClient, new NoOpConfluencePublisherListener());
+        this(metadata, publishingStrategy, confluenceClient, new NoOpConfluencePublisherListener(), null);
     }
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener) {
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy,
+                               ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener,
+                               String versionMessage) {
         this.metadata = metadata;
         this.publishingStrategy = publishingStrategy;
         this.confluenceClient = confluenceClient;
         this.confluencePublisherListener = confluencePublisherListener;
+        this.versionMessage = versionMessage;
     }
 
     public void publish() {
@@ -153,7 +157,7 @@ public class ConfluencePublisher {
             updatePage(contentId, ancestorId, page);
         } catch (NotFoundException e) {
             String content = fileContent(page.getContentFilePath(), UTF_8);
-            contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content);
+            contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
             this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
             this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
         }
@@ -170,7 +174,7 @@ public class ConfluencePublisher {
         if (notSameContentHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
             this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
             int newPageVersion = existingPage.getVersion() + 1;
-            this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion);
+            this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion, this.versionMessage);
             this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
             this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, newPageVersion));
         }

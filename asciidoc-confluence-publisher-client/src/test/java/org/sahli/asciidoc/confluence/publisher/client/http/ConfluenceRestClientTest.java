@@ -95,7 +95,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
-        String contentId = confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
+        String contentId = confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
 
         // assert
         assertThat(contentId, is(expectedContentId));
@@ -108,7 +108,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
-        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2);
+        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2, "Version Message");
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPut.class));
@@ -472,11 +472,16 @@ public class ConfluenceRestClientTest {
         // assert
         this.expectedException.expect(RuntimeException.class);
         this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content\n" +
-            "request: '{\"title\":\"Hello\",\"space\":{\"key\":\"~personalSpace\"},\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}},\"ancestors\":[{\"id\":\"123\"}],\"type\":\"page\"}'\n" +
+            "request: '{\"title\":\"Hello\"," +
+                "\"space\":{\"key\":\"~personalSpace\"}," +
+                "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
+                "\"ancestors\":[{\"id\":\"123\"}]," +
+                "\"version\":{\"number\":1,\"message\":\"Version Message\"}," +
+                "\"type\":\"page\"}'\n" +
             "response: '{\"some\": \"json\"}'");
 
         // act
-        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content");
+        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
     }
 
     @Test

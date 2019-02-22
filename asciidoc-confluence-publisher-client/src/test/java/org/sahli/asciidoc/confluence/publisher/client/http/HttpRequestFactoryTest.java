@@ -77,9 +77,10 @@ public class HttpRequestFactoryTest {
         String ancestorId = "1234";
         String title = "title";
         String content = "content";
+        String message = "versioned message";
 
         // act
-        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
+        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content, message);
 
         // assert
         assertThat(addPageUnderAncestorRequest.getMethod(), is("POST"));
@@ -98,7 +99,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("title must be set");
 
         // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content");
+        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content", "version message");
     }
 
     @Test
@@ -108,7 +109,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("ancestorId must be set");
 
         // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "", "title", "content");
+        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "", "title", "content", "version message");
     }
 
     @Test
@@ -119,9 +120,10 @@ public class HttpRequestFactoryTest {
         String title = "title";
         String content = "content";
         Integer version = 2;
+        String message = "versioned message";
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, message);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -143,7 +145,7 @@ public class HttpRequestFactoryTest {
         Integer version = 2;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, "test message");
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -162,7 +164,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2);
+        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message");
     }
 
     @Test
@@ -172,7 +174,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("title must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2);
+        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message");
     }
 
     @Test

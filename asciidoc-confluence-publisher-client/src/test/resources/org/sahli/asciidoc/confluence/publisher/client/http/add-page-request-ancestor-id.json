@@ -11,7 +11,7 @@
   ],
   "version": {
     "number": 1,
-    "message": "versioned message"
+    "message": "version message"
   },
   "body": {
     "storage": {

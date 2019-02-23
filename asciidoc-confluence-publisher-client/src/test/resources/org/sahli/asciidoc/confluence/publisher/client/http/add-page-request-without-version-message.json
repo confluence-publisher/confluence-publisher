@@ -1,14 +1,16 @@
 {
   "type": "page",
   "title": "title",
+  "space": {
+    "key": "~personalSpace"
+  },
   "ancestors": [
     {
-      "id": "1"
+      "id": "1234"
     }
   ],
   "version": {
-    "number": 2,
-    "message": "version message"
+    "number": 1
   },
   "body": {
     "storage": {

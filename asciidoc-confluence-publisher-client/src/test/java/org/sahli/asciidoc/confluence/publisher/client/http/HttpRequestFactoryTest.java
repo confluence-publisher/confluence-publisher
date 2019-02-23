@@ -77,10 +77,10 @@ public class HttpRequestFactoryTest {
         String ancestorId = "1234";
         String title = "title";
         String content = "content";
-        String message = "versioned message";
+        String versionMessage = "version message";
 
         // act
-        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content, message);
+        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content, versionMessage);
 
         // assert
         assertThat(addPageUnderAncestorRequest.getMethod(), is("POST"));
@@ -89,6 +89,28 @@ public class HttpRequestFactoryTest {
 
         String jsonPayload = inputStreamAsString(addPageUnderAncestorRequest.getEntity().getContent(), UTF_8);
         String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-ancestor-id.json").toString(), UTF_8);
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
+    }
+
+    @Test
+    public void addPageUnderAncestorRequest_withoutVersionMessage_returnsValidHttpPost() throws Exception {
+        // arrange
+        String spaceKey = "~personalSpace";
+        String ancestorId = "1234";
+        String title = "title";
+        String content = "content";
+        String versionMessage = null;
+
+        // act
+        HttpPost addPageUnderAncestorRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content, versionMessage);
+
+        // assert
+        assertThat(addPageUnderAncestorRequest.getMethod(), is("POST"));
+        assertThat(addPageUnderAncestorRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content"));
+        assertThat(addPageUnderAncestorRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
+
+        String jsonPayload = inputStreamAsString(addPageUnderAncestorRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "add-page-request-without-version-message.json").toString(), UTF_8);
         assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
     }
 
@@ -120,10 +142,10 @@ public class HttpRequestFactoryTest {
         String title = "title";
         String content = "content";
         Integer version = 2;
-        String message = "versioned message";
+        String versionMessage = "version message";
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, message);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -143,9 +165,10 @@ public class HttpRequestFactoryTest {
         String title = "title";
         String content = "content";
         Integer version = 2;
+        String versionMessage = null;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, "test message");
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));

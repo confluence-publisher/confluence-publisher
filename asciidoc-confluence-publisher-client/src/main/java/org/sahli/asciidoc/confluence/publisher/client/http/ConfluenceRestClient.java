@@ -76,8 +76,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content) {
-        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content);
+    public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content, String versionMessage) {
+        HttpPost addPageUnderSpaceRequest = this.httpRequestFactory.addPageUnderAncestorRequest(spaceKey, ancestorId, title, content, versionMessage);
 
         return sendRequestAndFailIfNot20x(addPageUnderSpaceRequest, (response) -> {
             String contentId = extractIdFromJsonNode(parseJsonResponse(response));
@@ -87,8 +87,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion) {
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion);
+    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion, versionMessage);
         sendRequestAndFailIfNot20x(updatePageRequest);
     }
 

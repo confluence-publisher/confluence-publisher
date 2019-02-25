@@ -24,6 +24,7 @@ import org.sahli.asciidoc.confluence.publisher.client.support.RuntimeUse;
 public class Version {
 
     private int number;
+    private String message;
 
     @RuntimeUse
     public int getNumber() {
@@ -34,4 +35,11 @@ public class Version {
         this.number = number;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

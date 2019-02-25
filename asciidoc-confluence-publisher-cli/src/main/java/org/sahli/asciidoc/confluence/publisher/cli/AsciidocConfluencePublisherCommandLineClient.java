@@ -52,6 +52,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String password = mandatoryArgument("password", args);
         String spaceKey = mandatoryArgument("spaceKey", args);
         String ancestorId = mandatoryArgument("ancestorId", args);
+        String versionMessage = optionalArgument("versionMessage", args).orElse(null);
 
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
@@ -70,7 +71,8 @@ public class AsciidocConfluencePublisherCommandLineClient {
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener());
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,
+                    confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
             confluencePublisher.publish();
         } finally {
             deleteDirectory(buildFolder);

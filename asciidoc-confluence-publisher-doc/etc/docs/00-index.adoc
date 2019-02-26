@@ -96,10 +96,6 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The documentation root folder with the AsciiDoc file structure.
 | mandatory
 
-| skip
-| Defines whether execution of plugin should be skipped.
-| optional (defaults to false)
-
 | sourceEncoding
 | The encoding of the AsciiDoc files.
 | optional (defaults to UTF-8)
@@ -153,6 +149,10 @@ remove all orphaned pages (requires the documentation source structure to contai
   Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitleSuffix` element.
 | optional (defaults to empty)
+
+| skip
+| Defines whether the plugin execution should be skipped.
+| optional (defaults to false, only supported for Maven plugin)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin

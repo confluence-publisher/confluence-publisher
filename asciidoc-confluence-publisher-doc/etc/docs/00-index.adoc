@@ -149,6 +149,10 @@ remove all orphaned pages (requires the documentation source structure to contai
   Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitleSuffix` element.
 | optional (defaults to empty)
+
+| skip
+| Defines whether the plugin execution should be skipped.
+| optional (defaults to false, only supported for Maven plugin)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin

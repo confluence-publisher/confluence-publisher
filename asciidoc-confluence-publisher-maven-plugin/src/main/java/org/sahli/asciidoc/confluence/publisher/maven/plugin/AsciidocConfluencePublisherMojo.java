@@ -79,9 +79,16 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private String pageTitleSuffix;
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Parameter(defaultValue = "false")
+    private boolean skip;
+
     @Override
     public void execute() throws MojoExecutionException {
+        if (this.skip) {
+            getLog().info("Publishing to Confluence skipped");
+            return;
+        }
+
         try {
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(this.pageTitlePrefix, this.pageTitleSuffix);
 

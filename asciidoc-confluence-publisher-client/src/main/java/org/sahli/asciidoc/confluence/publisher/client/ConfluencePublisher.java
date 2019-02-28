@@ -80,7 +80,7 @@ public class ConfluencePublisher {
                 startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 break;
             case REPLACE_ANCESTOR:
-                startPublishingReplacingAncestorId(this.metadata, this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+                startPublishingReplacingAncestorId(singleRootPage(this.metadata), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
                 break;
             default:
                 throw new IllegalArgumentException("Invalid publishing strategy '" + this.publishingStrategy + "'");
@@ -89,7 +89,7 @@ public class ConfluencePublisher {
         this.confluencePublisherListener.publishCompleted();
     }
 
-    private static ConfluencePageMetadata singleRootPageMetadata(ConfluencePublisherMetadata metadata) {
+    private static ConfluencePageMetadata singleRootPage(ConfluencePublisherMetadata metadata) {
         List<ConfluencePageMetadata> rootPages = metadata.getPages();
 
         if (rootPages.size() > 1) {
@@ -107,9 +107,7 @@ public class ConfluencePublisher {
         return null;
     }
 
-    private void startPublishingReplacingAncestorId(ConfluencePublisherMetadata metadata, String spaceKey, String ancestorId) {
-        ConfluencePageMetadata rootPage = singleRootPageMetadata(metadata);
-
+    private void startPublishingReplacingAncestorId(ConfluencePageMetadata rootPage, String spaceKey, String ancestorId) {
         if (rootPage != null) {
             updatePage(ancestorId, null, rootPage);
 

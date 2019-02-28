@@ -258,6 +258,7 @@
                     <excludes>
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
             <plugin>
@@ -323,6 +324,7 @@
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
+                            <useSystemClassLoader>false</useSystemClassLoader>
                         </configuration>
                         <executions>
                             <execution>
@@ -356,8 +358,8 @@
                         <version>1.6</version>
                         <configuration>
                             <executable>gpg</executable>
-                            <keyname>${env.GPG_KEYNAME}</keyname>
-                            <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+                            <keyname>${env.CODE_SIGNING_ID}</keyname>
+                            <passphrase>${env.CODE_SIGNING_PASSWORD}</passphrase>
                         </configuration>
                     </plugin>
                 </plugins>

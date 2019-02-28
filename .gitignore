@@ -1,3 +1,4 @@
+code-signing-key.asc
 *.iml
 target/
 !.idea/

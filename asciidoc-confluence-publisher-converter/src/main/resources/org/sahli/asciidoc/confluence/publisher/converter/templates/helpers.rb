@@ -134,6 +134,15 @@ module Slim::Helpers
     attr :language, nil, false
   end
 
+  def confluence_supported_lang(lang)
+    supported = ['actionscript3','applescript','bash','c#','cpp','css',
+                'coldfusion','delphi','diff','erl','groovy',
+                'xml','java','jfx','js','php','perl',
+                'text','powershell','py','ruby','sql','sass',
+                'scala','vb','yml']
+    supported.include? lang
+  end
+
   #--------------------------------------------------------
   # inline_anchor
   #

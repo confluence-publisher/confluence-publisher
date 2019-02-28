@@ -283,6 +283,39 @@ public class ConfluencePublisherTest {
     }
 
     @Test
+    public void publish_metadataWithExistingPageAndNewAttachments_sendsUpdateAndAddAttachmentRequests() {
+        // arrange
+        ConfluencePage existingPage = new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1);
+
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(existingPage);
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt"))
+                .thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt"))
+                .thenReturn(new ConfluenceAttachment("att2", "attachmentOne.txt", "/download/attachmentOne.txt", 1));
+        when(confluenceRestClientMock.getAttachmentContent("/download/attachmentOne.txt"))
+                .thenReturn(new ByteArrayInputStream("Old content".getBytes()));
+
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, never()).addPageUnderAncestor(any(), any(), any(), any(), any());
+        verify(confluenceRestClientMock, times(1)).updatePage(eq("72189173"), eq(null), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(null));
+        verify(confluenceRestClientMock).addAttachment(eq("72189173"), eq("attachmentOne.txt"), any(InputStream.class));
+        verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), any(InputStream.class));
+
+        verify(confluencePublisherListenerMock, times(1)).pageUpdated(existingPage, new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2));
+        verify(confluencePublisherListenerMock, times(1)).publishCompleted();
+        verifyNoMoreInteractions(confluencePublisherListenerMock);
+    }
+
+    @Test
     public void publish_metadataWithExistingPageAndAttachmentWithDifferentAttachmentContentUnderRootSpace_sendsUpdateAttachmentRequest() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);

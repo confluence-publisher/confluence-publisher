@@ -24,11 +24,14 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMet
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
@@ -66,6 +69,10 @@ public class ConfluencePublisherIntegrationTest {
         // arrange
         String title = uniqueTitle("Single Page");
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+        confluencePageMetadata.setAttachments(attachments);
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
 
         ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
@@ -77,6 +84,13 @@ public class ConfluencePublisherIntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(rootPage())
                 .then().body("title", is(title));
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(2))
+                .body("results[0].title", is("attachmentOne.txt"))
+                .body("results[1].title", is("attachmentTwo.txt"));
+
     }
 
     @Test
@@ -155,6 +169,10 @@ public class ConfluencePublisherIntegrationTest {
 
     private static String rootPage() {
         return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID;
+    }
+
+    private static String rootPageAttachments() {
+        return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/attachment";
     }
 
     private static String pageVersionOf(String contentId) {

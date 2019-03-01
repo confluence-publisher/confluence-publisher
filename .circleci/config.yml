@@ -16,12 +16,12 @@ jobs:
       - run: sudo apt-get install graphviz
       - run: ./mvnw clean install jacoco:report coveralls:report -nsu
 
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin; fi
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5; fi
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./waitForConfluenceStartup.sh confluence-publisher-it 300; fi
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
-      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./publishWithDockerImage.sh; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then ./waitForConfluenceStartup.sh confluence-publisher-it 300; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
+      - run: if [ -z "$CIRCLE_PR_USERNAME" ]; then ./publishWithDockerImage.sh; fi
 
       - run: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./importGpgKey.sh; fi
       - run: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi

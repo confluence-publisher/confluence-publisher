@@ -258,7 +258,6 @@
                     <excludes>
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
-                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
             <plugin>
@@ -324,7 +323,6 @@
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
-                            <useSystemClassLoader>false</useSystemClassLoader>
                         </configuration>
                         <executions>
                             <execution>

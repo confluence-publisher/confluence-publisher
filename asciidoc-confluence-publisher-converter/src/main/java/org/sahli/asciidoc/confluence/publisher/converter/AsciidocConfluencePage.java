@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -92,17 +93,20 @@ public class AsciidocConfluencePage {
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder) {
-        return newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesDir, pageAssetsFolder, new NoOpPageTitlePostProcessor());
+        return newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesDir, pageAssetsFolder, new NoOpPageTitlePostProcessor(), Collections.emptyMap());
     }
 
-    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor) {
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding,
+                                                                   Path templatesDir, Path pageAssetsFolder,
+                                                                   PageTitlePostProcessor pageTitlePostProcessor,
+                                                                   Map<String, Object> userAttributes) {
         try {
             Path asciidocPagePath = asciidocPage.path();
             String asciidocContent = readIntoString(newInputStream(asciidocPagePath), sourceEncoding);
 
             Map<String, String> attachmentCollector = new HashMap<>();
 
-            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder);
+            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributes);
             String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor, sourceEncoding);
 
             String pageTitle = pageTitle(asciidocContent, pageTitlePostProcessor);
@@ -163,12 +167,13 @@ public class AsciidocConfluencePage {
 
     private static String pageTitle(String pageContent, PageTitlePostProcessor pageTitlePostProcessor) {
         return Optional.ofNullable(ASCIIDOCTOR.readDocumentHeader(pageContent).getDocumentTitle())
-                .map(Title::getMain)
+                .map(title -> title.getMain())
                 .map((pageTitle) -> pageTitlePostProcessor.process(pageTitle))
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder) {
+    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder,
+                                   Map<String, Object> userAttributes) {
         if (!exists(templatesFolder)) {
             throw new RuntimeException("templateDir folder does not exist");
         }
@@ -177,7 +182,7 @@ public class AsciidocConfluencePage {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
-        Map<String, Object> attributes = new HashMap<>();
+        Map<String, Object> attributes = new HashMap<>(userAttributes);
         attributes.put("imagesoutdir", generatedAssetsTargetFolder.toString());
         attributes.put("outdir", generatedAssetsTargetFolder.toString());
 

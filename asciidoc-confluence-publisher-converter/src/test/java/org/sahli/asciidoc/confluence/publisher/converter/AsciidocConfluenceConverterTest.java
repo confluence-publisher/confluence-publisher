@@ -24,9 +24,13 @@ import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublish
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
@@ -47,12 +51,15 @@ public class AsciidocConfluenceConverterTest {
         // arrange
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("name", "Rick and Morty");
+        userAttributes.put("genre", "science fiction");
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder);
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, userAttributes);
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -92,7 +99,8 @@ public class AsciidocConfluenceConverterTest {
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter
+                .convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -113,7 +121,7 @@ public class AsciidocConfluenceConverterTest {
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
 
         // act
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder);
+        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, Collections.emptyMap());
 
         // assert
         assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));

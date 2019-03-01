@@ -15,7 +15,8 @@ ENV SOURCE_ENCODING="" \
     PAGE_TITLE_PREFIX=""  \
     PAGE_TITLE_SUFFIX="" \
     PUBLISHING_STRATEGY="" \
-    VERSION_MESSAGE=""
+    VERSION_MESSAGE="" \
+    ATTRIBUTES=""
 
 ENTRYPOINT ["sh", "-c", "java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     \"asciidocRootFolder=/var/asciidoc-root-folder\" \
@@ -29,4 +30,5 @@ ENTRYPOINT ["sh", "-c", "java -jar /opt/asciidoc-confluence-publisher-docker.jar
     \"pageTitleSuffix=$PAGE_TITLE_SUFFIX\" \
     \"publishingStrategy=$PUBLISHING_STRATEGY\" \
     \"versionMessage=$VERSION_MESSAGE\" \
+    \"attributes=$ATTRIBUTES\" \
 "]

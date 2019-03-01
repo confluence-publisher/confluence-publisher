@@ -18,10 +18,10 @@ package org.sahli.asciidoc.confluence.publisher.cli;
 
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
+import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
@@ -35,40 +35,44 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.Map;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.walkFileTree;
-import static java.util.Arrays.stream;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 
 public class AsciidocConfluencePublisherCommandLineClient {
 
     public static void main(String[] args) throws Exception {
-        String rootConfluenceUrl = mandatoryArgument("rootConfluenceUrl", args);
-        String username = mandatoryArgument("username", args);
-        String password = mandatoryArgument("password", args);
-        String spaceKey = mandatoryArgument("spaceKey", args);
-        String ancestorId = mandatoryArgument("ancestorId", args);
-        String versionMessage = optionalArgument("versionMessage", args).orElse(null);
+        ArgumentsParser argumentsParser = new ArgumentsParser();
+        String rootConfluenceUrl = argumentsParser.mandatoryArgument("rootConfluenceUrl", args);
+        String username = argumentsParser.mandatoryArgument("username", args);
+        String password = argumentsParser.mandatoryArgument("password", args);
+        String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
+        String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
+        String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
 
-        PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
+        PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
-        Path documentationRootFolder = Paths.get(mandatoryArgument("asciidocRootFolder", args));
+        Path documentationRootFolder = Paths.get(argumentsParser.mandatoryArgument("asciidocRootFolder", args));
         Path buildFolder = createTempDirectory("confluence-publisher");
 
-        Charset sourceEncoding = Charset.forName(optionalArgument("sourceEncoding", args).orElse("UTF-8"));
-        String prefix = optionalArgument("pageTitlePrefix", args).orElse(null);
-        String suffix = optionalArgument("pageTitleSuffix", args).orElse(null);
+        Charset sourceEncoding = Charset.forName(argumentsParser.optionalArgument("sourceEncoding", args).orElse("UTF-8"));
+        String prefix = argumentsParser.optionalArgument("pageTitlePrefix", args).orElse(null);
+        String suffix = argumentsParser.optionalArgument("pageTitleSuffix", args).orElse(null);
+        Map<String, Object> attributes = argumentsParser.optionalJsonArgument("attributes", args).orElseGet(Collections::emptyMap);
 
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder);
+
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter
+                    .convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,
@@ -77,19 +81,6 @@ public class AsciidocConfluencePublisherCommandLineClient {
         } finally {
             deleteDirectory(buildFolder);
         }
-    }
-
-    private static String mandatoryArgument(String key, String[] args) {
-        return optionalArgument(key, args)
-                .orElseThrow(() -> new IllegalArgumentException("mandatory argument '" + key + "' is missing"));
-    }
-
-    private static Optional<String> optionalArgument(String key, String[] args) {
-        return stream(args)
-                .filter((keyAndValue) -> keyAndValue.startsWith(key + "="))
-                .map((keyAndValue) -> keyAndValue.substring(keyAndValue.indexOf('=') + 1))
-                .filter((value) -> !value.isEmpty())
-                .findFirst();
     }
 
     private static void deleteDirectory(Path buildFolder) throws IOException {

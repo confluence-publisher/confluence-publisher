@@ -21,8 +21,11 @@ import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
+
+    private static final long ROOT_PAGE_ID = 327706;
 
     @Test
     public void publish_mandatoryArgumentsProvided_publishesDocumentationToConfluence() throws Exception {
@@ -32,25 +35,41 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "username=confluence-publisher-it",
                 "password=1234",
                 "spaceKey=CPI",
-                "ancestorId=327706",
-                "asciidocRootFolder=src/it/resources"
+                "ancestorId=" + ROOT_PAGE_ID,
+                "asciidocRootFolder=src/it/resources",
+                "attributes={\"key1\": \"value1\", \"key2\": \"value2\"}"
         };
 
         // act
         AsciidocConfluencePublisherCommandLineClient.main(args);
 
         // assert
+        long childPageId = givenAuthenticatedAsPublisher()
+                .when()
+                .get(childPagesFor(ROOT_PAGE_ID))
+                .then()
+                .body("results.title", hasItem("Index"))
+                .extract()
+                .body().jsonPath().getLong("results[0].id");
+
         givenAuthenticatedAsPublisher()
-                .when().get(childPages())
-                .then().body("results.title", hasItem("Index"));
+                .when()
+                .get(contentFor(childPageId))
+                .then()
+                .body("body.storage.value",
+                        is("<p>Hello! value1 value2</p>"));
+    }
+
+    private String contentFor(long pageId) {
+        return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.storage";
+    }
+
+    private static String childPagesFor(long pageId) {
+        return "http://localhost:8090/rest/api/content/" + pageId + "/child/page";
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
         return given().auth().preemptive().basic("confluence-publisher-it", "1234");
-    }
-
-    private static String childPages() {
-        return "http://localhost:8090/rest/api/content/327706/child/page";
     }
 
 }

@@ -35,4 +35,3 @@ The following secret environment variables have to be set on the build server:
 | DOCKER_HUB_USERNAME     | username of docker hub user for publishing docker image    | confluencepublisher                             |	
 | OSSRH_PASSWORD          | password of sonatype user for publishing maven artifacts   | (secret)                                        |	
 | OSSRH_USERNAME          | username of sonatype user for publishing maven artifacts   | confluence-publisher                            |
-| COVERALLS_TOKEN         | token for coveralls code coverage reporting                | (secret)                                        |

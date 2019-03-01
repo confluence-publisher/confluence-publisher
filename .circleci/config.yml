@@ -1,0 +1,47 @@
+version: 2
+jobs:
+  build:
+    machine:
+      java:
+        version: openjdk8
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: confluence-publisher-{{ checksum "pom.xml" }}
+
+      - run: if [ -n "$CIRCLE_TAG" ]; then ./mvnw versions:set -DnewVersion=$CIRCLE_TAG -nsu; fi
+
+      - run: sudo apt-get install graphviz
+      - run: ./mvnw clean install jacoco:report coveralls:report -nsu
+
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin; fi
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5; fi
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./waitForConfluenceStartup.sh confluence-publisher-it 300; fi
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
+      - run: if [ "$CIRCLE_PROJECT_USERNAME" == "confluence-publisher" ]; then ./publishWithDockerImage.sh; fi
+
+      - run: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./importGpgKey.sh; fi
+      - run: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi
+      - run: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu; fi
+      - run: if [ -n "$CIRCLE_TAG" ]; then ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
+
+      - run: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: confluence-publisher-{{ checksum "pom.xml" }}
+
+workflows:
+  version: 2
+
+  main:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/

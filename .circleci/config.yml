@@ -16,7 +16,7 @@ jobs:
           command: if [ -n "$CIRCLE_TAG" ]; then ./mvnw versions:set -DnewVersion=$CIRCLE_TAG -nsu; fi
 
       - run:
-          name: Install pre-requisites
+          name: Install prerequisites
           command: sudo apt-get install graphviz
 
       - run:
@@ -47,7 +47,10 @@ jobs:
           name: Publish documentation to Atlassian Confluence (tag build only)
           command: if [ -n "$CIRCLE_TAG" ]; then ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
 
-      - run: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
+      - run:
+          name: Prepare cache
+          command: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
+
       - save_cache:
           paths:
             - ~/.m2

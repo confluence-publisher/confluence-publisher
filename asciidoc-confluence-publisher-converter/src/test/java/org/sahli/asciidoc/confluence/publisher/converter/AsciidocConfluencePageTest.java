@@ -198,9 +198,9 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithHttpSourceListing_returnsConfluencePageContentWithMacroWithNameNoFormat() {
+    public void renderConfluencePage_asciiDocWithSourceListingOfUnsupportedLanguage_returnsConfluencePageContentWithMacroWithoutLanguageElement() {
         // arrange
-        String adocContent = "[source,http]\n" +
+        String adocContent = "[source,unsupported]\n" +
                 "----\n" +
                 "GET /events?param1=value1&param2=value2 HTTP/1.1\n" +
                 "Host: localhost:8080\n" +

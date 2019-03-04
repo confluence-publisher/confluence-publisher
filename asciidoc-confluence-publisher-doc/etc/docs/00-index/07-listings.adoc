@@ -34,7 +34,10 @@ this is a listing block
 
 == Source Block
 
-Source blocks are converted using the "code" macro.
+Source blocks are converted using the "code" macro. Only languages supported by the Code Block Macro can be used:
+`actionscript3`, `applescript`, `bash`, `c#`, `cpp`, `css`, `coldfusion`, `delphi`, `diff`, `erl`, `groovy`,
+`xml`, `java`, `jfx`, `js`, `php`, `perl`, `text`, `powershell`, `py`, `ruby`, `sql`, `sass`, `scala`,
+`vb`, `yml` (since Confluence 6.7 only)
 
 [listing]
 ....

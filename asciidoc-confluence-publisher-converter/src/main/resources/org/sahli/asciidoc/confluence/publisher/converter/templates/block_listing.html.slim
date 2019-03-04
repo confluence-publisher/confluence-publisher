@@ -1,6 +1,6 @@
 - if style == 'source'
   ac:structured-macro ac:name="code"
-    - if "#{source_lang}" != ""
+    - if (confluence_supported_lang "#{source_lang}")
       ac:parameter ac:name="language" #{source_lang}
     ac:plain-text-body
       <![CDATA[#{content}]]>

@@ -198,6 +198,27 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithSourceListingOfUnsupportedLanguage_returnsConfluencePageContentWithMacroWithoutLanguageElement() {
+        // arrange
+        String adocContent = "[source,unsupported]\n" +
+                "----\n" +
+                "GET /events?param1=value1&param2=value2 HTTP/1.1\n" +
+                "Host: localhost:8080\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:plain-text-body>" +
+                "<![CDATA[GET /events?param1=value1&param2=value2 HTTP/1.1\nHost: localhost:8080]]>" +
+                "</ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithListingWithHtmlMarkup_returnsConfluencePageContentWithMacroWithoutHtmlEscape() {
         // arrange
         String adocContent = "----\n" +

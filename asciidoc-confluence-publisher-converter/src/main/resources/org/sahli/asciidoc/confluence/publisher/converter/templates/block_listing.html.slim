@@ -2,9 +2,13 @@
   ac:structured-macro ac:name="code"
     - if (confluence_supported_lang "#{source_lang}")
       ac:parameter ac:name="language" #{source_lang}
+    - if title?
+      ac:parameter ac:name="title" #{title}
     ac:plain-text-body
       <![CDATA[#{content}]]>
 - else
   ac:structured-macro ac:name="noformat"
+    - if title?
+      ac:parameter ac:name="title" #{title}
     ac:plain-text-body
       <![CDATA[#{content}]]>

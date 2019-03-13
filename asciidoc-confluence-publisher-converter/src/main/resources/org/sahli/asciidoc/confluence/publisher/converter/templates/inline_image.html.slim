@@ -1,3 +1,3 @@
 = html_tag_if (attr? :link), :a, {href: (attr :link)}
-  ac:image ac:height=(attr :height) ac:width=(attr :width)
+  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt)
     ri:attachment ri:filename=(target)

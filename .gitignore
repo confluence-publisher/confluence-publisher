@@ -9,3 +9,7 @@ target/
 !.idea/scopes/
 .idea/scopes/*
 !.idea/scopes/Copyrighted_Sources.xml
+.project
+.settings
+.classpath
+.factorypath

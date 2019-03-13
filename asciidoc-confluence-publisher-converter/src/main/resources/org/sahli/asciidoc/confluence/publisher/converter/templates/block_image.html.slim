@@ -1,5 +1,5 @@
 = html_tag_if (attr? :link), :a, {href: (attr :link)}
-  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:title=(title if title?) ac:alt=(alt if alt?)
+  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:title=(title if title?) ac:alt=(title if title?)
     ri:attachment ri:filename=(attr :target)
   - if title?
     h6 =captioned_title

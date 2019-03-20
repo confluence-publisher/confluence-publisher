@@ -24,14 +24,13 @@ jobs:
           command: ./mvnw clean install jacoco:report coveralls:report -nsu
 
       - run:
-          name: Execute integration tests (own commits only)
+          name: Execute integration tests
           command: |
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin; fi
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5; fi
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then ./waitForConfluenceStartup.sh confluence-publisher-it 300; fi
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
-            if [ -z "$CIRCLE_PR_USERNAME" ]; then ./publishWithDockerImage.sh; fi
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+            ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+            ./publishWithDockerImage.sh
 
       - run:
           name: Sign and publish artifacts (master or tag builds only)
@@ -41,7 +40,9 @@ jobs:
 
       - run:
           name: Publish image to Docker Hub (master or tag builds only)
-          command: if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu; fi
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin; fi
+            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu; fi
 
       - run:
           name: Publish documentation to Atlassian Confluence (tag build only)

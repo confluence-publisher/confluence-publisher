@@ -143,6 +143,10 @@ remove all orphaned pages (requires the documentation source structure to contai
 
 | attributes| Attributes used during AsciiDoctor processing.
 See more details about attributes: https://asciidoctor.org/docs/user-manual/#attributes
+
+NOTE: when using Docker-based publishing, user attributes have to be provided as JSON object structure.
+
+NOTE: user attributes are currently not supported for using in the page title.
 | optional (default to empty)
 
 | pageTitlePrefix
@@ -258,7 +262,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -e VERSION_MESSAGE=V 1.0 \
-   -e ATTRIBUTES={"attribute1": "value1", "attribute2": "value2"} \
+   -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

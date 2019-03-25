@@ -2,4 +2,5 @@
   ac:image ac:height=(attr :height) ac:width=(attr :width) ac:title=(title if title?) ac:alt=(title if title?)
     ri:attachment ri:filename=(attr :target)
   - if title?
-    h6 =captioned_title
+    div class="cp-image-title"
+      em =captioned_title

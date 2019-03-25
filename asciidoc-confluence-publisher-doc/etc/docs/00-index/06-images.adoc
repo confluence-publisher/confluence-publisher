@@ -11,6 +11,16 @@ image::../images/frisbee.png[]
 
 image::../images/frisbee.png[]
 
+Also a caption can be set on an image by using a block title. The title is rendered with a custom CSS class `cp-image-title`.
+
+[listing]
+....
+.A nice orange frisbee
+image::../images/frisbee.png[]
+....
+
+.A nice orange frisbee
+image::../images/frisbee.png[]
 
 == Image Size
 

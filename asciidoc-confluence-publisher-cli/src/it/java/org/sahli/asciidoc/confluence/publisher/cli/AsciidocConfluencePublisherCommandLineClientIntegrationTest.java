@@ -25,8 +25,6 @@ import static org.hamcrest.Matchers.is;
 
 public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
 
-    private static final long ROOT_PAGE_ID = 327706;
-
     @Test
     public void publish_mandatoryArgumentsProvided_publishesDocumentationToConfluence() throws Exception {
         // arrange
@@ -35,7 +33,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "username=confluence-publisher-it",
                 "password=1234",
                 "spaceKey=CPI",
-                "ancestorId=" + ROOT_PAGE_ID,
+                "ancestorId=327706",
                 "asciidocRootFolder=src/it/resources",
                 "attributes={\"key1\": \"value1\", \"key2\": \"value2\"}"
         };
@@ -44,27 +42,26 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         AsciidocConfluencePublisherCommandLineClient.main(args);
 
         // assert
-        long childPageId = givenAuthenticatedAsPublisher()
+        String childPageId = givenAuthenticatedAsPublisher()
                 .when()
-                .get(childPagesFor(ROOT_PAGE_ID))
+                .get(childPagesFor("327706"))
                 .then()
                 .body("results.title", hasItem("Index"))
                 .extract()
-                .body().jsonPath().getLong("results[0].id");
+                .body().jsonPath().getString("results[0].id");
 
         givenAuthenticatedAsPublisher()
                 .when()
                 .get(contentFor(childPageId))
                 .then()
-                .body("body.storage.value",
-                        is("<p>Hello! value1 value2</p>"));
+                .body("body.storage.value", is("<p>Hello! value1 value2</p>"));
     }
 
-    private String contentFor(long pageId) {
+    private String contentFor(String pageId) {
         return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.storage";
     }
 
-    private static String childPagesFor(long pageId) {
+    private static String childPagesFor(String pageId) {
         return "http://localhost:8090/rest/api/content/" + pageId + "/child/page";
     }
 

@@ -29,16 +29,23 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -56,8 +63,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(), username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSSLVerfication, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(disableSSLVerfication), username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
@@ -370,15 +377,43 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient() {
+    private static CloseableHttpClient defaultHttpClient(boolean disableSSLVerfication) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
                 .build();
 
-        return HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+        HttpClientBuilder builder = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig);
+
+        if (disableSSLVerfication) {
+            builder.setSSLContext(emptySSLContext());
+        }
+        return builder.build();
+    }
+
+    private static SSLContext emptySSLContext() {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+
+            // set up a TrustManager that trusts everything
+            sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs,
+                                               String authType) {
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs,
+                                               String authType) {
+                }
+            }}, new SecureRandom());
+            return sslContext;
+        } catch (Exception e) {
+            throw new RuntimeException("error building SSLContext that accepts every certificates", e);
+        }
     }
 
     private static String basicAuthorizationHeaderValue(String username, String password) {

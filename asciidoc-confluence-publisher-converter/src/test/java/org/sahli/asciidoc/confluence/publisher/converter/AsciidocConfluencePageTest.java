@@ -161,6 +161,25 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithListingAndTitle_returnsConfluencePageContentWithMacroWithNameNoFormatAndTitle() {
+        // arrange
+        String adocContent = ".A block title\n" + 
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"noformat\">" +
+                "<ac:parameter ac:name=\"title\">A block title</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithSourceListing_returnsConfluencePageContentWithMacroWithNameCode() {
         // arrange
         String adocContent = "[source]\n" +
@@ -356,6 +375,17 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<a href=\"http://www.foo.ch\"><ac:image ac:height=\"200\" ac:width=\"300\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithImageWithTitle_returnsConfluencePageContentWithImageWithTitle() {
+        String adocContent = ".A beautiful sunset\n" + 
+            "image::sunset.jpg[]";
+
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<ac:image ac:title=\"A beautiful sunset\" ac:alt=\"A beautiful sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image><div class=\"cp-image-title\"><em>Figure 1. A beautiful sunset</em></div>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -936,6 +966,23 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithUnorderedListAndTitle_returnsConfluencePageHavingCorrectUnorderedListAndTitleMarkup() {
+        // arrange
+        String adocContent = ".An unordered list title\n" + 
+                "* L1-1\n" +
+                "* L1-2\n";
+
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<div class=\"cp-ulist-title\"><em>An unordered list title</em></div>" + "<ul><li>L1-1</li><li>L1-2</li></ul>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithOrderedList_returnsConfluencePageHavingCorrectOrderedListMarkup() {
         // arrange
         String adocContent = ". L1-1\n" +
@@ -951,6 +998,23 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<ol><li>L1-1<ol><li>L2-1<ol><li>L3-1<ol><li>L4-1<ol><li>L5-1</li></ol></li></ol></li></ol></li></ol></li><li>L1-2</li></ol>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithOrderedListAndTitle_returnsConfluencePageHavingCorrectOrderedListAndTitleMarkup() {
+        // arrange
+        String adocContent = ".An ordered list title\n" + 
+                ". L1-1\n" +
+                ". L1-2\n";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<div class=\"cp-olist-title\"><em>An ordered list title</em></div>" + 
+            "<ol><li>L1-1</li><li>L1-2</li></ol>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

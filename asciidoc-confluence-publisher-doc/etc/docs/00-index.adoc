@@ -85,8 +85,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
         <versionMessage>Version ${project.version}</versionMessage>
         <attributes>
-            <revnumber>${project.version}</revnumber>
-            <someOtheKey>value</someOtherKey>
+            <version>${project.version}</version>
+            <someOtherKey>value</someOtherKey>
         </attributes>
       </configuration>
     </plugin>

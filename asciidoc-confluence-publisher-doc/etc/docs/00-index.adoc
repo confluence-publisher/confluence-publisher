@@ -82,7 +82,12 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <username>username</username> <!-- or read from property -->
         <password>password</password> <!-- or read from property -->
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
-        <pageTitleSuffix xml:space="preserve"> [1.0]</pageTitleSuffix>
+        <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
+        <versionMessage>Version ${project.version}</versionMessage>
+        <attributes>
+            <revnumber>${project.version}</revnumber>
+            <someOtheKey>value</someOtherKey>
+        </attributes>
       </configuration>
     </plugin>
   </plugins>
@@ -135,6 +140,14 @@ remove all orphaned pages (requires the documentation source structure to contai
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
 | optional (defaults to empty)
+
+| attributes| Attributes used during AsciiDoctor processing.
+See more details about attributes: https://asciidoctor.org/docs/user-manual/#attributes
+
+NOTE: when using Docker-based publishing, user attributes have to be provided as JSON object structure.
+
+NOTE: user attributes are currently not supported for using in the page title.
+| optional (default to empty)
 
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
@@ -249,6 +262,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -e VERSION_MESSAGE=V 1.0 \
+   -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

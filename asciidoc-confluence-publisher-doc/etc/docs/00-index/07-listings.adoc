@@ -2,7 +2,7 @@
 
 AsciiDoc literal blocks, listing blocks and code blocks are converted to formatted blocks in Confluence.
 
-A title can be set for each type of block. The title is rendered as the title of confluence panel.
+A title can be set for each type of block. The title is rendered as the title of the Confluence panel.
 
 == Literal Block
 

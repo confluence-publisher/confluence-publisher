@@ -41,8 +41,8 @@ This is a paragraph with ^super^script and ~sub~script text.
 [listing]
 ....
 .This the title of a paragraph
-The title of a paragraph will rendered using a custom CSS class `cp-para-title`
+The title of a paragraph will rendered using a custom CSS class `cp-paragraph-title`
 ....
 
 .This the title of a paragraph
-The title of a paragraph will rendered using a custom CSS class `cp-para-title`
+The title of a paragraph will rendered using a custom CSS class `cp-paragraph-title`

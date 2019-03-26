@@ -2,6 +2,7 @@ version: 2
 jobs:
   build:
     machine:
+      image: circleci/classic:201808-01
       java:
         version: openjdk8
 

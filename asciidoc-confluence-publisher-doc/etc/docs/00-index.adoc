@@ -141,25 +141,27 @@ remove all orphaned pages (requires the documentation source structure to contai
 | The message that will be published with the changes into `Page History` comment.
 | optional (defaults to empty)
 
-| attributes| Attributes used during AsciiDoctor processing.
-See more details about attributes: https://asciidoctor.org/docs/user-manual/#attributes
-
-NOTE: when using Docker-based publishing, user attributes have to be provided as JSON object structure.
-
-NOTE: user attributes are currently not supported for using in the page title.
+| attributes| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
+  +
+  +
+  _Note:_ when using Docker-based publishing, user attributes have to be provided as JSON object structure.
+  +
+  _Note:_ user attributes are currently not supported for use in the page title.
 | optional (default to empty)
 
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
-
-  Note: in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
+  +
+  +
+  _Note:_ in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitlePrefix` element.
 | optional (defaults to empty)
 
 | pageTitleSuffix
 | The suffix to be appended to every page title.
-
-  Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
+  +
+  +
+  _Note:_ in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitleSuffix` element.
 | optional (defaults to empty)
 

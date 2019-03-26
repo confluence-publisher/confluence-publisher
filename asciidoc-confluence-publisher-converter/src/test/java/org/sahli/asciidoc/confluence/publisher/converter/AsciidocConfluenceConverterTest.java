@@ -99,8 +99,7 @@ public class AsciidocConfluenceConverterTest {
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter
-                .convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -121,7 +120,7 @@ public class AsciidocConfluenceConverterTest {
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
 
         // act
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, Collections.emptyMap());
+        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
 
         // assert
         assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));

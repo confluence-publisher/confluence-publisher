@@ -70,9 +70,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
-
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter
-                    .convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,

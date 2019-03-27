@@ -54,7 +54,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
-        boolean skipSslVerification = optionalBoolArgument("skipSslVerification", args);
+        boolean skipSslVerification = argumentsParser.optionalBoolArgument("skipSslVerification", args);
         
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
@@ -80,13 +80,6 @@ public class AsciidocConfluencePublisherCommandLineClient {
         } finally {
             deleteDirectory(buildFolder);
         }
-    }
-
-    private static boolean optionalBoolArgument(String key, String[] args) {
-        Optional<String> opt = stream(args)
-            .filter((keyAndValue) -> keyAndValue.startsWith(key))
-            .findFirst();
-        return opt.isPresent();
     }
 
     private static void deleteDirectory(Path buildFolder) throws IOException {

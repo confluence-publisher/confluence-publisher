@@ -34,6 +34,15 @@ class ArgumentsParser {
                 .orElseThrow(() -> new IllegalArgumentException("mandatory argument '" + key + "' is missing"));
     }
 
+
+    boolean optionalBoolArgument(String key, String[] args) {
+        Optional<String> opt = stream(args)
+                .filter((keyAndValue) -> keyAndValue.startsWith(key))
+                .findFirst();
+        return opt.isPresent();
+    }
+
+
     Optional<String> optionalArgument(String key, String[] args) {
         return stream(args)
                 .filter((keyAndValue) -> keyAndValue.startsWith(key + "="))

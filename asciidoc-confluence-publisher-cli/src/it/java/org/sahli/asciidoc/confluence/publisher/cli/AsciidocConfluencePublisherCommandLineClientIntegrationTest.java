@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
 
@@ -33,24 +34,39 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=1234",
                 "spaceKey=CPI",
                 "ancestorId=327706",
-                "asciidocRootFolder=src/it/resources"
+                "asciidocRootFolder=src/it/resources",
+                "attributes={\"key1\": \"value1\", \"key2\": \"value2\"}"
         };
 
         // act
         AsciidocConfluencePublisherCommandLineClient.main(args);
 
         // assert
+        String childPageId = givenAuthenticatedAsPublisher()
+                .when()
+                .get(childPagesFor("327706"))
+                .then()
+                .body("results.title", hasItem("Index"))
+                .extract()
+                .body().jsonPath().getString("results[0].id");
+
         givenAuthenticatedAsPublisher()
-                .when().get(childPages())
-                .then().body("results.title", hasItem("Index"));
+                .when()
+                .get(contentFor(childPageId))
+                .then()
+                .body("body.storage.value", is("<p>Hello! value1 value2</p>"));
+    }
+
+    private String contentFor(String pageId) {
+        return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.storage";
+    }
+
+    private static String childPagesFor(String pageId) {
+        return "http://localhost:8090/rest/api/content/" + pageId + "/child/page";
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
         return given().auth().preemptive().basic("confluence-publisher-it", "1234");
-    }
-
-    private static String childPages() {
-        return "http://localhost:8090/rest/api/content/327706/child/page";
     }
 
 }

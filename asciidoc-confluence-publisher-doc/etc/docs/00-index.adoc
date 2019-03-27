@@ -82,7 +82,12 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <username>username</username> <!-- or read from property -->
         <password>password</password> <!-- or read from property -->
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
-        <pageTitleSuffix xml:space="preserve"> [1.0]</pageTitleSuffix>
+        <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
+        <versionMessage>Version ${project.version}</versionMessage>
+        <attributes>
+            <version>${project.version}</version>
+            <someOtherKey>value</someOtherKey>
+        </attributes>
       </configuration>
     </plugin>
   </plugins>
@@ -136,17 +141,27 @@ remove all orphaned pages (requires the documentation source structure to contai
 | The message that will be published with the changes into `Page History` comment.
 | optional (defaults to empty)
 
+| attributes| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
+  +
+  +
+  _Note:_ when using Docker-based publishing, user attributes have to be provided as JSON object structure.
+  +
+  _Note:_ user attributes are currently not supported for use in the page title.
+| optional (default to empty)
+
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
-
-  Note: in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
+  +
+  +
+  _Note:_ in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitlePrefix` element.
 | optional (defaults to empty)
 
 | pageTitleSuffix
 | The suffix to be appended to every page title.
-
-  Note: in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
+  +
+  +
+  _Note:_ in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
   has to be added to the `pageTitleSuffix` element.
 | optional (defaults to empty)
 
@@ -249,6 +264,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -e VERSION_MESSAGE=V 1.0 \
+   -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

@@ -28,7 +28,9 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,6 +41,7 @@ import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
@@ -117,6 +120,18 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void render_asciidocWithoutAttributes_returnsConfluencePageWithoutAttributes() {
+        // arrange
+        String adoc = prependTitle("Hello {user}");
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), emptyMap());
+
+        // assert
+        assertThat(asciiDocConfluencePage.content(), is("<p>Hello {user}</p>"));
+    }
+
+    @Test
     public void render_asciidocWithPageTitleAndPageTitlePostProcessorConfigured_returnsConfluencePageWithPostProcessedPageTitle() {
         // arrange
         String adoc = "= Page Title";
@@ -144,6 +159,22 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithAttributes_returnsConfluencePageContentWithReplacedAttributes() {
+        // arrange
+        String adocContent = prependTitle("Hello {user}. Today is {date}. {unknown}");
+
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("user", "Nastya");
+        userAttributes.put("date", "28-02-2018");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), userAttributes);
+
+        // assert
+        assertThat(asciidocConfluencePage.content(), is("<p>Hello Nastya. Today is 28-02-2018. {unknown}</p>"));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoFormat() {
         // arrange
         String adocContent = "----\n" +
@@ -163,7 +194,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithListingAndTitle_returnsConfluencePageContentWithMacroWithNameNoFormatAndTitle() {
         // arrange
-        String adocContent = ".A block title\n" + 
+        String adocContent = ".A block title\n" +
                 "----\n" +
                 "import java.util.List;\n" +
                 "----";
@@ -380,8 +411,8 @@ public class AsciidocConfluencePageTest {
 
     @Test
     public void renderConfluencePage_asciiDocWithImageWithTitle_returnsConfluencePageContentWithImageWithTitle() {
-        String adocContent = ".A beautiful sunset\n" + 
-            "image::sunset.jpg[]";
+        String adocContent = ".A beautiful sunset\n" +
+                "image::sunset.jpg[]";
 
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
@@ -523,17 +554,17 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithTableWithAsciiDocCell_returnsConfluencePageWithTableWithAsciiDocCell() {
         // arrange
         String adocContent = "" +
-            "|===\n" +
-            "| A " +
-            "| B\n" +
-            "\n" +
-            "| 10 " +
-            "a|11\n" +
-            "\n" +
-            "* 12 \n" +
-            "* 13 \n" +
-            "\n" +
-            "|===";
+                "|===\n" +
+                "| A " +
+                "| B\n" +
+                "\n" +
+                "| 10 " +
+                "a|11\n" +
+                "\n" +
+                "* 12 \n" +
+                "* 13 \n" +
+                "\n" +
+                "|===";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
@@ -968,7 +999,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithUnorderedListAndTitle_returnsConfluencePageHavingCorrectUnorderedListAndTitleMarkup() {
         // arrange
-        String adocContent = ".An unordered list title\n" + 
+        String adocContent = ".An unordered list title\n" +
                 "* L1-1\n" +
                 "* L1-2\n";
 
@@ -1004,7 +1035,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithOrderedListAndTitle_returnsConfluencePageHavingCorrectOrderedListAndTitleMarkup() {
         // arrange
-        String adocContent = ".An ordered list title\n" + 
+        String adocContent = ".An ordered list title\n" +
                 ". L1-1\n" +
                 ". L1-2\n";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
@@ -1013,8 +1044,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<div class=\"cp-olist-title\"><em>An ordered list title</em></div>" + 
-            "<ol><li>L1-1</li><li>L1-2</li></ol>";
+        String expectedContent = "<div class=\"cp-olist-title\"><em>An ordered list title</em></div><ol><li>L1-1</li><li>L1-2</li></ol>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

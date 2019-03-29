@@ -100,4 +100,23 @@ public class ArgumentsParserTest {
         assertThat(value.get().get("attr1"), is("val1"));
         assertThat(value.get().get("attr2"), is("val2"));
     }
+
+    @Test
+    public void optionalBooleanArgument_valuePresent_returnsParsedValue() {
+        String[] args = { "enableNoValue", "enableWithValue=true", "disableWithValue=false"};
+        ArgumentsParser parser = new ArgumentsParser();
+
+        assertTrue(parser.optionalBooleanArgument("enableNoValue", args).orElse(false));
+        assertTrue(parser.optionalBooleanArgument("enableWithValue", args).orElse(false));
+        assertFalse(parser.optionalBooleanArgument("disableWithValue", args).orElse(true));
+    }
+
+    @Test
+    public void optionalBooleanArgument_valueNotPresent_returnsParsedValue() {
+        String[] args = { "otherFlag" };
+        ArgumentsParser parser = new ArgumentsParser();
+
+        assertFalse(parser.optionalBooleanArgument("disableNoValue", args).orElse(false));
+        assertTrue(parser.optionalBooleanArgument("disableNoValue", args).orElse(true));
+    }
 }

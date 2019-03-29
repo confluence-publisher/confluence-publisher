@@ -35,11 +35,15 @@ class ArgumentsParser {
     }
 
 
-    boolean optionalBoolArgument(String key, String[] args) {
-        Optional<String> opt = stream(args)
-                .filter((keyAndValue) -> keyAndValue.startsWith(key))
-                .findFirst();
-        return opt.isPresent();
+    Optional<Boolean> optionalBooleanArgument(String key, String[] args) {
+        Optional<String> value = optionalArgument(key, args);
+        if (value.isPresent()) {
+            return value.map(val -> val.equalsIgnoreCase("true"));
+        }
+        return stream(args)
+            .filter((keyAndValue) -> keyAndValue.equals(key))
+            .findFirst()
+            .map(val -> true);
     }
 
 

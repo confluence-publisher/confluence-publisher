@@ -54,7 +54,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
-        boolean skipSslVerification = argumentsParser.optionalBoolArgument("skipSslVerification", args);
+        boolean skipSslVerification = argumentsParser.optionalBooleanArgument("skipSslVerification", args).orElse(false);
         
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 

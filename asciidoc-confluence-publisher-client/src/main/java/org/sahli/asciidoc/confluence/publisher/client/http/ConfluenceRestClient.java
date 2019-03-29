@@ -63,8 +63,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSSLVerfication, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(disableSSLVerfication), username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerfication, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(disableSslVerfication), username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
@@ -377,7 +377,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient(boolean disableSSLVerfication) {
+    private static CloseableHttpClient defaultHttpClient(boolean disableSslLVerfication) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
@@ -386,7 +386,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
 
-        if (disableSSLVerfication) {
+        if (disableSslLVerfication) {
             builder.setSSLContext(emptySSLContext());
         }
         return builder.build();

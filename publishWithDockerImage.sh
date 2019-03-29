@@ -10,5 +10,6 @@ docker run --network container:confluence-publisher-it --rm \
     -e ANCESTOR_ID=327706 \
     -e PAGE_TITLE_PREFIX="Docker - " \
     -e PAGE_TITLE_SUFFIX=" - Test" \
+    -e ATTRIBUTES="{ \"confluencePublisherVersion\": \"$projectVersion\"}" \
     -v `pwd`/asciidoc-confluence-publisher-doc/etc/docs:/var/asciidoc-root-folder \
     confluencepublisher/confluence-publisher:${projectVersion}

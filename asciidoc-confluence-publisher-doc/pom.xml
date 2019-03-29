@@ -51,6 +51,9 @@
                     <ancestorId>${ancestorId}</ancestorId>
                     <username>${username}</username>
                     <password>${password}</password>
+                    <attributes>
+                        <confluencePublisherVersion>${project.version}</confluencePublisherVersion>
+                    </attributes>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,5 +1,7 @@
 = Confluence Publisher
 
+_Version {confluencePublisherVersion}_
+
 The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
 to be published to a Confluence space. It converts the resulting AsciiDoc HTML output to XHTML compatible with
 Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last

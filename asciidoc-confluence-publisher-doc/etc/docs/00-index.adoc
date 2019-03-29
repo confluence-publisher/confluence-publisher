@@ -79,6 +79,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <asciidocRootFolder>etc/docs</asciidocRootFolder>
         <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <skipSslVerification>false</skipSslVerification>
         <spaceKey>SPACE</spaceKey>
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
@@ -107,9 +108,15 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | The encoding of the AsciiDoc files.
 | optional (defaults to UTF-8)
 
+| skipSslVerification
+| switch to disable SSL certificates verification when connecting to an HTTPS Confluence 
+  server. Possible values: `true` or `false`
+| optional (default to `false`)
+
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
 | mandatory
+
 
 | spaceKey
 | The key of the Confluence space to publish to.
@@ -258,6 +265,7 @@ The following command shows an example for publishing AsciiDoc sources via the C
 
 ----
 docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
+   -e SKIP_SSL_VERIFICATION=false \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \

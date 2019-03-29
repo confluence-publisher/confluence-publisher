@@ -28,24 +28,22 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -377,7 +375,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient(boolean disableSslLVerfication) {
+    private static CloseableHttpClient defaultHttpClient(boolean disableSslVerification) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
@@ -386,33 +384,20 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
 
-        if (disableSslLVerfication) {
-            builder.setSSLContext(emptySSLContext());
+        if (disableSslVerification) {
+            builder.setSSLContext(trustAllSslContext());
+            builder.setSSLHostnameVerifier(new NoopHostnameVerifier());
         }
         return builder.build();
     }
 
-    private static SSLContext emptySSLContext() {
+    private static SSLContext trustAllSslContext() {
         try {
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-
-            // set up a TrustManager that trusts everything
-            sslContext.init(null, new TrustManager[]{new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-
-                public void checkClientTrusted(X509Certificate[] certs,
-                                               String authType) {
-                }
-
-                public void checkServerTrusted(X509Certificate[] certs,
-                                               String authType) {
-                }
-            }}, new SecureRandom());
-            return sslContext;
+            return new SSLContextBuilder()
+                .loadTrustMaterial((chain, authType) -> true)
+                .build();
         } catch (Exception e) {
-            throw new RuntimeException("error building SSLContext that accepts every certificates", e);
+            throw new RuntimeException("Could not create trust-all SSL context", e);
         }
     }
 

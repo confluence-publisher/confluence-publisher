@@ -34,18 +34,17 @@ class ArgumentsParser {
                 .orElseThrow(() -> new IllegalArgumentException("mandatory argument '" + key + "' is missing"));
     }
 
-
     Optional<Boolean> optionalBooleanArgument(String key, String[] args) {
-        Optional<String> value = optionalArgument(key, args);
-        if (value.isPresent()) {
-            return value.map(val -> val.equalsIgnoreCase("true"));
+        Optional<String> explicitValue = optionalArgument(key, args);
+        if (explicitValue.isPresent()) {
+            return explicitValue.map((value) -> value.equalsIgnoreCase("true"));
         }
-        return stream(args)
-            .filter((keyAndValue) -> keyAndValue.equals(key))
-            .findFirst()
-            .map(val -> true);
-    }
 
+        return stream(args)
+                .filter((keyAndValue) -> keyAndValue.equals(key))
+                .findFirst()
+                .map((keyAndValue) -> true);
+    }
 
     Optional<String> optionalArgument(String key, String[] args) {
         return stream(args)

@@ -100,4 +100,60 @@ public class ArgumentsParserTest {
         assertThat(value.get().get("attr1"), is("val1"));
         assertThat(value.get().get("attr2"), is("val2"));
     }
+
+    @Test
+    public void optionalBooleanArgument_keyWithoutValue_returnsOptionalOfTrue() {
+        // arrange
+        String[] args = {"keyWithoutValue"};
+        ArgumentsParser parser = new ArgumentsParser();
+
+        // act
+        Optional<Boolean> value = parser.optionalBooleanArgument("keyWithoutValue", args);
+
+        // assert
+        assertTrue(value.isPresent());
+        assertThat(value.get(), is(true));
+    }
+
+    @Test
+    public void optionalBooleanArgument_keyWithTrueValue_returnsOptionalOfTrue() {
+        // arrange
+        String[] args = {"keyWithValue=true"};
+        ArgumentsParser parser = new ArgumentsParser();
+
+        // act
+        Optional<Boolean> value = parser.optionalBooleanArgument("keyWithValue", args);
+
+        // assert
+        assertTrue(value.isPresent());
+        assertThat(value.get(), is(true));
+    }
+
+    @Test
+    public void optionalBooleanArgument_keyWithFalseValue_returnsOptionalOfFalse() {
+        // arrange
+        String[] args = {"keyWithValue=false"};
+        ArgumentsParser parser = new ArgumentsParser();
+
+        // act
+        Optional<Boolean> value = parser.optionalBooleanArgument("keyWithValue", args);
+
+        // assert
+        assertTrue(value.isPresent());
+        assertThat(value.get(), is(false));
+    }
+
+    @Test
+    public void optionalBooleanArgument_argumentNotPresent_returnsEmpty() {
+        // arrange
+        String[] args = {};
+        ArgumentsParser parser = new ArgumentsParser();
+
+        // act
+        Optional<Boolean> value = parser.optionalBooleanArgument("key", args);
+
+        // assert
+        assertFalse(value.isPresent());
+    }
+
 }

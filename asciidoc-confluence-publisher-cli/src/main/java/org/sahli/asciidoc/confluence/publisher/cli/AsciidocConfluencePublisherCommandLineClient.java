@@ -49,12 +49,12 @@ public class AsciidocConfluencePublisherCommandLineClient {
     public static void main(String[] args) throws Exception {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         String rootConfluenceUrl = argumentsParser.mandatoryArgument("rootConfluenceUrl", args);
+        boolean skipSslVerification = argumentsParser.optionalBooleanArgument("skipSslVerification", args).orElse(false);
         String username = argumentsParser.mandatoryArgument("username", args);
         String password = argumentsParser.mandatoryArgument("password", args);
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
-
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
         Path documentationRootFolder = Paths.get(argumentsParser.mandatoryArgument("asciidocRootFolder", args));
@@ -72,7 +72,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
-            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, username, password);
+            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, skipSslVerification, username, password);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,
                     confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
             confluencePublisher.publish();

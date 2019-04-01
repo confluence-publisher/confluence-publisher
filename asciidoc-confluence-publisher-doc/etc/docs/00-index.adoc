@@ -79,6 +79,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <asciidocRootFolder>etc/docs</asciidocRootFolder>
         <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
+        <skipSslVerification>false</skipSslVerification>
         <spaceKey>SPACE</spaceKey>
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
@@ -110,6 +111,11 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
 | mandatory
+
+| skipSslVerification
+| Defines whether to disable SSL certificate verification when connecting to Confluence via HTTPS while using self-
+  signed certificates.
+| optional (default to `false`)
 
 | spaceKey
 | The key of the Confluence space to publish to.
@@ -169,7 +175,7 @@ remove all orphaned pages (requires the documentation source structure to contai
 
 | skip
 | Defines whether the plugin execution should be skipped.
-| optional (defaults to false, only supported for Maven plugin)
+| optional (defaults to `false`, only supported for Maven plugin)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
@@ -258,6 +264,7 @@ The following command shows an example for publishing AsciiDoc sources via the C
 
 ----
 docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
+   -e SKIP_SSL_VERIFICATION=false \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \

@@ -8,6 +8,7 @@ VOLUME /var/asciidoc-root-folder
 
 ENV SOURCE_ENCODING="" \
     ROOT_CONFLUENCE_URL=""  \
+    SKIP_SSL_VERIFICATION="false" \
     SPACE_KEY=""  \
     ANCESTOR_ID=""  \
     USERNAME=""  \
@@ -22,6 +23,7 @@ ENTRYPOINT ["sh", "-c", "java -jar /opt/asciidoc-confluence-publisher-docker.jar
     \"asciidocRootFolder=/var/asciidoc-root-folder\" \
     \"sourceEncoding=$SOURCE_ENCODING\" \
     \"rootConfluenceUrl=$ROOT_CONFLUENCE_URL\" \
+    \"skipSslVerification=${SKIP_SSL_VERIFICATION}\" \
     \"spaceKey=$SPACE_KEY\" \
     \"ancestorId=$ANCESTOR_ID\" \
     \"username=$USERNAME\" \

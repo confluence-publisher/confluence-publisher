@@ -58,6 +58,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private String rootConfluenceUrl;
 
+    @Parameter(defaultValue = "false")
+    private boolean skipSslVerification;
+
     @Parameter(required = true)
     private String spaceKey;
 
@@ -84,9 +87,6 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "false")
     private boolean skip;
-
-    @Parameter(defaultValue = "false")
-    private boolean skipSslVerification;
 
     @Parameter
     private Map<String, Object> attributes;

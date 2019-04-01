@@ -23,7 +23,7 @@ ENTRYPOINT ["sh", "-c", "java -jar /opt/asciidoc-confluence-publisher-docker.jar
     \"asciidocRootFolder=/var/asciidoc-root-folder\" \
     \"sourceEncoding=$SOURCE_ENCODING\" \
     \"rootConfluenceUrl=$ROOT_CONFLUENCE_URL\" \
-    \"skipSslVerification=${SKIP_SSL_VERIFICATION}\" \
+    \"skipSslVerification=$SKIP_SSL_VERIFICATION\" \
     \"spaceKey=$SPACE_KEY\" \
     \"ancestorId=$ANCESTOR_ID\" \
     \"username=$USERNAME\" \

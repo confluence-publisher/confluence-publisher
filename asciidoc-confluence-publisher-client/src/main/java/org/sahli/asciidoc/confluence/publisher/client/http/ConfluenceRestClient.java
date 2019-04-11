@@ -48,6 +48,7 @@ import javax.net.ssl.SSLContext;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
+import static org.apache.http.client.config.CookieSpecs.STANDARD;
 
 /**
  * @author Alain Sahli
@@ -379,6 +380,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
+                .setCookieSpec(STANDARD)
                 .build();
 
         HttpClientBuilder builder = HttpClients.custom()

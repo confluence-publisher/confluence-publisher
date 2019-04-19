@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -43,12 +42,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.net.ssl.SSLContext;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
+import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
  * @author Alain Sahli
@@ -127,12 +124,14 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
+    public ConfluenceAttachment addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
-        sendRequestAndFailIfNot20x(addAttachmentRequest, (response) -> {
+        return sendRequestAndFailIfNot20x(addAttachmentRequest, (response) -> {
             closeInputStream(attachmentContent);
 
-            return null;
+            ConfluenceAttachment attachment = extractExactlyOneConfluenceAttachment(parseJsonResponse(response));
+
+            return attachment;
         });
     }
 
@@ -157,20 +156,9 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, "version");
 
         return sendRequestAndFailIfNot20x(attachmentByFileNameRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
+            ConfluenceAttachment attachment = extractExactlyOneConfluenceAttachment(parseJsonResponse(response));
 
-            int numberOfResults = jsonNode.get("size").asInt();
-            if (numberOfResults == 0) {
-                throw new NotFoundException();
-            }
-
-            if (numberOfResults > 1) {
-                throw new MultipleResultsException();
-            }
-
-            ConfluenceAttachment attachmentId = extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
-
-            return attachmentId;
+            return attachment;
         });
     }
 
@@ -183,30 +171,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
             return confluencePage;
         });
-    }
-
-    @Override
-    public InputStream getAttachmentContent(String relativeDownloadLink) {
-        HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
-
-        return sendRequestAndFailIfNot20x(getAttachmentContentRequest, (response) -> {
-            try {
-                return copyInputStream(response);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read attachment content", e);
-            }
-        });
-    }
-
-    private static ByteArrayInputStream copyInputStream(HttpResponse response) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        while ((read = response.getEntity().getContent().read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, read);
-        }
-
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
     private JsonNode parseJsonResponse(HttpResponse response) {
@@ -325,6 +289,19 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public void deletePropertyByKey(String contentId, String key) {
         HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
         sendRequest(deletePropertyByKeyRequest, (ignored) -> null);
+    }
+
+    private static ConfluenceAttachment extractExactlyOneConfluenceAttachment(JsonNode jsonNode) {
+        int numberOfResults = jsonNode.get("size").asInt();
+        if (numberOfResults == 0) {
+            throw new NotFoundException();
+        }
+
+        if (numberOfResults > 1) {
+            throw new MultipleResultsException();
+        }
+
+        return extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {

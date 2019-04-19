@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,30 @@ public class ConfluencePublisherIntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(rootPage())
                 .then().body("title", is(title));
+
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(2))
+                .body("results[0].title", is("attachmentOne.txt"))
+                .body("results[1].title", is("attachmentTwo.txt"));
+    }
+
+    @Test
+    public void publish_sameAttachmentsPublishedMultipleTimes_doesNotAddTheSameAttachments() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+        confluencePublisher.publish();
 
         givenAuthenticatedAsPublisher()
                 .when().get(rootPageAttachments())
@@ -211,7 +235,8 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
-        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceRestClient());
+        ConfluenceRestClient client = confluenceRestClient();
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, new ConfluenceAttachmentsHandler(client), client);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

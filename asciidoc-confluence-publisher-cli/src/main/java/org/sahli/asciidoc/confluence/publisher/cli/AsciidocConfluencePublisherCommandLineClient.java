@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.cli;
 
+import org.sahli.asciidoc.confluence.publisher.client.ConfluenceAttachmentsHandler;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
@@ -73,8 +74,9 @@ public class AsciidocConfluencePublisherCommandLineClient {
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, skipSslVerification, username, password);
+            ConfluenceAttachmentsHandler attachmentsHandler = new ConfluenceAttachmentsHandler(confluenceClient);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,
-                    confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
+                    attachmentsHandler, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
             confluencePublisher.publish();
         } finally {
             deleteDirectory(buildFolder);

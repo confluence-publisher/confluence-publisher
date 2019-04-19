@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.sahli.asciidoc.confluence.publisher.client.ConfluenceAttachmentsHandler;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
@@ -109,8 +110,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
             ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.skipSslVerification, this.username, this.password);
             ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
+            ConfluenceAttachmentsHandler attachmentsHandler = new ConfluenceAttachmentsHandler(confluenceRestClient);
 
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, attachmentsHandler, confluenceRestClient, confluencePublisherListener, this.versionMessage);
             confluencePublisher.publish();
         } catch (Exception e) {
             getLog().error("Publishing to Confluence failed: " + e.getMessage());

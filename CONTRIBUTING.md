@@ -6,12 +6,33 @@ please ensure that the following points are fulfilled:
 - create an issue on GitHub (if not yet existing)
 - implement your changes following the style of the existing code
 - cover your changes with appropriate automated tests
-- create a pull request with a brief description of the relevant changes and design decisions
+- document new features and newly introduced configuration options in documentation (both for Maven- and for 
+  Docker-based publishing)
+- create a pull request with a brief description of the relevant changes and design decisions and reference the issue 
 
-As our integration test suite requires secret variables only available on branches belonging to the Confluence Publisher 
-repository, pull requests will first be merged onto a feature branch within the Confluence Publisher repository. Once 
-all integration tests have passed, the feature branch will be merged to the master. In the process, the authorship of 
-your changes will _not_ be changed.
+When doing a pull request, please try to implement the feature / bug fix with minimal design and code formatting 
+changes, so that reviewing and integrating the pull request is as easy as possible. 
+
+
+## Conventions
+
+Please see the following (incomplete) list of guidelines applied to the code base:
+
+**Java**
+  - avoid method references, use explicit lambdas instead
+  - always put lambda parameters in parentheses
+  - make methods static when possible
+  - make fields final when possible
+  - never make parameters and local variables final (unless required by compiler)
+  - avoid randomly breaking long lines (extract utility methods instead, or keep long lines)
+  - use triple-a approach (arrange, act, assert) for unit testing (see existing tests)
+   
+**Maven**
+  - manage dependency versions in top-level pom with explicit scope set (normally either runtime or test)
+  - order dependencies: own dependencies first, followed by third-party dependencies sorted by group-id, then 
+    artifact-id (not by scope first)
+  - prefer JDK functionality over third-party dependencies
+  - judge wisely whether adding a new third-party dependency is worth just for using that one utility method
 
 
 ## Prerequisites

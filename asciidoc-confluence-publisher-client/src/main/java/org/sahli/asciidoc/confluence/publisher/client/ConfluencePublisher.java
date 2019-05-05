@@ -22,7 +22,6 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.client.utils.HashUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,8 +57,7 @@ public class ConfluencePublisher {
     private final ConfluencePublisherListener confluencePublisherListener;
     private final String versionMessage;
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy,
-                               ConfluenceClient confluenceClient) {
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient) {
         this(metadata, publishingStrategy, confluenceClient, new NoOpConfluencePublisherListener(), null);
     }
 
@@ -113,7 +111,7 @@ public class ConfluencePublisher {
         if (rootPage != null) {
             updatePage(ancestorId, null, rootPage);
 
-            deleteAttachmentsNotPresentUnderPage(ancestorId, rootPage.getAttachments());
+            deleteConfluenceAttachmentsNotPresentUnderPage(ancestorId, rootPage.getAttachments());
             addAttachments(ancestorId, rootPage.getAttachments());
 
             startPublishingUnderAncestorId(rootPage.getChildren(), spaceKey, ancestorId);
@@ -125,7 +123,7 @@ public class ConfluencePublisher {
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 
-            deleteAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
+            deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
 
             startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
@@ -147,12 +145,11 @@ public class ConfluencePublisher {
         });
     }
 
-    public void deleteAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
+    private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
         List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
-                .filter(confluenceAttachment -> attachments.keySet().stream()
-                        .noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
+                .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
                 .map(ConfluenceAttachment::getId)
                 .collect(toList());
 
@@ -171,7 +168,7 @@ public class ConfluencePublisher {
         } catch (NotFoundException e) {
             String content = fileContent(page.getContentFilePath(), UTF_8);
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
-            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, HashUtils.contentHash(content));
+            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
             this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
         }
 
@@ -182,9 +179,9 @@ public class ConfluencePublisher {
         String content = fileContent(page.getContentFilePath(), UTF_8);
         ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
         String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
-        String newContentHash = HashUtils.contentHash(content);
+        String newContentHash = contentHash(content);
 
-        if (HashUtils.notSameHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
+        if (notSameHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
             this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
             int newPageVersion = existingPage.getVersion() + 1;
             this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion, this.versionMessage);
@@ -193,7 +190,7 @@ public class ConfluencePublisher {
         }
     }
 
-    public void addAttachments(String contentId, Map<String, String> attachments) {
+    private void addAttachments(String contentId, Map<String, String> attachments) {
         attachments.forEach((attachmentFileName, attachmentPath) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
     }
 
@@ -206,7 +203,7 @@ public class ConfluencePublisher {
             String attachmentId = existingAttachment.getId();
             String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, attachmentId);
 
-            if (HashUtils.notSameHash(existingContentHash, newContentHash)) {
+            if (notSameHash(existingContentHash, newContentHash)) {
                 this.confluenceClient.deletePropertyByKey(contentId, attachmentId);
                 this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
                 this.confluenceClient.setPropertyByKey(contentId, attachmentId, newContentHash);
@@ -220,6 +217,14 @@ public class ConfluencePublisher {
 
     private Path absoluteAttachmentPath(String attachmentPath) {
         return Paths.get(attachmentPath);
+    }
+
+    private static String contentHash(String content) {
+        return sha256Hex(content);
+    }
+
+    private static boolean notSameHash(String actualContentHash, String newContentHash) {
+        return actualContentHash == null || !actualContentHash.equals(newContentHash);
     }
 
     private static String sha256Hash(InputStream content) {
@@ -242,6 +247,7 @@ public class ConfluencePublisher {
             throw new RuntimeException("Could not find attachment ", e);
         }
     }
+
 
     private static class NoOpConfluencePublisherListener implements ConfluencePublisherListener {
 

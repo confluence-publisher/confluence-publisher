@@ -36,6 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -148,13 +149,12 @@ public class ConfluencePublisher {
     private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
-        List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
+        Map<String, String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
                 .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
-                .map(ConfluenceAttachment::getId)
-                .collect(toList());
+                .collect(toMap(ConfluenceAttachment::getId, ConfluenceAttachment::getTitle));
 
-        confluenceAttachmentsToDelete.forEach(attachmentId -> {
-            this.confluenceClient.deletePropertyByKey(contentId, attachmentId);
+        confluenceAttachmentsToDelete.forEach( (attachmentId, attachmentFileName) -> {
+            this.confluenceClient.deletePropertyByKey(contentId, attachmentFileName);
             this.confluenceClient.deleteAttachment(attachmentId);
         });
     }
@@ -168,7 +168,7 @@ public class ConfluencePublisher {
         } catch (NotFoundException e) {
             String content = fileContent(page.getContentFilePath(), UTF_8);
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
-            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
+            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, hash(content));
             this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
         }
 
@@ -179,7 +179,7 @@ public class ConfluencePublisher {
         String content = fileContent(page.getContentFilePath(), UTF_8);
         ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
         String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
-        String newContentHash = contentHash(content);
+        String newContentHash = hash(content);
 
         if (notSameHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
             this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
@@ -196,22 +196,22 @@ public class ConfluencePublisher {
 
     private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
         Path absoluteAttachmentPath = absoluteAttachmentPath(attachmentPath);
-        String newContentHash = sha256Hash(fileInputStream(absoluteAttachmentPath));
+        String newAttachmentHash = hash(fileInputStream(absoluteAttachmentPath));
 
         try {
             ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
             String attachmentId = existingAttachment.getId();
-            String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, attachmentId);
+            String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, attachmentFileName);
 
-            if (notSameHash(existingContentHash, newContentHash)) {
-                this.confluenceClient.deletePropertyByKey(contentId, attachmentId);
+            if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
+                this.confluenceClient.deletePropertyByKey(contentId, attachmentFileName);
                 this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
-                this.confluenceClient.setPropertyByKey(contentId, attachmentId, newContentHash);
+                this.confluenceClient.setPropertyByKey(contentId, attachmentFileName, newAttachmentHash);
             }
 
         } catch (NotFoundException e) {
-            ConfluenceAttachment newAttachment = this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
-            this.confluenceClient.setPropertyByKey(contentId, newAttachment.getId(), newContentHash);
+            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
+            this.confluenceClient.setPropertyByKey(contentId, attachmentFileName, newAttachmentHash);
         }
     }
 
@@ -219,15 +219,15 @@ public class ConfluencePublisher {
         return Paths.get(attachmentPath);
     }
 
-    private static String contentHash(String content) {
+    private static String hash(String content) {
         return sha256Hex(content);
     }
 
-    private static boolean notSameHash(String actualContentHash, String newContentHash) {
-        return actualContentHash == null || !actualContentHash.equals(newContentHash);
+    private static boolean notSameHash(String actualHash, String newHash) {
+        return actualHash == null || !actualHash.equals(newHash);
     }
 
-    private static String sha256Hash(InputStream content) {
+    private static String hash(InputStream content) {
         try {
             return sha256Hex(content);
         } catch (IOException e) {

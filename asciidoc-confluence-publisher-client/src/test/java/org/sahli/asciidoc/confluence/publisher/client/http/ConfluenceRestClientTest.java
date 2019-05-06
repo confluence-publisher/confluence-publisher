@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -61,10 +60,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
  */
 public class ConfluenceRestClientTest {
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8089);
-
-    private static final String CONFLUENCE_ROOT_URL = "http://localhost:8089";
+    private static final String CONFLUENCE_ROOT_URL = "http://confluence.com";
 
     @Rule
     public final ExpectedException expectedException = none();
@@ -166,15 +162,14 @@ public class ConfluenceRestClientTest {
     @Test
     public void addAttachment_withValidParameters_sendsMultipartHttpPostRequest() throws Exception {
         // arrange
-        ConfluenceServer.postAttachmentSucceeds("1234");
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, true, null, null);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
-        ConfluenceAttachment attachment = confluenceRestClient.addAttachment("1234", "file.txt", inputStream("file content"));
+        confluenceRestClient.addAttachment("1234", "file.txt", new ByteArrayInputStream("file content".getBytes()));
 
         // assert
-        ConfluenceServer.verifyAttachmentPosted("1234");
-        assertThat(attachment, is(new ConfluenceAttachment("65615", "file.txt", "/download/attachments/65613/file.txt", 1)));
+        verify(httpClientMock, times(1)).execute(any(HttpPost.class));
     }
 
     @Test
@@ -184,7 +179,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
-        confluenceRestClient.updateAttachmentContent("1234", "att12", inputStream("file content"));
+        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()));
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPost.class));
@@ -474,7 +469,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("404 reason POST http://localhost:8089/rest/api/content\n" +
+        this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content\n" +
             "request: '{\"title\":\"Hello\"," +
                 "\"space\":{\"key\":\"~personalSpace\"}," +
                 "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
@@ -535,7 +530,7 @@ public class ConfluenceRestClientTest {
     private static HttpEntity recordHttpEntityForContent(String content) {
         HttpEntity httpEntityMock = mock(HttpEntity.class);
         try {
-            when(httpEntityMock.getContent()).thenReturn(inputStream(content));
+            when(httpEntityMock.getContent()).thenReturn(new ByteArrayInputStream(content.getBytes()));
             when(httpEntityMock.getContentEncoding()).thenReturn(new BasicHeader("Content-Encoding", "UTF-8"));
         } catch (IOException e) {
             fail(e.getMessage());
@@ -566,10 +561,6 @@ public class ConfluenceRestClientTest {
                         "\"ancestors\": [{\"id\": \"ancestor\"}]" +
                         "}")
                 .collect(Collectors.joining(",\n"));
-    }
-
-    private static ByteArrayInputStream inputStream(String s) {
-        return new ByteArrayInputStream(s.getBytes());
     }
 
 }

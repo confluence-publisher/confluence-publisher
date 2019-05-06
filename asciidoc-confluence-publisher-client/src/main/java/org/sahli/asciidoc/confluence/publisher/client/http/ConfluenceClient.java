@@ -32,7 +32,7 @@ public interface ConfluenceClient {
 
     String getPageByTitle(String spaceKey, String title) throws NotFoundException, MultipleResultsException;
 
-    ConfluenceAttachment addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent);
+    void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent);
 
     void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent);
 

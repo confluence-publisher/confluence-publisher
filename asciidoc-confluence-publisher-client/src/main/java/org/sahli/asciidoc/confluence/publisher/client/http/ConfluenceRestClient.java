@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,14 +124,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public ConfluenceAttachment addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
+    public void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent) {
         HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
-        return sendRequestAndFailIfNot20x(addAttachmentRequest, (response) -> {
+        sendRequestAndFailIfNot20x(addAttachmentRequest, (response) -> {
             closeInputStream(attachmentContent);
 
-            ConfluenceAttachment attachment = extractExactlyOneConfluenceAttachment(parseJsonResponse(response));
-
-            return attachment;
+            return null;
         });
     }
 
@@ -156,9 +154,20 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpGet attachmentByFileNameRequest = this.httpRequestFactory.getAttachmentByFileNameRequest(contentId, attachmentFileName, "version");
 
         return sendRequestAndFailIfNot20x(attachmentByFileNameRequest, (response) -> {
-            ConfluenceAttachment attachment = extractExactlyOneConfluenceAttachment(parseJsonResponse(response));
+            JsonNode jsonNode = parseJsonResponse(response);
 
-            return attachment;
+            int numberOfResults = jsonNode.get("size").asInt();
+            if (numberOfResults == 0) {
+                throw new NotFoundException();
+            }
+
+            if (numberOfResults > 1) {
+                throw new MultipleResultsException();
+            }
+
+            ConfluenceAttachment attachmentId = extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
+
+            return attachmentId;
         });
     }
 
@@ -289,19 +298,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public void deletePropertyByKey(String contentId, String key) {
         HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
         sendRequest(deletePropertyByKeyRequest, (ignored) -> null);
-    }
-
-    private static ConfluenceAttachment extractExactlyOneConfluenceAttachment(JsonNode jsonNode) {
-        int numberOfResults = jsonNode.get("size").asInt();
-        if (numberOfResults == 0) {
-            throw new NotFoundException();
-        }
-
-        if (numberOfResults > 1) {
-            throw new MultipleResultsException();
-        }
-
-        return extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
     }
 
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {

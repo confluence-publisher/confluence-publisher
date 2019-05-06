@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import static io.restassured.RestAssured.given;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -72,8 +74,7 @@ public class ConfluencePublisherIntegrationTest {
                 .when().get(attachmentsOf(pageIdBy(title)))
                 .then()
                 .body("results", hasSize(2))
-                .body("results[0].title", is("attachmentOne.txt"))
-                .body("results[1].title", is("attachmentTwo.txt"));
+                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
     }
 
     @Test
@@ -100,9 +101,81 @@ public class ConfluencePublisherIntegrationTest {
                 .when().get(rootPageAttachments())
                 .then()
                 .body("results", hasSize(2))
-                .body("results[0].title", is("attachmentOne.txt"))
-                .body("results[1].title", is("attachmentTwo.txt"));
+                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
     }
+
+    @Test
+    public void publish_sameAttachmentsPublishedMultipleTimes_publishProcessDoesNotFail() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(2))
+                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
+    }
+
+    @Test
+    public void publish_attachmentIsDeleted_attachmentIsReuploaded() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPage())
+                .then().body("title", is(title));
+
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(2))
+                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
+
+        // act
+        givenAuthenticatedAsPublisher()
+                .when().delete(attachment(firstAttachmentId()));
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(1))
+                .body("results.title", anyOf(hasItem("attachmentTwo.txt"), hasItem("attachmentOne.txt")));
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(2))
+                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
+    }
+
 
     @Test
     public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() {
@@ -188,6 +261,10 @@ public class ConfluencePublisherIntegrationTest {
         return "http://localhost:8090/rest/api/content/" + contentId + "/child/attachment";
     }
 
+    private static String attachment(String attachmentId) {
+        return "http://localhost:8090/rest/api/content/" + attachmentId;
+    }
+
     private static String rootPage() {
         return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID;
     }
@@ -204,10 +281,16 @@ public class ConfluencePublisherIntegrationTest {
         return "http://localhost:8090/rest/api/content/" + contentId + "/property/" + key;
     }
 
+    private String firstAttachmentId() {
+        return givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .path("results[0].id");
+    }
+
     private static String pageIdBy(String title) {
         return givenAuthenticatedAsPublisher()
                 .when().get(childPages())
-                .then().extract().jsonPath().getString("results.find({it.title == '" + title + "'}).id");
+                .path("results.find({it.title == '" + title + "'}).id");
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {

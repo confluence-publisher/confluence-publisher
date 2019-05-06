@@ -151,7 +151,7 @@ public class ConfluencePublisher {
         confluenceAttachments.stream()
                 .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
                 .forEach(confluenceAttachment -> {
-                    this.confluenceClient.deletePropertyByKey(contentId, confluenceAttachment.getTitle());
+                    this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(confluenceAttachment.getTitle()));
                     this.confluenceClient.deleteAttachment(confluenceAttachment.getId());
                 });
     }
@@ -198,18 +198,23 @@ public class ConfluencePublisher {
         try {
             ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
             String attachmentId = existingAttachment.getId();
-            String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, attachmentFileName);
+            String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
 
             if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
-                this.confluenceClient.deletePropertyByKey(contentId, attachmentFileName);
+                this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
                 this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
-                this.confluenceClient.setPropertyByKey(contentId, attachmentFileName, newAttachmentHash);
+                this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
             }
 
         } catch (NotFoundException e) {
+            this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
             this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
-            this.confluenceClient.setPropertyByKey(contentId, attachmentFileName, newAttachmentHash);
+            this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
         }
+    }
+
+    private String getAttachmentHashKey(String attachmentFileName) {
+        return attachmentFileName + "-hash";
     }
 
     private Path absoluteAttachmentPath(String attachmentPath) {

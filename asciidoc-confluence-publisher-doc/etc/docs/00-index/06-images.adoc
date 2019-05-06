@@ -22,6 +22,18 @@ image::../images/frisbee.png[]
 .A nice orange frisbee
 image::../images/frisbee.png[]
 
+Remote (i.e., images with a URL target) block and inline images are also supported.
+
+[listing]
+....
+.GitHub mascot
+image::https://asciidoctor.org/images/octocat.jpg[]
+....
+
+.GitHub mascot
+image::https://asciidoctor.org/images/octocat.jpg[]
+
+
 == Image Size
 
 In addition, width and/or height can be specified explicitly and are respected when inserting the image into the
@@ -69,5 +81,5 @@ This image has a link image:../images/frisbee.png[width=16, height=16, link=http
 
 [WARNING]
 ====
-Image captions and images from URLs are currently not supported.
+Image captions are currently not supported.
 ====

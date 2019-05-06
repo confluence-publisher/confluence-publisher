@@ -36,7 +36,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -149,14 +148,12 @@ public class ConfluencePublisher {
     private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
-        Map<String, String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
+        confluenceAttachments.stream()
                 .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
-                .collect(toMap(ConfluenceAttachment::getId, ConfluenceAttachment::getTitle));
-
-        confluenceAttachmentsToDelete.forEach( (attachmentId, attachmentFileName) -> {
-            this.confluenceClient.deletePropertyByKey(contentId, attachmentFileName);
-            this.confluenceClient.deleteAttachment(attachmentId);
-        });
+                .forEach(confluenceAttachment -> {
+                    this.confluenceClient.deletePropertyByKey(contentId, confluenceAttachment.getTitle());
+                    this.confluenceClient.deleteAttachment(confluenceAttachment.getId());
+                });
     }
 
     private String addOrUpdatePageUnderAncestor(String spaceKey, String ancestorId, ConfluencePageMetadata page) {
@@ -219,12 +216,12 @@ public class ConfluencePublisher {
         return Paths.get(attachmentPath);
     }
 
-    private static String hash(String content) {
-        return sha256Hex(content);
-    }
-
     private static boolean notSameHash(String actualHash, String newHash) {
         return actualHash == null || !actualHash.equals(newHash);
+    }
+
+    private static String hash(String content) {
+        return sha256Hex(content);
     }
 
     private static String hash(InputStream content) {

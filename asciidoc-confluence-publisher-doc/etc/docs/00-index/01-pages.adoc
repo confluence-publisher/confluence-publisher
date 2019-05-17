@@ -30,7 +30,7 @@ referencing AsciiDoc file. All referenced AsciiDoc files must be placed below th
 
 == Links within Pages
 
-Links within pages in Confluence are supported using AsciiDoc inline anchors and internal cross references:
+Links to content blocks within the same page are supported using AsciiDoc inline anchors and internal cross references:
 
 [listing]
 ....
@@ -42,6 +42,34 @@ Another paragraph with internal cross-reference to <<paragraph-a>>
 [[paragraph-a]]Paragraph with inline anchor
 
 Another paragraph with internal cross-reference to <<paragraph-a>>
+
+Links to sections within the same page are supported either using anchors or custom section ids:
+
+[listing]
+....
+[[section-a]]
+=== Section with Anchor
+
+Paragraph with internal cross-reference to <<section-a>>
+....
+
+[[section-a]]
+=== Section with Anchor
+
+Paragraph with internal cross-reference to <<section-a>>
+
+[listing]
+....
+[#section-b]
+=== Section with Custom Id
+
+Paragraph with internal cross-reference to <<section-b>>
+....
+
+[#section-b]
+=== Section with Custom Id
+
+Paragraph with internal cross-reference to <<section-b>>
 
 
 [WARNING]

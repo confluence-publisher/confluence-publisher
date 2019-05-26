@@ -201,7 +201,9 @@ public class ConfluencePublisher {
             String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
 
             if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
-                this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+                if (existingAttachmentHash != null) {
+                    this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+                }
                 this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
             }

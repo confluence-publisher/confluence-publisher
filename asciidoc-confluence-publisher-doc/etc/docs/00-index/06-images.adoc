@@ -22,18 +22,6 @@ image::../images/frisbee.png[]
 .A nice orange frisbee
 image::../images/frisbee.png[]
 
-Remote (i.e., images with a URL target) block and inline images are also supported.
-
-[listing]
-....
-.GitHub mascot
-image::https://asciidoctor.org/images/octocat.jpg[]
-....
-
-.GitHub mascot
-image::https://asciidoctor.org/images/octocat.jpg[]
-
-
 == Image Size
 
 In addition, width and/or height can be specified explicitly and are respected when inserting the image into the
@@ -66,6 +54,20 @@ This line has an inline image image:../images/frisbee.png[width=16, height=16].
 
 This line has an inline image image:../images/frisbee.png[width=16, height=16] within a text block.
 
+== Remote Images
+
+Remote (i.e., images with a URL target) block and inline images are also supported. These images will not be downloaded
+and attached to the Confluence page, instead direct link will be used for image rendering.
+
+[listing]
+....
+.GitHub mascot
+image::https://asciidoctor.org/images/octocat.jpg[]
+....
+
+.GitHub mascot
+image::https://asciidoctor.org/images/octocat.jpg[]
+
 
 == Links
 
@@ -77,9 +79,3 @@ This image has a link image:../images/frisbee.png[width=16, height=16, link=http
 ....
 
 This image has a link image:../images/frisbee.png[width=16, height=16, link=https://en.wikipedia.org/wiki/Frisbee].
-
-
-[WARNING]
-====
-Image captions are currently not supported.
-====

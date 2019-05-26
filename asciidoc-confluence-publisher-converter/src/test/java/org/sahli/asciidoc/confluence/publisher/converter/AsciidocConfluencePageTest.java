@@ -1081,8 +1081,8 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithBlockRemoteImage_returnsConfluencePageWithBlockRemoteImage() {
-        String adocContent = ".GitHub mascot\r\n" +
+    public void renderConfluencePage_asciiDocWithBlockRemoteImageAndBlockTitle_returnsConfluencePageWithBlockRemoteImageAndImageCaption() {
+        String adocContent = ".GitHub mascot\n" +
                 "image::https://asciidoctor.org/images/octocat.jpg[]";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
 

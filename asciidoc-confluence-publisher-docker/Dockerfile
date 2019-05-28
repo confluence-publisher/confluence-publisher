@@ -6,7 +6,8 @@ RUN apk add --update graphviz ttf-dejavu
 
 VOLUME /var/asciidoc-root-folder
 
-ENV SOURCE_ENCODING="" \
+ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
+    SOURCE_ENCODING="" \
     ROOT_CONFLUENCE_URL=""  \
     SKIP_SSL_VERIFICATION="false" \
     SPACE_KEY=""  \
@@ -20,7 +21,7 @@ ENV SOURCE_ENCODING="" \
     ATTRIBUTES=""
 
 ENTRYPOINT ["sh", "-c", "java -jar /opt/asciidoc-confluence-publisher-docker.jar \
-    \"asciidocRootFolder=/var/asciidoc-root-folder\" \
+    \"asciidocRootFolder=$ASCIIDOC_ROOT_FOLDER\" \
     \"sourceEncoding=$SOURCE_ENCODING\" \
     \"rootConfluenceUrl=$ROOT_CONFLUENCE_URL\" \
     \"skipSslVerification=$SKIP_SSL_VERIFICATION\" \

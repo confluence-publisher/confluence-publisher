@@ -55,7 +55,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
-        PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("strategy", args).orElse(APPEND_TO_ANCESTOR.name()));
+        PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("publishingStrategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
         Path documentationRootFolder = Paths.get(argumentsParser.mandatoryArgument("asciidocRootFolder", args));
         Path buildFolder = createTempDirectory("confluence-publisher");

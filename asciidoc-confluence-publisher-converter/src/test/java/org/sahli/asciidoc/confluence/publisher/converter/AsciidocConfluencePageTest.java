@@ -336,11 +336,11 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1>Title level 1</h1>" +
-                "<h2>Title level 2</h2>" +
-                "<h3>Title level 3</h3>" +
-                "<h4>Title level 4</h4>" +
-                "<h5>Title level 5</h5>";
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_1</ac:parameter></ac:structured-macro>Title level 1</h1>" +
+                "<h2><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_2</ac:parameter></ac:structured-macro>Title level 2</h2>" +
+                "<h3><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_3</ac:parameter></ac:structured-macro>Title level 3</h3>" +
+                "<h4><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_4</ac:parameter></ac:structured-macro>Title level 4</h4>" +
+                "<h5><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_5</ac:parameter></ac:structured-macro>Title level 5</h5>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1125,19 +1125,55 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSection_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingSectionTitle() {
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionWithBlockAnchor_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingBlockAnchor() {
         // arrange
         String adocContent = "" +
-                "== Section 1 [[section1]]\n" +
-                "Cross reference to <<section1>>";
+                "[[section-1]]\n" +
+                "== Section 1\n" +
+                "Cross reference to <<section-1>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
         String expectedContent = "" +
-                "<h1>Section 1</h1>" +
-                "<p>Cross reference to <ac:link ac:anchor=\"section1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
+                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionWithCustomId_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingCustomId() {
+        // arrange
+        String adocContent = "" +
+                "[#section-1]\n" +
+                "== Section 1\n" +
+                "Cross reference to <<section-1>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceInlineToSectionWithInlineAnchor_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingSectionTitle() {
+        // arrange
+        String adocContent = "" +
+                "== Section 1 [[section-1]]\n" +
+                "Cross reference to <<section-1>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1145,16 +1181,16 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionAndCustomLabel_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingCustomLabel() {
         // arrange
         String adocContent = "" +
-                "== Section 1 [[section1]]\n" +
-                "Cross reference to <<section1,section 1>>";
+                "== Section 1 [[section-1]]\n" +
+                "Cross reference to <<section-1,section 1>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
         String expectedContent = "" +
-                "<h1>Section 1</h1>" +
-                "<p>Cross reference to <ac:link ac:anchor=\"section1\"><ac:plain-text-link-body><![CDATA[section 1]]></ac:plain-text-link-body></ac:link></p>";
+                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+                "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

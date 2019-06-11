@@ -34,8 +34,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -43,12 +42,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.net.ssl.SSLContext;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
+import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
  * @author Alain Sahli
@@ -183,30 +180,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
             return confluencePage;
         });
-    }
-
-    @Override
-    public InputStream getAttachmentContent(String relativeDownloadLink) {
-        HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
-
-        return sendRequestAndFailIfNot20x(getAttachmentContentRequest, (response) -> {
-            try {
-                return copyInputStream(response);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read attachment content", e);
-            }
-        });
-    }
-
-    private static ByteArrayInputStream copyInputStream(HttpResponse response) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        while ((read = response.getEntity().getContent().read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, read);
-        }
-
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
     private JsonNode parseJsonResponse(HttpResponse response) {

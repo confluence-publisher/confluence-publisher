@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
@@ -29,7 +31,7 @@ import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -38,10 +40,12 @@ import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newInputStream;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Matchers.any;
@@ -182,7 +186,7 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataOnePageWithAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() {
+    public void publish_metadataOnePageWithNewAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
@@ -199,11 +203,13 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(1)).addPageUnderAncestor(eq("~personalSpace"), eq("72189173"), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(null));
+        verify(confluenceRestClientMock).addPageUnderAncestor("~personalSpace", "72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", null);
         verify(confluenceRestClientMock, times(2)).addAttachment(contentId.capture(), attachmentFileName.capture(), attachmentContent.capture());
         assertThat(contentId.getAllValues(), contains("4321", "4321"));
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentOne.txt")), UTF_8), is("attachment1"));
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentTwo.txt")), UTF_8), is("attachment2"));
+        verify(confluenceRestClientMock).setPropertyByKey("4321", "attachmentOne.txt-hash", sha256Hex("attachment1"));
+        verify(confluenceRestClientMock).setPropertyByKey("4321", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
     }
 
     @Test
@@ -283,85 +289,174 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithExistingPageAndNewAttachmentsAndReplaceAncestorStrategy_sendsUpdateAndAddAttachmentRequests() {
+    public void publish_metadataWithExistingPageAndReplaceAncestorStrategy_sendsUpdate() {
         // arrange
         ConfluencePage existingPage = new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1);
 
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(existingPage);
         when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
-        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt")).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentOne.txt", "/download/attachmentOne.txt", 1));
-        when(confluenceRestClientMock.getAttachmentContent("/download/attachmentOne.txt")).thenReturn(new ByteArrayInputStream("Old content".getBytes()));
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
 
         // assert
         verify(confluenceRestClientMock, never()).addPageUnderAncestor(any(), any(), any(), any(), any());
-        verify(confluenceRestClientMock, times(1)).updatePage(eq("72189173"), eq(null), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(null));
-        verify(confluenceRestClientMock).addAttachment(eq("72189173"), eq("attachmentOne.txt"), any(InputStream.class));
-        verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), any(InputStream.class));
-
-        verify(confluencePublisherListenerMock, times(1)).pageUpdated(existingPage, new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2));
-        verify(confluencePublisherListenerMock, times(1)).publishCompleted();
+        verify(confluenceRestClientMock).updatePage(eq("72189173"), eq(null), eq("Some Confluence Content"), eq("<h1>Some Confluence Content</h1>"), eq(2), eq(null));
+        verify(confluencePublisherListenerMock).pageUpdated(existingPage, new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2));
+        verify(confluencePublisherListenerMock).publishCompleted();
         verifyNoMoreInteractions(confluencePublisherListenerMock);
     }
 
     @Test
-    public void publish_metadataWithExistingPageAndAttachmentWithDifferentAttachmentContentUnderRootSpace_sendsUpdateAttachmentRequest() {
+    public void publish_whenAttachmentsHaveSameContentHash_doesNotUpdateAttachments() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
 
-        ConfluencePage existingConfluencePage = new ConfluencePage("3456", "Existing Page", "<h1>Some Confluence Content</h1>", 1);
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("3456")).thenReturn(existingConfluencePage);
-        when(confluenceRestClientMock.getPropertyByKey("3456", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt")).thenReturn(new ConfluenceAttachment("att1", "attachmentOne.txt", "/download/attachmentOne.txt", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentOne.txt-hash")).thenReturn(sha256Hex("attachment1"));
 
-        ConfluenceAttachment existingConfluenceAttachment = new ConfluenceAttachment("att12", "attachmentOne.txt", "/download/attachmentOne.txt", 1);
-        when(confluenceRestClientMock.getAttachmentByFileName("3456", "attachmentOne.txt")).thenReturn(existingConfluenceAttachment);
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "/download/attachmentTwo.txt", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(sha256Hex("attachment2"));
 
-        when(confluenceRestClientMock.getAttachmentContent(anyString())).thenReturn(new ByteArrayInputStream("Old content".getBytes()));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-and-existing-attachment-space-key", confluenceRestClientMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
-        ArgumentCaptor<InputStream> attachmentContentCaptor = ArgumentCaptor.forClass(InputStream.class);
-        verify(confluenceRestClientMock, times(1)).updateAttachmentContent(eq("3456"), eq("att12"), attachmentContentCaptor.capture());
-        assertThat(inputStreamAsString(attachmentContentCaptor.getValue(), UTF_8), is("attachment1"));
+        verify(confluenceRestClientMock, never()).addAttachment(any(), any(), any());
+        verify(confluenceRestClientMock, never()).updateAttachmentContent(any(), any(), any());
     }
 
     @Test
-    public void publish_metadataWithExistingPageAndAttachmentWithSameAttachmentContentUnderRootSpace_sendsNoAddOrUpdateAttachmentRequest() {
+    public void publish_whenExistingAttachmentsHaveMissingHashProperty_updatesAttachmentsAndHashProperties() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Existing Page")).thenReturn("3456");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
 
-        ConfluencePage existingConfluencePage = new ConfluencePage("3456", "Existing Page", "<h1>Some Confluence Content</h1>", 1);
-        when(confluenceRestClientMock.getPageWithContentAndVersionById("3456")).thenReturn(existingConfluencePage);
-        when(confluenceRestClientMock.getPropertyByKey("3456", CONTENT_HASH_PROPERTY_KEY)).thenReturn(CONTENT_HASH_PROPERTY_KEY);
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt")).thenReturn(new ConfluenceAttachment("att1", "attachmentOne.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentOne.txt-hash")).thenReturn(null);
 
-        ConfluenceAttachment existingConfluenceAttachment = new ConfluenceAttachment("att12", "attachmentOne.txt", "/download/attachmentOne.txt", 1);
-        when(confluenceRestClientMock.getAttachmentByFileName("3456", "attachmentOne.txt")).thenReturn(existingConfluenceAttachment);
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(null);
 
-        when(confluenceRestClientMock.getAttachmentContent(anyString())).thenReturn(new ByteArrayInputStream("attachment1".getBytes()));
-
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-and-existing-attachment-space-key", confluenceRestClientMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
 
         // act
         confluencePublisher.publish();
 
         // assert
+        verify(confluenceRestClientMock, never()).deletePropertyByKey("72189173", "attachmentOne.txt-hash");
+        verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), any(FileInputStream.class));
+        verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentOne.txt-hash", sha256Hex("attachment1"));
+
+        verify(confluenceRestClientMock, never()).deletePropertyByKey("72189173", "attachmentTwo.txt-hash");
+        verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), any(FileInputStream.class));
+        verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
+
         verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
-        verify(confluenceRestClientMock, never()).updateAttachmentContent(anyString(), anyString(), any(InputStream.class));
+    }
+
+    @Test
+    public void publish_whenExistingAttachmentsHaveDifferentHashProperty_updatesAttachmentsAndHashProperties() {
+        // arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
+
+        ArgumentCaptor<InputStream> content = ArgumentCaptor.forClass(InputStream.class);
+
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt")).thenReturn(new ConfluenceAttachment("att1", "attachmentOne.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentOne.txt-hash")).thenReturn("otherHash1");
+
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn("otherHash2");
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        InOrder inOrder = Mockito.inOrder(confluenceRestClientMock);
+        inOrder.verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentOne.txt-hash");
+        inOrder.verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), content.capture());
+        inOrder.verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentOne.txt-hash", sha256Hex("attachment1"));
+        assertThat(inputStreamAsString(content.getValue(), UTF_8), is("attachment1"));
+
+        verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentTwo.txt-hash");
+        verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), content.capture());
+        verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
+        assertThat(inputStreamAsString(content.getValue(), UTF_8), is("attachment2"));
+
+        verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
+    }
+
+    @Test
+    public void publish_whenNewAttachmentsAreEmpty_deletesAttachmentsPresentOnConfluence() {
+        //arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
+
+        when(confluenceRestClientMock.getAttachments("72189173")).thenReturn(asList(
+                new ConfluenceAttachment("att1", "attachmentOne.txt", "", 1),
+                new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1)
+        ));
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock).deleteAttachment("att1");
+        verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentOne.txt-hash");
+
+        verify(confluenceRestClientMock).deleteAttachment("att2");
+        verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentTwo.txt-hash");
+    }
+
+    @Test
+    public void publish_whenSomePreviouslyAttachedFilesHaveBeenRemovedFromPage_deletesAttachmentsNotPresentUnderPage() {
+        // arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("72189173")).thenReturn(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
+
+        when(confluenceRestClientMock.getAttachments("72189173")).thenReturn(asList(
+                new ConfluenceAttachment("att1", "attachmentOne.txt", "", 1),
+                new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1),
+                new ConfluenceAttachment("att3", "attachmentThree.txt", "", 1)
+        ));
+
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentOne.txt")).thenReturn(new ConfluenceAttachment("att1", "attachmentOne.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentOne.txt-hash")).thenReturn(sha256Hex("attachment1"));
+
+        when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
+        when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(sha256Hex("attachment2"));
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, never()).deleteAttachment("att1");
+        verify(confluenceRestClientMock, never()).deletePropertyByKey("72189173", "attachmentOne.txt-hash");
+
+        verify(confluenceRestClientMock, never()).deleteAttachment("att2");
+        verify(confluenceRestClientMock, never()).deletePropertyByKey("72189173", "attachmentTwo.txt-hash");
+
+        verify(confluenceRestClientMock).deleteAttachment("att3");
+        verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentThree.txt-hash");
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,12 +148,12 @@ public class ConfluencePublisher {
     private void deleteConfluenceAttachmentsNotPresentUnderPage(String contentId, Map<String, String> attachments) {
         List<ConfluenceAttachment> confluenceAttachments = this.confluenceClient.getAttachments(contentId);
 
-        List<String> confluenceAttachmentsToDelete = confluenceAttachments.stream()
+        confluenceAttachments.stream()
                 .filter(confluenceAttachment -> attachments.keySet().stream().noneMatch(attachmentFileName -> attachmentFileName.equals(confluenceAttachment.getTitle())))
-                .map(ConfluenceAttachment::getId)
-                .collect(toList());
-
-        confluenceAttachmentsToDelete.forEach(this.confluenceClient::deleteAttachment);
+                .forEach(confluenceAttachment -> {
+                    this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(confluenceAttachment.getTitle()));
+                    this.confluenceClient.deleteAttachment(confluenceAttachment.getId());
+                });
     }
 
     private String addOrUpdatePageUnderAncestor(String spaceKey, String ancestorId, ConfluencePageMetadata page) {
@@ -165,7 +165,7 @@ public class ConfluencePublisher {
         } catch (NotFoundException e) {
             String content = fileContent(page.getContentFilePath(), UTF_8);
             contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
-            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, contentHash(content));
+            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, hash(content));
             this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
         }
 
@@ -176,9 +176,9 @@ public class ConfluencePublisher {
         String content = fileContent(page.getContentFilePath(), UTF_8);
         ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
         String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
-        String newContentHash = contentHash(content);
+        String newContentHash = hash(content);
 
-        if (notSameContentHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
+        if (notSameHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
             this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
             int newPageVersion = existingPage.getVersion() + 1;
             this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion, this.versionMessage);
@@ -187,46 +187,51 @@ public class ConfluencePublisher {
         }
     }
 
-    private static String contentHash(String content) {
-        return sha256Hex(content);
-    }
-
     private void addAttachments(String contentId, Map<String, String> attachments) {
         attachments.forEach((attachmentFileName, attachmentPath) -> addOrUpdateAttachment(contentId, attachmentPath, attachmentFileName));
     }
 
     private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
         Path absoluteAttachmentPath = absoluteAttachmentPath(attachmentPath);
+        String newAttachmentHash = hash(fileInputStream(absoluteAttachmentPath));
 
         try {
             ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
-            InputStream existingAttachmentContent = this.confluenceClient.getAttachmentContent(existingAttachment.getRelativeDownloadLink());
+            String attachmentId = existingAttachment.getId();
+            String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
 
-            if (!isSameContent(existingAttachmentContent, fileInputStream(absoluteAttachmentPath))) {
-                this.confluenceClient.updateAttachmentContent(contentId, existingAttachment.getId(), fileInputStream(absoluteAttachmentPath));
+            if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
+                if (existingAttachmentHash != null) {
+                    this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+                }
+                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
+                this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
             }
 
         } catch (NotFoundException e) {
+            this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
             this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
+            this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
         }
+    }
+
+    private String getAttachmentHashKey(String attachmentFileName) {
+        return attachmentFileName + "-hash";
     }
 
     private Path absoluteAttachmentPath(String attachmentPath) {
         return Paths.get(attachmentPath);
     }
 
-    private static boolean notSameContentHash(String actualContentHash, String newContentHash) {
-        return actualContentHash == null || !actualContentHash.equals(newContentHash);
+    private static boolean notSameHash(String actualHash, String newHash) {
+        return actualHash == null || !actualHash.equals(newHash);
     }
 
-    private static boolean isSameContent(InputStream left, InputStream right) {
-        String leftHash = sha256Hash(left);
-        String rightHash = sha256Hash(right);
-
-        return leftHash.equals(rightHash);
+    private static String hash(String content) {
+        return sha256Hex(content);
     }
 
-    private static String sha256Hash(InputStream content) {
+    private static String hash(InputStream content) {
         try {
             return sha256Hex(content);
         } catch (IOException e) {

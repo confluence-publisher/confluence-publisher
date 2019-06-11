@@ -33,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -54,7 +53,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
-import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
 
 /**
  * @author Alain Sahli
@@ -482,19 +480,6 @@ public class ConfluenceRestClientTest {
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
-    }
-
-    @Test
-    public void getAttachmentContent_withValidParameters_returnsAttachmentInputStream() throws Exception {
-        // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("Attachment content", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
-
-        // act
-        InputStream attachmentContent = confluenceRestClient.getAttachmentContent("/download/file.txt?v=2");
-
-        // assert
-        assertThat(inputStreamAsString(attachmentContent, UTF_8), is("Attachment content"));
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {

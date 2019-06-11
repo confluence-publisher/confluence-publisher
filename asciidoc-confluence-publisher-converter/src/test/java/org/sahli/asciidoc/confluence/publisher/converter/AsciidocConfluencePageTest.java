@@ -1063,6 +1063,42 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInlineRemoteImage_returnsConfluencePageWithInlineRemoteImage() {
+        // arrange
+        String adocContent = "Some text image:https://asciidoctor.org/images/octocat.jpg[GitHub mascot]";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text " +
+                "<ac:image ac:alt=\"GitHub mascot\">" +
+                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"></ri:url>" +
+                "</ac:image></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+        assertThat(asciidocConfluencePage.attachments().size(), is(0));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithBlockRemoteImageAndBlockTitle_returnsConfluencePageWithBlockRemoteImageAndImageCaption() {
+        String adocContent = ".GitHub mascot\n" +
+                "image::https://asciidoctor.org/images/octocat.jpg[]";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:image ac:title=\"GitHub mascot\" ac:alt=\"GitHub mascot\">" +
+                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"></ri:url>" +
+                "</ac:image>" +
+                "<div class=\"cp-image-title\"><em>Figure 1. GitHub mascot</em></div>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+        assertThat(asciidocConfluencePage.attachments().size(), is(0));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithInlineImageWithHeightAndWidthAttributeSurroundedByLink_returnsConfluencePageContentWithInlineImageWithHeightAttributeMacroWrappedInLink() {
         // arrange
         String adocContent = "Some text image:sunset.jpg[Sunset, 16, 20, link=\"http://www.foo.ch\"] with inline image";

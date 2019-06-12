@@ -251,7 +251,8 @@ The Docker image for the code on master is automatically published as version `0
 Instead of providing the `asciidocRootFolder` configuration property as with the Maven plugin, the AsciiDoc sources
 have to be mounted to the `/var/asciidoc-root-folder` volume.
 
-If you are not able or allowed to mount anything into this image you can change this path by providing the environment variable `ASCIIDOC_ROOT_FOLDER`.
+In case your documentation sources are already available under a different path in your Docker container, you can
+specify the path to the documentation sources via the environment variable `ASCIIDOC_ROOT_FOLDER`.
 
 All other mandatory and optional configuration properties from the Maven plugin have to be / can be specified as
 environment variable in all-uppercase writing, e.g. `ROOT_CONFLUENCE_URL` for `rootConfluenceUrl`.

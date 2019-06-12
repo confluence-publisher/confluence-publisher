@@ -251,6 +251,9 @@ The Docker image for the code on master is automatically published as version `0
 Instead of providing the `asciidocRootFolder` configuration property as with the Maven plugin, the AsciiDoc sources
 have to be mounted to the `/var/asciidoc-root-folder` volume.
 
+In case your documentation sources are already available under a different path in your Docker container, you can
+specify the path to the documentation sources via the environment variable `ASCIIDOC_ROOT_FOLDER`.
+
 All other mandatory and optional configuration properties from the Maven plugin have to be / can be specified as
 environment variable in all-uppercase writing, e.g. `ROOT_CONFLUENCE_URL` for `rootConfluenceUrl`.
 
@@ -276,4 +279,22 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
+----
+
+In case you want to extend the Docker image or your build runs inside this image you should
+use the script `/publish.sh` for invoking the actual publishing. E.g. using this image as
+GitLab CI job could look like:
+
+----
+publish-docs:
+  stage: publish-docs
+  image:
+    name: confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
+    entrypoint: [""]
+  variables:
+    ASCIIDOC_ROOT_FOLDER: ./docs/
+    ROOT_CONFLUENCE_URL: http://confluence-host
+    ...
+  script:
+    - /publish.sh
 ----

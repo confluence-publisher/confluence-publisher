@@ -1,7 +1,7 @@
 FROM openjdk:8-jre-alpine
 
 ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
-ADD ./publish.sh /publish.sh
+ADD ./publish.sh /usr/local/bin
 
 RUN apk add --update graphviz ttf-dejavu
 
@@ -21,4 +21,4 @@ ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
     VERSION_MESSAGE="" \
     ATTRIBUTES=""
 
-ENTRYPOINT ["/publish.sh"]
+ENTRYPOINT ["publish.sh"]

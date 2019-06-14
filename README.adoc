@@ -15,3 +15,8 @@ publication is again re-published.
 == Documentation
 
 The documentation of the current release version is published to https://confluence-publisher.atlassian.net/[].
+
+
+== Acknowledgments
+
+https://www.jetbrains.com/?from=confluence-publisher[JetBrains] kindly supports the core developers with free open-source licenses for their products.

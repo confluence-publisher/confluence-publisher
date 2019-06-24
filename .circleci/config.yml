@@ -3,7 +3,7 @@ jobs:
   build:
     machine:
       java:
-        version: openjdk8
+        version: openjdk11
 
     steps:
       - checkout

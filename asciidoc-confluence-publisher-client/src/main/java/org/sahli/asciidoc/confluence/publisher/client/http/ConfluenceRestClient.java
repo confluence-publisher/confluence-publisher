@@ -357,6 +357,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
                 .build();
 
         HttpClientBuilder builder = HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultRequestConfig(requestConfig);
 
         if (disableSslVerification) {

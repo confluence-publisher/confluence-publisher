@@ -1229,6 +1229,43 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableOfContentsAsAttribute_returnsConfluencePageContentWithTableOfContentsMacro() {
+        // arrange
+        String adocContent = "" +
+                "= Page Title\n" +
+                ":toc: auto\n";
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<ac:structured-macro ac:name=\"toc\">" +
+                "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableOfContentsAsMacro_returnsConfluencePageContentWithTableOfContentsMacro() {
+        // arrange
+        String adocContent = "" +
+                "= Page Title\n" +
+                ":toc: macro\n" +
+                "\n" +
+                "toc::[]";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<ac:structured-macro ac:name=\"toc\">" +
+                "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

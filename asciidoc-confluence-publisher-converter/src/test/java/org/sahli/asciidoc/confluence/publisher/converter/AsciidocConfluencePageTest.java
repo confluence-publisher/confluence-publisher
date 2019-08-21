@@ -1239,9 +1239,11 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "" +
+                "<p>" +
                 "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
-                "</ac:structured-macro>";
+                "</ac:structured-macro>" +
+                "</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1257,9 +1259,11 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "" +
+                "<p>" +
                 "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">4</ac:parameter>" +
-                "</ac:structured-macro>";
+                "</ac:structured-macro>" +
+                "</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

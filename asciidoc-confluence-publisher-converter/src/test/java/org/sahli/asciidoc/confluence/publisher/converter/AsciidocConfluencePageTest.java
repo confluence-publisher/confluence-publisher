@@ -1246,6 +1246,24 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableOfContentsAsAttributeWithCustomDepth_returnsConfluencePageContentWithTableOfContentsMacroWithCustomDepth() {
+        // arrange
+        String adocContent = "" +
+                "= Page Title\n" +
+                ":toc: auto\n" +
+                ":toclevels: 4\n";
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<ac:structured-macro ac:name=\"toc\">" +
+                "<ac:parameter ac:name=\"maxLevel\">4</ac:parameter>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsMacro_returnsConfluencePageContentWithTableOfContentsMacro() {
         // arrange
         String adocContent = "" +
@@ -1261,6 +1279,27 @@ public class AsciidocConfluencePageTest {
         String expectedContent = "" +
                 "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
+                "</ac:structured-macro>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableOfContentsAsMacroWithCustomDepth_returnsConfluencePageContentWithTableOfContentsMacroWithCustomDepth() {
+        // arrange
+        String adocContent = "" +
+                "= Page Title\n" +
+                ":toc: macro\n" +
+                ":toclevels: 4\n" +
+                "\n" +
+                "toc::[]";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<ac:structured-macro ac:name=\"toc\">" +
+                "<ac:parameter ac:name=\"maxLevel\">4</ac:parameter>" +
                 "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }

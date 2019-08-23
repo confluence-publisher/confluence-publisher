@@ -2,7 +2,6 @@ version: 2
 jobs:
   build:
     machine:
-      image: ubuntu-1604:201903-01
       java:
         version: openjdk8
 
@@ -18,10 +17,7 @@ jobs:
 
       - run:
           name: Install prerequisites
-          command: |
-            sudo add-apt-repository universe
-            sudo apt update
-            sudo apt-get install graphviz
+          command: sudo apt-get install graphviz
 
       - run:
           name: Execute build and unit tests

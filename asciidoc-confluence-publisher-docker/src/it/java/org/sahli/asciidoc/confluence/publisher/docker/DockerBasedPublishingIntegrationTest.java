@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.docker;
 
 import io.restassured.specification.RequestSpecification;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,11 @@ public class DockerBasedPublishingIntegrationTest {
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
+    }
+
+    @Before
+    public void deleteAllPages() {
+        publish("empty", mandatoryEnvVars());
     }
 
     @Test

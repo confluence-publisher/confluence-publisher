@@ -19,6 +19,7 @@ package org.sahli.asciidoc.confluence.publisher.docker;
 import io.restassured.specification.RequestSpecification;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
@@ -168,7 +169,7 @@ public class DockerBasedPublishingIntegrationTest {
 
     private static Map<String, String> mandatoryEnvVars() {
         Map<String, String> env = new HashMap<>();
-        env.put("ROOT_CONFLUENCE_URL", "http://host.docker.internal:8090");
+        env.put("ROOT_CONFLUENCE_URL", "http://" + DockerClientFactory.instance().dockerHostIpAddress() + ":8090");
         env.put("SPACE_KEY", "CPI");
         env.put("ANCESTOR_ID", "327706");
         env.put("USERNAME", "confluence-publisher-it");

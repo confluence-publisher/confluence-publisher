@@ -29,10 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.Network.SHARED;
+import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 import static org.testcontainers.containers.wait.strategy.Wait.forLogMessage;
 
 public class DockerBasedPublishingIntegrationTest {
@@ -139,20 +142,54 @@ public class DockerBasedPublishingIntegrationTest {
         });
     }
 
+    @Test
+    public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() {
+        // arrange
+        withSslProxyEnabled("proxy", 8443, () -> {
+            Map<String, String> env = mandatoryEnvVars();
+            env.put("ROOT_CONFLUENCE_URL", "https://proxy:8443");
+            env.put("SKIP_SSL_VERIFICATION", "true");
+
+            // act
+            publishAndVerify("default", env, () -> {
+                // assert
+                givenAuthenticatedAsPublisher()
+                        .when().get(childPages())
+                        .then().body("results.title", hasItem("Index"));
+            });
+        });
+    }
+
     private static void publish(String pathToContent, Map<String, String> env) {
         publishAndVerify(pathToContent, env, () -> {
         });
     }
 
     private static void publishAndVerify(String pathToContent, Map<String, String> env, Runnable runnable) {
-        try (GenericContainer container = new GenericContainer("confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT")
+        try (GenericContainer publisher = new GenericContainer("confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT")
                 .withEnv(env)
+                .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
                 .waitingFor(forLogMessage(".*Documentation successfully published to Confluence.*", 1))) {
 
-            container.start();
+            publisher.start();
+            runnable.run();
+        }
+    }
 
+    private static void withSslProxyEnabled(String proxyHost, int proxyPort, Runnable runnable) {
+        try (GenericContainer proxy = new GenericContainer("fsouza/docker-ssl-proxy:1.1.0")
+                .withEnv("TARGET_HOST", "host.testcontainers.internal")
+                .withEnv("TARGET_PORT", "8090")
+                .withEnv("SSL_PORT", valueOf(proxyPort))
+                .withEnv("DOMAIN", "confluence-publisher-it.local")
+                .withNetwork(SHARED)
+                .withNetworkAliases(proxyHost)
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
+                .waitingFor(forListeningPort())) {
+
+            proxy.start();
             runnable.run();
         }
     }

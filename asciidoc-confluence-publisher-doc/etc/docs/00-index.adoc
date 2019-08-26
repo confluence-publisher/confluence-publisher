@@ -147,6 +147,8 @@ remove all orphaned pages (requires the documentation source structure to contai
 
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
+
+  Note: Confluence only supports version messages for updated pages, but not when creating new pages.
 | optional (defaults to empty)
 
 | attributes| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.

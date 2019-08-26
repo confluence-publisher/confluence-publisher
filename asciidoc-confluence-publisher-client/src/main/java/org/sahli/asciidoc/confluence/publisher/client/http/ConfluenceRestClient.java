@@ -59,8 +59,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerfication, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(disableSslVerfication), username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(disableSslVerification), username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {

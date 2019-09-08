@@ -1,0 +1,62 @@
+= Table of Contents
+:toc:
+
+AsciiDoc table of contents are converted to the table of contents macro of Confluence. The table of contents displays
+the tree of sections for a specific page.
+
+Table of contents can either be displayed at the very top of a page (default
+mode), or at a custom-defined location within the page (macro mode):
+
+
+== Table of Contents (Default)
+
+Displaying the table of contents at the top of a page can be done by specifying the `toc` AsciiDoc attribute:
+
+[listing]
+....
+= Page Title
+:toc:
+
+== Some Section
+....
+
+The `toc` attribute must follow the title without any additional empty line.
+
+
+== Table of Contents (Macro)
+
+Displaying the table of contents in any location other than the top of the page requires the `toc` AsciiDoc attribute
+to be set to `macro`. Once done, the table of content can be displayed in the requested location using the `toc::[]`
+macro:
+
+[listing]
+....
+= Page Title
+:toc: macro
+
+== Some Section
+
+toc::[]
+....
+
+The `toc::[]` macro must be surrounded by empty lines for the table of contents to be displayed.
+
+
+== Levels
+
+By default, sections of level 1 and 2 are contained in the table of contents. The number of levels displayed can be
+customized using the `toclevels` attribute (for both default and macro mode):
+
+[listing]
+....
+= Page Title
+:toc:
+:toclevels: 4
+
+== Some Section
+....
+
+[NOTE]
+====
+Specifying a title for the table of contents is currently not supported.
+====

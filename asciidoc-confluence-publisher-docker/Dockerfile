@@ -1,9 +1,9 @@
 FROM openjdk:8-jre-alpine
 
+RUN apk add --update graphviz ttf-dejavu
+
 ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
 ADD ./publish.sh /usr/local/bin
-
-RUN apk add --update graphviz ttf-dejavu
 
 VOLUME /var/asciidoc-root-folder
 

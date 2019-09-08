@@ -145,10 +145,54 @@ public class DockerBasedPublishingIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() {
         // arrange
-        withSslProxyEnabled("proxy", 8443, () -> {
+        withReverseProxyEnabled("proxy", 8443, "host.testcontainers.internal", 8090, () -> {
             Map<String, String> env = mandatoryEnvVars();
             env.put("ROOT_CONFLUENCE_URL", "https://proxy:8443");
             env.put("SKIP_SSL_VERIFICATION", "true");
+
+            // act
+            publishAndVerify("default", env, () -> {
+                // assert
+                givenAuthenticatedAsPublisher()
+                        .when().get(childPages())
+                        .then().body("results.title", hasItem("Index"));
+            });
+        });
+    }
+
+    @Test
+    public void publish_withProxySchemeHostAndPort_allowsPublishingViaProxy() {
+        // arrange
+        withForwardProxyEnabled("proxy", 8443, () -> {
+            Map<String, String> env = mandatoryEnvVars();
+            env.put("ROOT_CONFLUENCE_URL", "http://host.testcontainers.internal:8090");
+            env.put("SKIP_SSL_VERIFICATION", "true");
+            env.put("PROXY_SCHEME", "https");
+            env.put("PROXY_HOST", "proxy");
+            env.put("PROXY_PORT", "8443");
+
+            // act
+            publishAndVerify("default", env, () -> {
+                // assert
+                givenAuthenticatedAsPublisher()
+                        .when().get(childPages())
+                        .then().body("results.title", hasItem("Index"));
+            });
+        });
+    }
+
+    @Test
+    public void publish_withProxySchemeHostPortUsernameAndPassword_allowsPublishingViaProxy() {
+        // arrange
+        withForwardProxyEnabled("proxy", 8443, "proxy-user", "proxy-password", () -> {
+            Map<String, String> env = mandatoryEnvVars();
+            env.put("ROOT_CONFLUENCE_URL", "http://host.testcontainers.internal:8090");
+            env.put("SKIP_SSL_VERIFICATION", "true");
+            env.put("PROXY_SCHEME", "https");
+            env.put("PROXY_HOST", "proxy");
+            env.put("PROXY_PORT", "8443");
+            env.put("PROXY_USERNAME", "proxy-user");
+            env.put("PROXY_PASSWORD", "proxy-password");
 
             // act
             publishAndVerify("default", env, () -> {
@@ -178,14 +222,42 @@ public class DockerBasedPublishingIntegrationTest {
         }
     }
 
-    private static void withSslProxyEnabled(String proxyHost, int proxyPort, Runnable runnable) {
-        try (GenericContainer proxy = new GenericContainer("fsouza/docker-ssl-proxy:1.1.0")
-                .withEnv("TARGET_HOST", "host.testcontainers.internal")
-                .withEnv("TARGET_PORT", "8090")
-                .withEnv("SSL_PORT", valueOf(proxyPort))
-                .withEnv("DOMAIN", "confluence-publisher-it.local")
+    private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, Runnable runnable) {
+        Map<String, String> env = new HashMap<>();
+        env.put("PROXY_HOST", proxyHost);
+        env.put("PROXY_PORT", valueOf(proxyPort));
+        env.put("TARGET_HOST", targetHost);
+        env.put("TARGET_PORT", valueOf(targetPort));
+
+        startProxy("confluencepublisher/reverse-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+    }
+
+    private static void withForwardProxyEnabled(String proxyHost, int proxyPort, Runnable runnable) {
+        Map<String, String> env = new HashMap<>();
+        env.put("PROXY_HOST", proxyHost);
+        env.put("PROXY_PORT", valueOf(proxyPort));
+        env.put("BASIC_AUTH", "off");
+
+        startProxy("confluencepublisher/forward-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+    }
+
+    private static void withForwardProxyEnabled(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, Runnable runnable) {
+        Map<String, String> env = new HashMap<>();
+        env.put("PROXY_HOST", proxyHost);
+        env.put("PROXY_PORT", valueOf(proxyPort));
+        env.put("BASIC_AUTH", "on");
+        env.put("BASIC_USERNAME", proxyUsername);
+        env.put("BASIC_PASSWORD", proxyPassword);
+
+        startProxy("confluencepublisher/forward-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+    }
+
+    private static void startProxy(String dockerImageName, String proxyHost, int proxyPort, Map<String, String> env, Runnable runnable) {
+        try (GenericContainer proxy = new GenericContainer(dockerImageName)
+                .withEnv(env)
                 .withNetwork(SHARED)
                 .withNetworkAliases(proxyHost)
+                .withExposedPorts(proxyPort)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
                 .waitingFor(forListeningPort())) {
 

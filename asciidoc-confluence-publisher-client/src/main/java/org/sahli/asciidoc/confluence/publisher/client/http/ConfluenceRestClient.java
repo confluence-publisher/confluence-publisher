@@ -19,6 +19,7 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
@@ -32,6 +33,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -43,7 +45,9 @@ import java.util.List;
 import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
@@ -60,7 +64,11 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
 
     public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(disableSslVerification), username, password);
+        this(rootConfluenceUrl, null, disableSslVerification, username, password);
+    }
+
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
@@ -349,7 +357,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient(boolean disableSslVerification) {
+    private static CloseableHttpClient defaultHttpClient(ProxyConfiguration proxyConfiguration, boolean disableSslVerification) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
@@ -359,18 +367,36 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
 
+        if (proxyConfiguration != null) {
+            if (proxyConfiguration.proxyHost() != null) {
+                String proxyScheme = proxyConfiguration.proxyScheme() != null ? proxyConfiguration.proxyScheme() : "http";
+                String proxyHost = proxyConfiguration.proxyHost();
+                int proxyPort = proxyConfiguration.proxyPort() != null ? proxyConfiguration.proxyPort() : 80;
+
+                builder.setProxy(new HttpHost(proxyHost, proxyPort, proxyScheme));
+
+                if (proxyConfiguration.proxyUsername() != null) {
+                    String proxyUsername = proxyConfiguration.proxyUsername();
+                    String proxyPassword = proxyConfiguration.proxyPassword();
+
+                    builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, basicAuthorizationHeaderValue(proxyUsername, proxyPassword))));
+                }
+            }
+        }
+
         if (disableSslVerification) {
             builder.setSSLContext(trustAllSslContext());
             builder.setSSLHostnameVerifier(new NoopHostnameVerifier());
         }
+
         return builder.build();
     }
 
     private static SSLContext trustAllSslContext() {
         try {
             return new SSLContextBuilder()
-                .loadTrustMaterial((chain, authType) -> true)
-                .build();
+                    .loadTrustMaterial((chain, authType) -> true)
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException("Could not create trust-all SSL context", e);
         }
@@ -378,6 +404,45 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     private static String basicAuthorizationHeaderValue(String username, String password) {
         return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
+    }
+
+
+    public static class ProxyConfiguration {
+
+        private final String proxyScheme;
+        private final String proxyHost;
+        private final Integer proxyPort;
+        private final String proxyUsername;
+        private final String proxyPassword;
+
+        public ProxyConfiguration(String proxyScheme, String proxyHost, Integer proxyPort, String proxyUsername, String proxyPassword) {
+            this.proxyScheme = proxyScheme;
+            this.proxyHost = proxyHost;
+            this.proxyPort = proxyPort;
+            this.proxyUsername = proxyUsername;
+            this.proxyPassword = proxyPassword;
+        }
+
+        public String proxyScheme() {
+            return this.proxyScheme;
+        }
+
+        public String proxyHost() {
+            return this.proxyHost;
+        }
+
+        public Integer proxyPort() {
+            return this.proxyPort;
+        }
+
+        public String proxyUsername() {
+            return this.proxyUsername;
+        }
+
+        public String proxyPassword() {
+            return this.proxyPassword;
+        }
+
     }
 
 }

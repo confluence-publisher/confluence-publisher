@@ -111,6 +111,9 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
+  +
+  +
+  _Note:_ when publishing to Confluence Cloud, the root URL is https://<project>.atlassian.net/wiki.
 | mandatory
 
 | skipSslVerification
@@ -135,6 +138,10 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | password
 | The password of the user to use for publishing.
+  +
+  +
+  _Note:_ when publishing to Confluence Cloud, an API token generated via the corresponding Atlassian account has to
+  be used as password.
 | mandatory
 
 | publishingStrategy

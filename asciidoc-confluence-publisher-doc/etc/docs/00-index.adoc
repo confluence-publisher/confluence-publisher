@@ -180,23 +180,24 @@ remove all orphaned pages (requires the documentation source structure to contai
 | optional (defaults to `false`, only supported for Maven plugin)
 
 | proxyScheme
-| The scheme (http, https) of the proxy (in case a forward proxy needs to be used for accessing the Confluence instance).
+| The scheme (http or https) used to connect to a forward proxy (in case a forward proxy is required to access the
+  Confluence instance).
 | optional (defaults to empty)
 
 | proxyHost
-| The host of the proxy.
+| The host of the forward proxy.
 | optional (defaults to empty)
 
 | proxyPort
-| The port of the proxy.
+| The port of the forward proxy.
 | optional (defaults to empty)
 
 | proxyUsername
-| The username of the proxy (in case the proxy requires basic authentication).
+| The username of the forward proxy (in case the forward proxy requires basic authentication).
 | optional (defaults to empty)
 
 | proxyPassword
-| The password of the proxy (in case the proxy requires basic authentication).
+| The password of the forward proxy (in case the forward proxy requires basic authentication).
 | optional (defaults to empty)
 |===
 

@@ -343,6 +343,9 @@
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
+                            <systemProperties>
+                                <confluence-publisher.version>${project.version}</confluence-publisher.version>
+                            </systemProperties>
                         </configuration>
                         <executions>
                             <execution>

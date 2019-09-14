@@ -21,6 +21,7 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListene
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
@@ -38,6 +39,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.lang.Integer.parseInt;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.delete;
@@ -65,6 +67,12 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String suffix = argumentsParser.optionalArgument("pageTitleSuffix", args).orElse(null);
         Map<String, Object> attributes = argumentsParser.optionalJsonArgument("attributes", args).orElseGet(Collections::emptyMap);
 
+        String proxyScheme = argumentsParser.optionalArgument("proxyScheme", args).orElse(null);
+        String proxyHost = argumentsParser.optionalArgument("proxyHost", args).orElse(null);
+        Integer proxyPort = argumentsParser.optionalArgument("proxyPort", args).map((value) -> parseInt(value)).orElse(null);
+        String proxyUsername = argumentsParser.optionalArgument("proxyUsername", args).orElse(null);
+        String proxyPassword = argumentsParser.optionalArgument("proxyPassword", args).orElse(null);
+
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
@@ -72,9 +80,10 @@ public class AsciidocConfluencePublisherCommandLineClient {
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
-            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, skipSslVerification, username, password);
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy,
-                    confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
+            ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
+
+            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, username, password);
+            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
             confluencePublisher.publish();
         } finally {
             deleteDirectory(buildFolder);

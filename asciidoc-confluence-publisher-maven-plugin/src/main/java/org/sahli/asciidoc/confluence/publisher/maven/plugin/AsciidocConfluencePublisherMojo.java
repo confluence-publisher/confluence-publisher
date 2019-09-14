@@ -26,6 +26,7 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListene
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
@@ -89,6 +90,21 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     private boolean skip;
 
     @Parameter
+    private String proxyScheme;
+
+    @Parameter
+    private String proxyHost;
+
+    @Parameter
+    private Integer proxyPort;
+
+    @Parameter
+    private String proxyUsername;
+
+    @Parameter
+    private String proxyPassword;
+
+    @Parameter
     private Map<String, Object> attributes;
 
     @Override
@@ -107,7 +123,8 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
-            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, this.skipSslVerification, this.username, this.password);
+            ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
+            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.username, this.password);
             ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);

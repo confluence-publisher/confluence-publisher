@@ -119,7 +119,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | skipSslVerification
 | Defines whether to disable SSL certificate verification when connecting to Confluence via HTTPS while using self-
   signed certificates.
-| optional (default to `false`)
+| optional (defaults to `false`)
 
 | spaceKey
 | The key of the Confluence space to publish to.
@@ -186,6 +186,27 @@ remove all orphaned pages (requires the documentation source structure to contai
 | skip
 | Defines whether the plugin execution should be skipped.
 | optional (defaults to `false`, only supported for Maven plugin)
+
+| proxyScheme
+| The scheme (http or https) used to connect to a forward proxy (in case a forward proxy is required to access the
+  Confluence instance).
+| optional (defaults to empty)
+
+| proxyHost
+| The host of the forward proxy.
+| optional (defaults to empty)
+
+| proxyPort
+| The port of the forward proxy.
+| optional (defaults to empty)
+
+| proxyUsername
+| The username of the forward proxy (in case the forward proxy requires basic authentication).
+| optional (defaults to empty)
+
+| proxyPassword
+| The password of the forward proxy (in case the forward proxy requires basic authentication).
+| optional (defaults to empty)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
@@ -287,6 +308,9 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -e VERSION_MESSAGE=V 1.0 \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
+   -e PROXY_SCHEME=https \
+   -e PROXY_HOST=my.proxy.com \
+   -e PROXY_PORT=8443 \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

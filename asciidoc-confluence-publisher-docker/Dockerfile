@@ -1,9 +1,9 @@
 FROM openjdk:8-jre-alpine
 
+RUN apk add --update graphviz ttf-dejavu
+
 ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
 ADD ./publish.sh /usr/local/bin
-
-RUN apk add --update graphviz ttf-dejavu
 
 VOLUME /var/asciidoc-root-folder
 
@@ -19,6 +19,11 @@ ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
     PAGE_TITLE_SUFFIX="" \
     PUBLISHING_STRATEGY="" \
     VERSION_MESSAGE="" \
-    ATTRIBUTES=""
+    ATTRIBUTES="" \
+    PROXY_SCHEME="" \
+    PROXY_HOST="" \
+    PROXY_PORT="" \
+    PROXY_USERNAME="" \
+    PROXY_PASSWORD=""
 
 ENTRYPOINT ["publish.sh"]

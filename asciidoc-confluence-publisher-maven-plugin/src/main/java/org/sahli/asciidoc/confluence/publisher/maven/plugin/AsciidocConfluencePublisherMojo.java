@@ -74,10 +74,10 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private String versionMessage;
 
-    @Parameter
+    @Parameter(property = "confluence.username")
     private String username;
 
-    @Parameter
+    @Parameter(property = "confluence.password")
     private String password;
 
     @Parameter

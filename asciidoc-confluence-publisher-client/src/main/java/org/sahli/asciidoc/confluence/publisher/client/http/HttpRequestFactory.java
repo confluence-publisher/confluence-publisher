@@ -166,8 +166,7 @@ class HttpRequestFactory {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentFileName), "attachmentFileName");
 
-        URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+        URIBuilder uriBuilder = createUriBuilder(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
         uriBuilder.addParameter("filename", attachmentFileName);
 
         if (isNotBlank(expandOptions)) {
@@ -184,6 +183,14 @@ class HttpRequestFactory {
         return getAttachmentByFileNameRequest;
     }
 
+    private static URIBuilder createUriBuilder(String path) {
+        try {
+            return new URIBuilder(path);
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException("Failed to parse path as URI: " + path, e);
+        }
+    }
+
     HttpGet getPageByIdRequest(String contentId, final String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
 
@@ -192,8 +199,7 @@ class HttpRequestFactory {
 
     HttpGet getChildPagesByIdRequest(String parentContentId, Integer limit, Integer start, String expandOptions) {
         assertMandatoryParameter(isNotBlank(parentContentId), "parentContentId");
-        URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + parentContentId + "/child/page");
+        URIBuilder uriBuilder = createUriBuilder(this.confluenceRestApiEndpoint + "/content/" + parentContentId + "/child/page");
 
         if (limit != null) {
             uriBuilder.addParameter("limit", limit.toString());
@@ -217,8 +223,7 @@ class HttpRequestFactory {
 
     public HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start, String expandOptions) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
-        URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setPath(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+        URIBuilder uriBuilder = createUriBuilder(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
 
         if (limit != null) {
             uriBuilder.addParameter("limit", limit.toString());

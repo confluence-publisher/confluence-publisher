@@ -153,6 +153,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 a| The strategy to use when publishing to confluence. Possible values:
 
 * `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and remove all orphaned pages
+* `APPEND_TO_ANCESTOR_KEEP_CHILDREN`: append the published pages to the ancestor, without removing the existing children
+of the ancestor
 * `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page and
 remove all orphaned pages (requires the documentation source structure to contain exactly one single root page)
 

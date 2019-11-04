@@ -20,8 +20,29 @@ package org.sahli.asciidoc.confluence.publisher.client;
  * @author Laurent Verbruggen
  */
 public enum PublishingStrategy {
+    APPEND_TO_ANCESTOR(true, false, true),
+    APPEND_TO_ANCESTOR_KEEP_CHILDREN(true, false, false),
+    REPLACE_ANCESTOR(false, true, true);
 
-    APPEND_TO_ANCESTOR,
-    REPLACE_ANCESTOR
+    private final boolean appendToAncestor;
+    private final boolean replaceAncestor;
+    private final boolean deleteExistingChildren;
 
+    PublishingStrategy(boolean appendToAncestor, final boolean replaceAncestor, boolean deleteExistingChildren) {
+        this.appendToAncestor = appendToAncestor;
+        this.replaceAncestor = replaceAncestor;
+        this.deleteExistingChildren = deleteExistingChildren;
+    }
+
+    boolean isAppendToAncestor() {
+        return appendToAncestor;
+    }
+
+    boolean isReplaceAncestor() {
+        return replaceAncestor;
+    }
+
+    boolean isDeleteExistingChildren() {
+        return deleteExistingChildren;
+    }
 }

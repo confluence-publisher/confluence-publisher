@@ -186,7 +186,7 @@ class HttpRequestFactory {
     private static URIBuilder createUriBuilder(String path) {
         try {
             return new URIBuilder(path);
-        } catch (final URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to parse path as URI: " + path, e);
         }
     }

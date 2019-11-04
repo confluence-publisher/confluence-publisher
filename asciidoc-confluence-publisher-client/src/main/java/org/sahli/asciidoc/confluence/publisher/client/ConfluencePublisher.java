@@ -75,15 +75,12 @@ public class ConfluencePublisher {
         assertMandatoryParameter(isNotBlank(this.metadata.getSpaceKey()), "spaceKey");
         assertMandatoryParameter(isNotBlank(this.metadata.getAncestorId()), "ancestorId");
 
-        switch (this.publishingStrategy) {
-            case APPEND_TO_ANCESTOR:
-                startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
-                break;
-            case REPLACE_ANCESTOR:
-                startPublishingReplacingAncestorId(singleRootPage(this.metadata), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid publishing strategy '" + this.publishingStrategy + "'");
+        if (this.publishingStrategy.isAppendToAncestor()) {
+            startPublishingUnderAncestorId(this.metadata.getPages(), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+        } else if (this.publishingStrategy.isReplaceAncestor()) {
+            startPublishingReplacingAncestorId(singleRootPage(this.metadata), this.metadata.getSpaceKey(), this.metadata.getAncestorId());
+        } else {
+            throw new IllegalArgumentException("Invalid publishing strategy '" + this.publishingStrategy + "'");
         }
 
         this.confluencePublisherListener.publishCompleted();
@@ -119,7 +116,9 @@ public class ConfluencePublisher {
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
-        deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
+        if (this.publishingStrategy.isDeleteExistingChildren()) {
+            deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
+        }
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 

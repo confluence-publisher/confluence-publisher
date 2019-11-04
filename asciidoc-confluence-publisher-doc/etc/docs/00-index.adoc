@@ -148,6 +148,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 a| The strategy to use when publishing to confluence. Possible values:
 
 * `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and remove all orphaned pages
+* `APPEND_TO_ANCESTOR_KEEP_CHILDREN`: append the published pages to the ancestor, without removing the existing children
+of the ancestor
 * `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page and
 remove all orphaned pages (requires the documentation source structure to contain exactly one single root page)
 
@@ -315,7 +317,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----
 
-In case you want to extend the Confluence Publisher Docker image or if you use it as part of your CI build, you 
+In case you want to extend the Confluence Publisher Docker image or if you use it as part of your CI build, you
 should use the script `publish.sh` for triggering the actual publishing. The following shows an example for a
 GitLab CI build step that uses the Confluence Publisher Docker image as its execution environment, assuming the
 documentation sources already being available in `./docs/` from the project checkout:

@@ -302,11 +302,11 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \
-   -e ANCESTOR_ID=012345 \
+   -e ANCESTOR_ID=012345 \bb
    -e PAGE_TITLE_PREFIX="Draft - " \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
-   -e VERSION_MESSAGE=V 1.0 \
+   -e VERSION_MESSAGE="V 1.0" \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -e PROXY_SCHEME=https \
    -e PROXY_HOST=my.proxy.com \
@@ -315,7 +315,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----
 
-In case you want to extend the Confluence Publisher Docker image or if you use it as part of your CI build, you 
+In case you want to extend the Confluence Publisher Docker image or if you use it as part of your CI build, you
 should use the script `publish.sh` for triggering the actual publishing. The following shows an example for a
 GitLab CI build step that uses the Confluence Publisher Docker image as its execution environment, assuming the
 documentation sources already being available in `./docs/` from the project checkout:

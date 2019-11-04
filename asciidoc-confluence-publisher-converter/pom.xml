@@ -75,4 +75,35 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-dot-exists</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>process-test-sources</phase>
+                        <configuration>
+                            <rules>
+                                <requireFilesExist>
+                                    <files>
+                                        <file>/opt/local/bin/dot</file>
+                                    </files>
+                                    <message><![CDATA[File not found: /opt/local/bin/dot. Please make sure GraphViz is installed.
+For more information, refer to the contribution guide:
+https://github.com/confluence-publisher/confluence-publisher/blob/master/CONTRIBUTING.md]]></message>
+                                </requireFilesExist>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

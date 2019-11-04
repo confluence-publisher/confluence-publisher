@@ -16,6 +16,9 @@ publication is again re-published.
 
 The documentation of the current release version is published to https://confluence-publisher.atlassian.net/[].
 
+== Contributing
+
+Please see the link:CONTRIBUTING.md[contribution guide] for instructions on how to build the Confluence Publisher locally and what to check before sending a pull request.
 
 == Acknowledgments
 

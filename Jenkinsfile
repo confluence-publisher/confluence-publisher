@@ -52,7 +52,7 @@ pipeline {
         stage('Version') {
             steps {
                 script {
-                    env.BUILD_VERSION = sh(script: 'cat .version', returnStdout: true).trim() + $ { env.BUILD_ID }
+                    env.BUILD_VERSION = sh(script: 'cat .version', returnStdout: true).trim() + '.' + env.BUILD_ID
                     currentBuild.displayName = "${env.BUILD_VERSION}"
                 }
                 echo "Version: ${env.BUILD_VERSION}"

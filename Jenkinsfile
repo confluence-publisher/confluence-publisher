@@ -22,7 +22,7 @@ pipeline {
     }
     parameters {
         booleanParam(name: 'DO_CLEAN', defaultValue: true, description: 'Whether or not to clean the workspace.')
-        booleanParam(name: 'DO_BUILD', defaultValue: false, description: 'Whether or not to perform a build.')
+        booleanParam(name: 'DO_BUILD', defaultValue: true, description: 'Whether or not to perform a build.')
         booleanParam(name: 'DO_PUBLISH', defaultValue: false, description: 'Whether or not to publish the artifact.')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Whether or not to enable DEBUG mode.')
         booleanParam(name: 'TRACE', defaultValue: false, description: 'Whether or not to enable TRACE mode.')

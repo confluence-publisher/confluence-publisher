@@ -104,7 +104,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>${docker.repo}}</repository>
+                    <repository>${docker.repo}</repository>
                     <tag>${project.version}</tag>
                     <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
                 </configuration>

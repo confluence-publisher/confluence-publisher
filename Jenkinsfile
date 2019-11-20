@@ -58,7 +58,7 @@ pipeline {
             when { expression { params.DO_BUILD } }
             steps {
                 sh "./mvnw -nsu versions:set -DnewVersion=${env.BUILD_VERSION}"
-                sh './mvnw -nsu clean install'
+                sh "./mvnw -nsu -Ddocker.repo=${env.DOCKER_COORDS} clean install"
             }
             post {
                 always {

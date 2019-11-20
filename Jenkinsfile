@@ -74,10 +74,11 @@ pipeline {
                         usernamePassword(credentialsId: env.DOCKER_REG_CREDS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
                 ]) {
                     sh "docker tag ${env.DOCKER_COORDS}:${env.BUILD_VERSION} ${env.DOCKER_COORDS}:latest"
-                    sh 'echo \'$DOCKER_PASS\' | docker login -u \'$DOCKER_USER\' --password-stdin'
+                    sh 'echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin'
                     sh "docker push ${env.DOCKER_COORDS}:latest"
-                    sh 'echo \'$DOCKER_PASS\' | docker login -u \'$DOCKER_USER\' --password-stdin'
+                    sh 'echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin'
                     sh "docker push ${env.DOCKER_COORDS}:${env.BUILD_VERSION}"
+                    sh 'docker logout'
                 }
             }
         }

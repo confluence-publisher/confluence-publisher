@@ -153,6 +153,7 @@ public class ConfluencePublisher {
                 .forEach(confluenceAttachment -> {
                     this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(confluenceAttachment.getTitle()));
                     this.confluenceClient.deleteAttachment(confluenceAttachment.getId());
+                    this.confluencePublisherListener.attachmentDeleted(confluenceAttachment.getTitle(), contentId);
                 });
     }
 
@@ -206,12 +207,14 @@ public class ConfluencePublisher {
                 }
                 this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
+                this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
             }
 
         } catch (NotFoundException e) {
             this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
             this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
             this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
+            this.confluencePublisherListener.attachmentAdded(attachmentFileName, contentId);
         }
     }
 
@@ -265,6 +268,18 @@ public class ConfluencePublisher {
 
         @Override
         public void pageDeleted(ConfluencePage deletedPage) {
+        }
+
+        @Override
+        public void attachmentAdded(String attachmentFileName, String contentId) {
+        }
+
+        @Override
+        public void attachmentUpdated(String attachmentFileName, String contentId) {
+        }
+
+        @Override
+        public void attachmentDeleted(String attachmentFileName, String contentId) {
         }
 
         @Override

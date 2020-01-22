@@ -13,6 +13,12 @@ public interface ConfluencePublisherListener {
 
     void pageDeleted(ConfluencePage deletedPage);
 
+    void attachmentAdded(String attachmentFileName, String contentId);
+
+    void attachmentUpdated(String attachmentFileName, String contentId);
+
+    void attachmentDeleted(String attachmentFileName, String contentId);
+
     void publishCompleted();
 
 }

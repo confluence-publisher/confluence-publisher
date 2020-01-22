@@ -129,6 +129,21 @@ public class AsciidocConfluencePublisherCommandLineClient {
         }
 
         @Override
+        public void attachmentAdded(String attachmentFileName, String contentId) {
+            System.out.println("Added attachment '" + attachmentFileName + "' (page id " + contentId + ")");
+        }
+
+        @Override
+        public void attachmentUpdated(String attachmentFileName, String contentId) {
+            System.out.println("Updated attachment '" + attachmentFileName + "' (page id " + contentId + ")");
+        }
+
+        @Override
+        public void attachmentDeleted(String attachmentFileName, String contentId) {
+            System.out.println("Deleted attachment '" + attachmentFileName + "' (page id " + contentId + ")");
+        }
+
+        @Override
         public void publishCompleted() {
             System.out.println("Documentation successfully published to Confluence");
         }

@@ -145,8 +145,8 @@ public class ConfluencePublisherTest {
 
     @Test
     public void publish_multiplePageWithAncestorIdAndReplaceAncestorStrategy_delegatesToConfluenceRestClient() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content', but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content', but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
 
         ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id-replace", REPLACE_ANCESTOR, null, null, "version message");
         confluencePublisher.publish();
@@ -197,7 +197,9 @@ public class ConfluencePublisherTest {
         ArgumentCaptor<String> attachmentFileName = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<InputStream> attachmentContent = ArgumentCaptor.forClass(InputStream.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock);
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -210,6 +212,12 @@ public class ConfluencePublisherTest {
         assertThat(inputStreamAsString(attachmentContent.getAllValues().get(attachmentFileName.getAllValues().indexOf("attachmentTwo.txt")), UTF_8), is("attachment2"));
         verify(confluenceRestClientMock).setPropertyByKey("4321", "attachmentOne.txt-hash", sha256Hex("attachment1"));
         verify(confluenceRestClientMock).setPropertyByKey("4321", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
+
+        verify(confluencePublisherListenerMock, times(1)).pageAdded(eq(new ConfluencePage("4321", "Some Confluence Content", "<h1>Some Confluence Content</h1>", INITIAL_PAGE_VERSION)));
+        verify(confluencePublisherListenerMock, times(1)).attachmentAdded(eq("attachmentOne.txt"), eq("4321"));
+        verify(confluencePublisherListenerMock, times(1)).attachmentAdded(eq("attachmentTwo.txt"), eq("4321"));
+        verify(confluencePublisherListenerMock, times(1)).publishCompleted();
+        verifyNoMoreInteractions(confluencePublisherListenerMock);
     }
 
     @Test
@@ -347,7 +355,9 @@ public class ConfluencePublisherTest {
         when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
         when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(null);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -362,6 +372,12 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
 
         verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
+
+        verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1)), eq(new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).attachmentUpdated(eq("attachmentOne.txt"), eq("72189173"));
+        verify(confluencePublisherListenerMock, times(1)).attachmentUpdated(eq("attachmentTwo.txt"), eq("72189173"));
+        verify(confluencePublisherListenerMock, times(1)).publishCompleted();
+        verifyNoMoreInteractions(confluencePublisherListenerMock);
     }
 
     @Test
@@ -411,7 +427,9 @@ public class ConfluencePublisherTest {
                 new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1)
         ));
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, null, null);
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -422,6 +440,12 @@ public class ConfluencePublisherTest {
 
         verify(confluenceRestClientMock).deleteAttachment("att2");
         verify(confluenceRestClientMock).deletePropertyByKey("72189173", "attachmentTwo.txt-hash");
+
+        verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1)), eq(new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).attachmentDeleted(eq("attachmentOne.txt"), eq("72189173"));
+        verify(confluencePublisherListenerMock, times(1)).attachmentDeleted(eq("attachmentTwo.txt"), eq("72189173"));
+        verify(confluencePublisherListenerMock, times(1)).publishCompleted();
+        verifyNoMoreInteractions(confluencePublisherListenerMock);
     }
 
     @Test

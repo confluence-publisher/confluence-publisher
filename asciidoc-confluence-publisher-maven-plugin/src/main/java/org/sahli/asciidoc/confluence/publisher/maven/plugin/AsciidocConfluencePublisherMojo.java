@@ -146,17 +146,32 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
         @Override
         public void pageAdded(ConfluencePage addedPage) {
-            log.info("Added page '" + addedPage.getTitle() + "' (id " + addedPage.getContentId() + ")");
+            this.log.info("Added page '" + addedPage.getTitle() + "' (id " + addedPage.getContentId() + ")");
         }
 
         @Override
         public void pageUpdated(ConfluencePage existingPage, ConfluencePage updatedPage) {
-            log.info("Updated page '" + updatedPage.getTitle() + "' (id " + updatedPage.getContentId() + ", version " + existingPage.getVersion() + " -> " + updatedPage.getVersion() + ")");
+            this.log.info("Updated page '" + updatedPage.getTitle() + "' (id " + updatedPage.getContentId() + ", version " + existingPage.getVersion() + " -> " + updatedPage.getVersion() + ")");
         }
 
         @Override
         public void pageDeleted(ConfluencePage deletedPage) {
-            log.info("Deleted page '" + deletedPage.getTitle() + "' (id " + deletedPage.getContentId() + ")");
+            this.log.info("Deleted page '" + deletedPage.getTitle() + "' (id " + deletedPage.getContentId() + ")");
+        }
+
+        @Override
+        public void attachmentAdded(String attachmentFileName, String contentId) {
+            this.log.info("Added attachment '" + attachmentFileName + "' (page id " + contentId + ")");
+        }
+
+        @Override
+        public void attachmentUpdated(String attachmentFileName, String contentId) {
+            this.log.info("Updated attachment '" + attachmentFileName + "' (page id " + contentId + ")");
+        }
+
+        @Override
+        public void attachmentDeleted(String attachmentFileName, String contentId) {
+            this.log.info("Deleted attachment '" + attachmentFileName + "' (page id " + contentId + ")");
         }
 
         @Override

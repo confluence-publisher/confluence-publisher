@@ -266,7 +266,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     private static void startProxy(String dockerImageName, String proxyHost, int proxyPort, Map<String, String> env, PortAwareRunnable runnable) throws Exception {
-        try (GenericContainer proxy = new GenericContainer(dockerImageName)
+        try (GenericContainer<?> proxy = new GenericContainer<>(dockerImageName)
                 .withEnv(env)
                 .withNetwork(SHARED)
                 .withNetworkAliases(proxyHost)

@@ -206,7 +206,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         return sendRequest(request, (response) -> {
             StatusLine statusLine = response.getStatusLine();
             if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
-                throw new RequestFailedException(request, response);
+                throw new RequestFailedException(request, response, null);
             }
 
             return responseHandler.apply(response);
@@ -219,7 +219,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);
         } catch (IOException e) {
-            throw new RuntimeException("Request could not be sent" + httpRequest, e);
+            throw new RequestFailedException(httpRequest, null, e);
         }
     }
 

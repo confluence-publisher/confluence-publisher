@@ -130,7 +130,12 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
             confluencePublisher.publish();
         } catch (Exception e) {
-            getLog().error("Publishing to Confluence failed: " + e.getMessage());
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Publishing to Confluence failed", e);
+            } else {
+                getLog().error("Publishing to Confluence failed: " + e.getMessage());
+            }
+
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
     }

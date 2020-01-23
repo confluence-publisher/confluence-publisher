@@ -35,27 +35,37 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 @SuppressWarnings("WeakerAccess")
 public class RequestFailedException extends RuntimeException {
 
-    RequestFailedException(HttpRequest request, HttpResponse response) {
-        super("" +
-                response.getStatusLine().getStatusCode() +
-                " " +
-                response.getStatusLine().getReasonPhrase() +
-                " " +
-                request.getRequestLine().getMethod() +
-                " " +
-                request.getRequestLine().getUri() +
-                "\n" +
-                "request: '" + failedRequestContent(request) + "'" +
-                "\n" +
-                "response: '" + failedResponseContent(response) + "'"
-        );
+    RequestFailedException(HttpRequest request, HttpResponse response, Exception reason) {
+        super("request failed (" +
+                "request: " + requestLog(request) + ", " +
+                "response: " + responseLog(response) +
+                (reason != null ? ", reason: '" + reason.getMessage() + "'" : "") +
+                ")", reason);
     }
 
-    private static String failedRequestContent(HttpRequest request) {
-        return request instanceof HttpEntityEnclosingRequest ? entityAsString(((HttpEntityEnclosingRequest) request).getEntity()) : "";
+    private static String requestLog(HttpRequest request) {
+        String requestLine = request.getRequestLine().getMethod() + " " + request.getRequestLine().getUri();
+        String requestBody = requestBody(request);
+
+        return requestLine + " " + requestBody;
     }
 
-    private static String failedResponseContent(HttpResponse response) {
+    private static String responseLog(HttpResponse response) {
+        if (response == null) {
+            return "<none>";
+        }
+
+        String statusLine = response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase();
+        String responseBody = responseBody(response);
+
+        return statusLine + " " + responseBody;
+    }
+
+    private static String requestBody(HttpRequest request) {
+        return request instanceof HttpEntityEnclosingRequest ? entityAsString(((HttpEntityEnclosingRequest) request).getEntity()) : "<empty body>";
+    }
+
+    private static String responseBody(HttpResponse response) {
         return entityAsString(response.getEntity());
     }
 
@@ -67,7 +77,7 @@ public class RequestFailedException extends RuntimeException {
 
             return contentString;
         } catch (Exception ignored) {
-            return "";
+            return "<empty body>";
         }
     }
 }

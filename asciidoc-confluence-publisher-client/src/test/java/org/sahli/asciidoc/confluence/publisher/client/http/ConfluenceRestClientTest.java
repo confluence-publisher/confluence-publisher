@@ -42,6 +42,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -462,21 +463,51 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void addPageUnderAncestor_withUnsuccessfulResponse_throwsRuntimeExceptionWithResponseInformation() throws Exception {
+    public void addPageUnderAncestor_withUnsuccessfulRequest_throwsExceptionWithRequestInformationAndRootCause() throws Exception {
+        // arrange
+        IOException exception = new IOException("expected");
+
+        CloseableHttpClient httpClientMock = recordHttpClientForRequestException(exception);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // assert
+        this.expectedException.expect(RequestFailedException.class);
+        this.expectedException.expectCause(is(equalTo(exception)));
+        this.expectedException.expectMessage("request failed (" +
+                "request: POST http://confluence.com/rest/api/content " +
+                "{\"title\":\"Hello\"," +
+                "\"space\":{\"key\":\"~personalSpace\"}," +
+                "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
+                "\"ancestors\":[{\"id\":\"123\"}]," +
+                "\"version\":{\"number\":1,\"message\":\"Version Message\"}," +
+                "\"type\":\"page\"}, " +
+                "response: <none>, " +
+                "reason: 'expected'" +
+                ")");
+
+        // act
+        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
+    }
+
+    @Test
+    public void addPageUnderAncestor_withUnsuccessfulResponse_throwsExceptionWithResponseInformation() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"some\": \"json\"}", 404, "reason");
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("404 reason POST http://confluence.com/rest/api/content\n" +
-            "request: '{\"title\":\"Hello\"," +
+        this.expectedException.expect(RequestFailedException.class);
+        this.expectedException.expectMessage("request failed (" +
+                "request: POST http://confluence.com/rest/api/content " +
+                "{\"title\":\"Hello\"," +
                 "\"space\":{\"key\":\"~personalSpace\"}," +
                 "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
                 "\"ancestors\":[{\"id\":\"123\"}]," +
                 "\"version\":{\"number\":1,\"message\":\"Version Message\"}," +
-                "\"type\":\"page\"}'\n" +
-            "response: '{\"some\": \"json\"}'");
+                "\"type\":\"page\"}, " +
+                "response: 404 reason " +
+                "{\"some\": \"json\"}" +
+                ")");
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
@@ -493,6 +524,13 @@ public class ConfluenceRestClientTest {
 
     private static CloseableHttpClient recordHttpClientForSingleResponseWithContentAndStatusCode(String contentPayload, int statusCode) throws IOException {
         return recordHttpClientForSingleResponseWithContentAndStatusCode(contentPayload, statusCode, null);
+    }
+
+    private static CloseableHttpClient recordHttpClientForRequestException(IOException exception) throws IOException {
+        CloseableHttpClient httpClientMock = anyCloseableHttpClient();
+        when(httpClientMock.execute(any(HttpRequestBase.class))).thenThrow(exception);
+
+        return httpClientMock;
     }
 
     private static CloseableHttpClient recordHttpClientForSingleResponseWithContentAndStatusCode(String contentPayload, int statusCode, String reason) throws IOException {

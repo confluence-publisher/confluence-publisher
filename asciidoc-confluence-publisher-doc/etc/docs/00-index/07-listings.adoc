@@ -96,6 +96,67 @@ Restricting the source code to be included based on tags is supported:
 include::../files/SourceWithMethodTag.java[tags=myMethod]
 ----
 
+== Line Numbers
+
+Line numbers for source code blocks can be enabled either using the `:source-linenums-option:` attribute globally for
+all source blocks on the page, or per source block using the `linenums` option:
+
+[listing]
+....
+[source,java,linenums]
+----
+public class MyCode {
+    // comment
+}
+----
+....
+
+[source,java,linenums]
+----
+public class MyCode {
+    // comment
+}
+----
+
+In case no source language is specified for the source block, line numbers have to be enabled using `[source%linenums]` (not `[source,linenums]`):
+
+[listing]
+....
+[source%linenums]
+----
+line one
+line two
+line three
+----
+....
+
+[source%linenums]
+----
+line one
+line two
+line three
+----
+
+A custom start line number for a source block can be specified using the `start` option:
+
+[listing]
+....
+[source,java,linenums,start=4]
+----
+public class MyCode {
+    // comment
+}
+----
+....
+
+[source,java,linenums,start=4]
+----
+public class MyCode {
+    // comment
+}
+----
+
+
 [WARNING]
 ====
 Other advanced features like listing file names or callouts are not supported.

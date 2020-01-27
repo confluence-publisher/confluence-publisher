@@ -201,6 +201,7 @@ public class AsciidocConfluencePage {
         Map<String, Object> attributes = new HashMap<>(userAttributes);
         attributes.put("imagesoutdir", generatedAssetsTargetFolder.toString());
         attributes.put("outdir", generatedAssetsTargetFolder.toString());
+        attributes.put("source-highlighter", "none");
 
         return OptionsBuilder.options()
                 .backend("xhtml5")

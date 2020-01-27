@@ -403,6 +403,26 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithSourceListingAndSourceHighlighter_returnsConfluencePageContentWithoutSourceHighlighting() {
+        // arrange
+        String adocContent = ":source-highlighter: coderay\n" +
+                "[source,java]\n" +
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"language\">java</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() {
         // arrange
         String adocContent = "= Title level 0\n\n" +

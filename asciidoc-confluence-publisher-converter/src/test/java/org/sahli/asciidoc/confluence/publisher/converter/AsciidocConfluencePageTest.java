@@ -229,7 +229,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithJavaSourceListing_returnsConfluencePageContentWithMacroWithNameCodeAndParameterJava() {
+    public void renderConfluencePage_asciiDocWithJavaSourceListing_returnsConfluencePageContentWithMacroWithJavaParameter() {
         // arrange
         String adocContent = "[source,java]\n" +
                 "----\n" +
@@ -242,6 +242,65 @@ public class AsciidocConfluencePageTest {
         // assert
         String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
                 "<ac:parameter ac:name=\"language\">java</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithLineNumbers_returnsConfluencePageContentWithMacroWithLineNumbersParameter() {
+        // arrange
+        String adocContent = "[source%linenums]\n" +
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"linenumbers\">true</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithLineNumbersAndJavaLanguage_returnsConfluencePageContentWithMacroWithLineNumbersAndJavaParameter() {
+        // arrange
+        String adocContent = "[source,java,linenums]\n" +
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"language\">java</ac:parameter>" +
+                "<ac:parameter ac:name=\"linenumbers\">true</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithGlobalLineNumbersAttribute_returnsConfluencePageContentWithMacroWithLineNumbersParameter() {
+        // arrange
+        String adocContent = ":source-linenums-option:\n" +
+                "[source]\n" +
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"linenumbers\">true</ac:parameter>" +
                 "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
                 "</ac:structured-macro>";
         assertThat(asciiDocConfluencePage.content(), is(expectedContent));

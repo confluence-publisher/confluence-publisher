@@ -137,6 +137,26 @@ line two
 line three
 ----
 
+A custom start line number for a source block can be specified using the `start` option:
+
+[listing]
+....
+[source,java,linenums,start=4]
+----
+public class MyCode {
+    // comment
+}
+----
+....
+
+[source,java,linenums,start=4]
+----
+public class MyCode {
+    // comment
+}
+----
+
+
 [WARNING]
 ====
 Other advanced features like listing file names or callouts are not supported.

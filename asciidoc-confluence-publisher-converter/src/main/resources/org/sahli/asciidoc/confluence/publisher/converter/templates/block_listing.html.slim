@@ -6,6 +6,8 @@
       ac:parameter ac:name="title" #{title}
     - if attr? :linenums
       ac:parameter ac:name="linenumbers" true
+    - if attr? :start
+      ac:parameter ac:name="firstline" =(attr :start)
     ac:plain-text-body
       <![CDATA[#{content}]]>
 - else

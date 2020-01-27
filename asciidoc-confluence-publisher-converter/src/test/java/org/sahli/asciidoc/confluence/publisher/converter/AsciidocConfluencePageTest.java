@@ -287,6 +287,26 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithSourceListingWithLineNumbersAndStartIndex_returnsConfluencePageContentWithMacroWithLineNumbersAndFirstLineParameter() {
+        // arrange
+        String adocContent = "[source%linenums,start=3]\n" +
+                "----\n" +
+                "import java.util.List;\n" +
+                "----";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"linenumbers\">true</ac:parameter>" +
+                "<ac:parameter ac:name=\"firstline\">3</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithSourceListingWithGlobalLineNumbersAttribute_returnsConfluencePageContentWithMacroWithLineNumbersParameter() {
         // arrange
         String adocContent = ":source-linenums-option:\n" +

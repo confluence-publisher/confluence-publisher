@@ -33,6 +33,7 @@ import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.Network.SHARED;
@@ -217,6 +218,21 @@ public class DockerBasedPublishingIntegrationTest {
                         .when().get(childPages())
                         .then().body("results.title", hasItem("Index"));
             });
+        });
+    }
+
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("CONVERT_ONLY", "true");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results", hasSize(0));
         });
     }
 

@@ -43,6 +43,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
@@ -228,6 +229,21 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                         .when().get(childPages())
                         .then().body("results.title", hasItem("Index"));
             });
+        });
+    }
+
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() {
+        // arrange
+        Map<String, String> env = mandatoryProperties();
+        env.put("convertOnly", "true");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results", hasSize(0));
         });
     }
 

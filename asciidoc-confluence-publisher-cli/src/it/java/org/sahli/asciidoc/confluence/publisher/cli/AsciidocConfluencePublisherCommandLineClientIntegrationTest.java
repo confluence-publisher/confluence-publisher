@@ -31,6 +31,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
@@ -203,6 +204,28 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(childPagesFor("327706"))
                 .then().body("results.title", hasItem("Index"));
+    }
+
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() throws Exception {
+        // arrange
+        String[] args = {
+                "rootConfluenceUrl=http://localhost:8090",
+                "username=confluence-publisher-it",
+                "password=1234",
+                "spaceKey=CPI",
+                "ancestorId=327706",
+                "asciidocRootFolder=src/it/resources/default",
+                "convertOnly=true"
+        };
+
+        // act
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(childPagesFor("327706"))
+                .then().body("results", hasSize(0));
     }
 
     private static String pageIdBy(String title) {

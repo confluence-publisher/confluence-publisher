@@ -75,6 +75,8 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String proxyUsername = argumentsParser.optionalArgument("proxyUsername", args).orElse(null);
         String proxyPassword = argumentsParser.optionalArgument("proxyPassword", args).orElse(null);
 
+        boolean convertOnly = argumentsParser.optionalBooleanArgument("convertOnly", args).orElse(false);
+
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
@@ -82,11 +84,15 @@ public class AsciidocConfluencePublisherCommandLineClient {
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
-            ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
+            if (convertOnly) {
+                System.out.println("Publishing to Confluence skipped ('convert only' is enabled)");
+            } else {
+                ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
-            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password);
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
-            confluencePublisher.publish();
+                ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
+                confluencePublisher.publish();
+            }
         } finally {
             deleteDirectory(buildFolder);
         }

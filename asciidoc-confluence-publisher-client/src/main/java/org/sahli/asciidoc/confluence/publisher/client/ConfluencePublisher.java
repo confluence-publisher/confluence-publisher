@@ -271,37 +271,4 @@ public class ConfluencePublisher {
         }
     }
 
-
-    private static class NoOpConfluencePublisherListener implements ConfluencePublisherListener {
-
-        @Override
-        public void pageAdded(ConfluencePage addedPage) {
-        }
-
-        @Override
-        public void pageUpdated(ConfluencePage existingPage, ConfluencePage updatedPage) {
-        }
-
-        @Override
-        public void pageDeleted(ConfluencePage deletedPage) {
-        }
-
-        @Override
-        public void attachmentAdded(String attachmentFileName, String contentId) {
-        }
-
-        @Override
-        public void attachmentUpdated(String attachmentFileName, String contentId) {
-        }
-
-        @Override
-        public void attachmentDeleted(String attachmentFileName, String contentId) {
-        }
-
-        @Override
-        public void publishCompleted() {
-        }
-
-    }
-
 }

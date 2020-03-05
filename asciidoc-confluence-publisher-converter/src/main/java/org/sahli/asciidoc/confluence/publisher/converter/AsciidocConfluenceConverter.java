@@ -136,6 +136,7 @@ public final class AsciidocConfluenceConverter {
         confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
         confluencePageMetadata.setChildren(childConfluencePages);
         confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
+        confluencePageMetadata.getLabels().addAll(asciidocConfluencePage.keywords());
 
         return confluencePageMetadata;
     }

@@ -33,6 +33,7 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.message.BasicHeader;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Ancestor;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Body;
+import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Label;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.PagePayload;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.PropertyPayload;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Space;
@@ -45,8 +46,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.http.entity.ContentType.APPLICATION_OCTET_STREAM;
 import static org.sahli.asciidoc.confluence.publisher.client.http.HttpRequestFactory.PagePayloadBuilder.pagePayloadBuilder;
@@ -279,6 +282,32 @@ class HttpRequestFactory {
         postRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
 
         return postRequest;
+    }
+
+    HttpGet getLabelsRequest(String contentId) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+
+        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label");
+    }
+
+    HttpPost addLabelsRequest(String contentId, List<String> labels) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(!labels.isEmpty(), "labels");
+
+        List<Label> payload = labels.stream().map(Label::new).collect(toList());
+
+        HttpPost postRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label");
+        postRequest.setEntity(httpEntityWithJsonPayload(payload));
+        postRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
+
+        return postRequest;
+    }
+
+    HttpDelete deleteLabelRequest(String contentId, String label) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(label), "label");
+
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label?name=" + label);
     }
 
     private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {

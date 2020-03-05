@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -552,6 +554,54 @@ public class ConfluencePublisherTest {
         verify(confluencePublisherListenerMock, times(0)).pageDeleted(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
         verifyNoMoreInteractions(confluencePublisherListenerMock);
+    }
+
+    @Test
+    public void publish_labels_withoutLabelOnPage() {
+        // arrange
+        ConfluencePage confluencePage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 1);
+        List<String> labels = new ArrayList<>();
+
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Some Confluence Content")).thenReturn("2345");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("2345")).thenReturn(confluencePage);
+        when(confluenceRestClientMock.getPropertyByKey("2345", CONTENT_HASH_PROPERTY_KEY)).thenReturn("7a901829ba6a0b6f7f084ae4313bdb5d83bc2c4ea21b452ba7073c0b0c60faae");
+        when(confluenceRestClientMock.getLabels("2345")).thenReturn(labels);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("without-label-on-page", confluenceRestClientMock);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, times(1)).getLabels(eq("2345"));
+        verify(confluenceRestClientMock, times(0)).deleteLabel(eq("2345"), any(String.class));
+        verify(confluenceRestClientMock, times(1)).addLabels(eq("2345"), eq(Arrays.asList("foo", "bar")));
+    }
+
+    @Test
+    public void publish_labels_withLabelsOnPage() {
+        // arrange
+        ConfluencePage confluencePage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 1);
+        List<String> labels = new ArrayList<>();
+        labels.add("foo");
+
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageByTitle("~personalSpace", "Some Confluence Content")).thenReturn("2345");
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("2345")).thenReturn(confluencePage);
+        when(confluenceRestClientMock.getPropertyByKey("2345", CONTENT_HASH_PROPERTY_KEY)).thenReturn("7a901829ba6a0b6f7f084ae4313bdb5d83bc2c4ea21b452ba7073c0b0c60faae");
+        when(confluenceRestClientMock.getLabels("2345")).thenReturn(labels);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("label-on-page", confluenceRestClientMock);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, times(1)).getLabels(eq("2345"));
+        verify(confluenceRestClientMock, times(1)).deleteLabel(eq("2345"), eq("foo"));
+        verify(confluenceRestClientMock, times(0)).deleteLabel(eq("2345"), eq("bar"));
+        verify(confluenceRestClientMock, times(1)).addLabels(eq("2345"), eq(Arrays.asList("bar")));
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {

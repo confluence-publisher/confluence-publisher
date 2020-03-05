@@ -111,6 +111,9 @@ public class ConfluencePublisher {
         if (rootPage != null) {
             updatePage(ancestorId, null, rootPage);
 
+            removeLabelsNotPresentOnPage(ancestorId, rootPage.getLabels());
+            addLabels(ancestorId, rootPage.getLabels());
+
             deleteConfluenceAttachmentsNotPresentUnderPage(ancestorId, rootPage.getAttachments());
             addAttachments(ancestorId, rootPage.getAttachments());
 
@@ -122,6 +125,9 @@ public class ConfluencePublisher {
         deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
+
+            removeLabelsNotPresentOnPage(contentId, page.getLabels());
+            addLabels(contentId, page.getLabels());
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
@@ -224,6 +230,23 @@ public class ConfluencePublisher {
 
     private Path absoluteAttachmentPath(String attachmentPath) {
         return Paths.get(attachmentPath);
+    }
+
+    private void removeLabelsNotPresentOnPage(String contentId, List<String> labels) {
+        List<String> labelsToDelete = this.confluenceClient.getLabels(contentId);
+        labelsToDelete.removeAll(labels);
+
+        for (String label : labelsToDelete) {
+            this.confluenceClient.deleteLabel(contentId, label);
+        }
+    }
+
+    private void addLabels(String contentId, List<String> labels) {
+        if (labels.isEmpty()) {
+            return;
+        }
+
+        confluenceClient.addLabels(contentId, labels);
     }
 
     private static boolean notSameHash(String actualHash, String newHash) {

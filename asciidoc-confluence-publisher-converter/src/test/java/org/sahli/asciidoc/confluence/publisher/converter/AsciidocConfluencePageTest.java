@@ -45,6 +45,7 @@ import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
@@ -1487,10 +1488,42 @@ public class AsciidocConfluencePageTest {
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
-        // assert
         assertThat(asciidocConfluencePage.attachments().size(), is(2));
         assertThat(asciidocConfluencePage.attachments(), hasEntry("sunrise.jpg", "sunrise.jpg"));
         assertThat(asciidocConfluencePage.attachments(), hasEntry("foo.txt", "foo.txt"));
+    }
+
+    @Test
+    public void keywords_singleKeyword_returnsSingleKeyword() {
+        // arrange
+        String adoc = "= Page Title\n"
+                + ":keywords: foo";
+
+        AsciidocPage asciidocPage = asciidocPage(adoc);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        assertThat(asciidocConfluencePage.keywords().size(), is(1));
+        assertThat(asciidocConfluencePage.keywords(), hasItem("foo"));
+    }
+
+    @Test
+    public void keywords_multipleKeywords_returnAllKeywords() {
+        // arrange
+        String adoc = "= Page Title\n"
+                + ":keywords: foo, bar";
+
+        AsciidocPage asciidocPage = asciidocPage(adoc);
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        assertThat(asciidocConfluencePage.keywords().size(), is(2));
+        assertThat(asciidocConfluencePage.keywords(), hasItem("foo"));
+        assertThat(asciidocConfluencePage.keywords(), hasItem("bar"));
     }
 
     private static String prependTitle(String content) {

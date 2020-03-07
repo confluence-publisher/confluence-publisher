@@ -6,7 +6,8 @@
       "title": "Some Confluence Content",
       "contentFilePath": "some-confluence-content.html",
       "labels": [
-        "bar"
+        "label-one",
+        "label-two"
       ]
     }
   ]

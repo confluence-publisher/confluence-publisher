@@ -33,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -533,11 +532,11 @@ public class ConfluenceRestClientTest {
     @Test
     public void addLabels_sendsPostRequest() throws Exception {
         // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [{\"prefix\": \"global\", \"name\": \"label\"}, {\"foo\": \"bar\"}]}", 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act
-        confluenceRestClient.addLabels("123456", Arrays.asList("foo", "bar"));
+        confluenceRestClient.addLabels("123456", asList("foo", "bar"));
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPost.class));
@@ -546,7 +545,7 @@ public class ConfluenceRestClientTest {
     @Test
     public void deleteLabel_sendsDeleteRequest() throws Exception {
         // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [{\"prefix\": \"global\", \"name\": \"label\"}, {\"foo\": \"bar\"}]}", 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
 
         // act

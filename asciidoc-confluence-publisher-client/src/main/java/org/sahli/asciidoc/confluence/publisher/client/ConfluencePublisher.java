@@ -111,8 +111,7 @@ public class ConfluencePublisher {
         if (rootPage != null) {
             updatePage(ancestorId, null, rootPage);
 
-            removeLabelsNotPresentOnPage(ancestorId, rootPage.getLabels());
-            addLabels(ancestorId, rootPage.getLabels());
+            addOrUpdateLabels(ancestorId, rootPage.getLabels());
 
             deleteConfluenceAttachmentsNotPresentUnderPage(ancestorId, rootPage.getAttachments());
             addAttachments(ancestorId, rootPage.getAttachments());
@@ -126,8 +125,7 @@ public class ConfluencePublisher {
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 
-            removeLabelsNotPresentOnPage(contentId, page.getLabels());
-            addLabels(contentId, page.getLabels());
+            addOrUpdateLabels(contentId, page.getLabels());
 
             deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
             addAttachments(contentId, page.getAttachments());
@@ -232,21 +230,20 @@ public class ConfluencePublisher {
         return Paths.get(attachmentPath);
     }
 
-    private void removeLabelsNotPresentOnPage(String contentId, List<String> labels) {
-        List<String> labelsToDelete = this.confluenceClient.getLabels(contentId);
-        labelsToDelete.removeAll(labels);
+    private void addOrUpdateLabels(String contentId, List<String> labels) {
+        List<String> existingLabels = this.confluenceClient.getLabels(contentId);
 
-        for (String label : labelsToDelete) {
-            this.confluenceClient.deleteLabel(contentId, label);
+        existingLabels.stream()
+                .filter((existingLabel) -> !(labels.contains(existingLabel)))
+                .forEach((labelToDelete) -> this.confluenceClient.deleteLabel(contentId, labelToDelete));
+
+        List<String> labelsToAdd = labels.stream()
+                .filter((label) -> !(existingLabels.contains(label)))
+                .collect(toList());
+
+        if (labelsToAdd.size() > 0) {
+            this.confluenceClient.addLabels(contentId, labelsToAdd);
         }
-    }
-
-    private void addLabels(String contentId, List<String> labels) {
-        if (labels.isEmpty()) {
-            return;
-        }
-
-        confluenceClient.addLabels(contentId, labels);
     }
 
     private static boolean notSameHash(String actualHash, String newHash) {

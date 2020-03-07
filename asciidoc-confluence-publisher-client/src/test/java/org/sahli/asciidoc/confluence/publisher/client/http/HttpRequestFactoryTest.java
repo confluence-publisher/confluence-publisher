@@ -29,8 +29,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -642,4 +644,41 @@ public class HttpRequestFactoryTest {
         assertThat(deletePropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/" + key));
     }
 
+    @Test
+    public void getLabels_withValidParameters_returnsHttpGetRequest() {
+        // arrange
+        String contentId = "1234";
+
+        // act
+        HttpGet getLabelsRequest = this.httpRequestFactory.getLabelsRequest(contentId);
+
+        // assert
+        assertThat(getLabelsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/label"));
+    }
+
+    @Test
+    public void addLabels_withValidParameters_returnsHttpPostRequest() {
+        // arrange
+        String contentId = "1234";
+        List<String> labels = singletonList("foo");
+
+        // act
+        HttpPost addLabelsRequest = this.httpRequestFactory.addLabelsRequest(contentId, labels);
+
+        // assert
+        assertThat(addLabelsRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/label"));
+    }
+
+    @Test
+    public void deleteLabel_withValidParameters_returnsHttpDeleteRequest() {
+        // arrange
+        String contentId = "1234";
+        String label = "foo";
+
+        // act
+        HttpDelete deleteLabelRequest = this.httpRequestFactory.deleteLabelRequest(contentId, label);
+
+        // assert
+        assertThat(deleteLabelRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/label?name=" + label));
+    }
 }

@@ -34,6 +34,7 @@ public class ConfluencePageMetadata {
     private String contentFilePath;
     private List<ConfluencePageMetadata> children = new ArrayList<>();
     private Map<String, String> attachments = new HashMap<>();
+    private List<String> labels = new ArrayList<>();
 
     public String getTitle() {
         return this.title;
@@ -75,4 +76,12 @@ public class ConfluencePageMetadata {
         this.attachments = attachments;
     }
 
+    public List<String> getLabels() {
+        return labels;
+    }
+
+    @RuntimeUse
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
+    }
 }

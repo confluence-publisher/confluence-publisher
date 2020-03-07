@@ -312,7 +312,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public List<String> getLabels(String contentId) {
         HttpGet getLabelsRequest = this.httpRequestFactory.getLabelsRequest(contentId);
         return sendRequest(getLabelsRequest, response -> {
-            ArrayList<String> labels = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
 
             JsonNode jsonNode = parseJsonResponse(response);
             jsonNode.withArray("results").elements().forEachRemaining(n -> labels.add(n.get("name").asText()));
@@ -324,7 +324,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
     @Override
     public void addLabels(String contentId, List<String> labels) {
         HttpPost addLabelRequest = this.httpRequestFactory.addLabelsRequest(contentId, labels);
-
         sendRequestAndFailIfNot20x(addLabelRequest);
     }
 

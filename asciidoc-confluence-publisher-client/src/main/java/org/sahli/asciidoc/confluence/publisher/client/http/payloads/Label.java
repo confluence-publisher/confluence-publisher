@@ -12,6 +12,7 @@ public class Label {
 
     @RuntimeUse
     public String getName() {
-        return name;
+        return this.name;
     }
+
 }

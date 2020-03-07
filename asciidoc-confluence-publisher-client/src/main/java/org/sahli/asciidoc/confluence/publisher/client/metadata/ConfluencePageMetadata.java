@@ -77,11 +77,12 @@ public class ConfluencePageMetadata {
     }
 
     public List<String> getLabels() {
-        return labels;
+        return this.labels;
     }
 
     @RuntimeUse
     public void setLabels(List<String> labels) {
         this.labels = labels;
     }
+
 }

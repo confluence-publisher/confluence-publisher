@@ -99,7 +99,7 @@ public class AsciidocConfluencePage {
     }
 
     public List<String> keywords() {
-        return unmodifiableList(keywords);
+        return unmodifiableList(this.keywords);
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder) {

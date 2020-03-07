@@ -296,11 +296,11 @@ class HttpRequestFactory {
 
         List<Label> payload = labels.stream().map(Label::new).collect(toList());
 
-        HttpPost postRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label");
-        postRequest.setEntity(httpEntityWithJsonPayload(payload));
-        postRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
+        HttpPost addLabelsRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label");
+        addLabelsRequest.setEntity(httpEntityWithJsonPayload(payload));
+        addLabelsRequest.addHeader(APPLICATION_JSON_UTF8_HEADER);
 
-        return postRequest;
+        return addLabelsRequest;
     }
 
     HttpDelete deleteLabelRequest(String contentId, String label) {

@@ -57,4 +57,5 @@ public interface ConfluenceClient {
     void addLabels(String contentId, List<String> labels);
 
     void deleteLabel(String contentId, String label);
+
 }

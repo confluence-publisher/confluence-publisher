@@ -43,6 +43,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -511,6 +512,47 @@ public class ConfluenceRestClientTest {
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
+    }
+
+    @Test
+    public void getLabels_returnsLabels() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [{\"prefix\": \"global\", \"name\": \"label\"}, {\"prefix\": \"foo\", \"name\": \"bar\"}]}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        List<String> labels = confluenceRestClient.getLabels("123456");
+
+        // assert
+        assertThat(labels.size(), is(2));
+        assertThat(labels, hasItem("label"));
+        assertThat(labels, hasItem("bar"));
+    }
+
+    @Test
+    public void addLabels_sendsPostRequest() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        confluenceRestClient.addLabels("123456", asList("foo", "bar"));
+
+        // assert
+        verify(httpClientMock, times(1)).execute(any(HttpPost.class));
+    }
+
+    @Test
+    public void deleteLabel_sendsDeleteRequest() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null);
+
+        // act
+        confluenceRestClient.deleteLabel("123456", "foo");
+
+        // assert
+        verify(httpClientMock, times(1)).execute(any(HttpDelete.class));
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {

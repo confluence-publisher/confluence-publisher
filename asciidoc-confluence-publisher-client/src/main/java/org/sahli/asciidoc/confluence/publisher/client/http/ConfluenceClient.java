@@ -52,4 +52,10 @@ public interface ConfluenceClient {
 
     void deletePropertyByKey(String contentId, String key);
 
+    List<String> getLabels(String contentId);
+
+    void addLabels(String contentId, List<String> labels);
+
+    void deleteLabel(String contentId, String label);
+
 }

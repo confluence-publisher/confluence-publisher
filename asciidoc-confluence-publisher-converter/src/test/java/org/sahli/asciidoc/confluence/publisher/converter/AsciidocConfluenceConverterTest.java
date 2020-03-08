@@ -70,15 +70,18 @@ public class AsciidocConfluenceConverterTest {
         assertThat(indexPageMetadata.getTitle(), is("Test Document"));
         assertThat(indexPageMetadata.getAttachments().size(), is(0));
         assertThat(indexPageMetadata.getChildren().size(), is(1));
+        assertThat(indexPageMetadata.getLabels().size(), is(0));
 
         ConfluencePageMetadata subPageMetadata = indexPageMetadata.getChildren().get(0);
         assertThat(subPageMetadata.getTitle(), is("Sub Page"));
         assertThat(subPageMetadata.getAttachments().size(), is(2));
         assertThat(subPageMetadata.getChildren().size(), is(1));
+        assertThat(subPageMetadata.getLabels().size(), is(0));
 
         ConfluencePageMetadata subSubPageMetadata = subPageMetadata.getChildren().get(0);
         assertThat(subSubPageMetadata.getTitle(), is("Sub Sub Page"));
         assertThat(subSubPageMetadata.getAttachments().size(), is(0));
+        assertThat(subSubPageMetadata.getLabels().size(), is(1));
 
         assertContentFilePath(indexPageMetadata, targetFilePath(buildFolder, documentationRootFolder, "index.adoc", "index.html"));
         assertContentFilePath(subPageMetadata, targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "sub-page.html"));

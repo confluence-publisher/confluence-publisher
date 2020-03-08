@@ -12,6 +12,17 @@ According to the restrictions of Confluence, document titles must be unique with
 documentation is published to. The AsciiDoc file name itself is not reflected in Confluence.
 
 
+== Keywords / Labels
+
+AsciiDoc keywords defined using the `:keywords` attribute as page metadata are automatically added as labels to the
+corresponding Confluence page:
+
+[listing]
+....
+:keywords: label-one, label-two
+....
+
+
 == Links between Pages
 
 Links between pages in Confluence are supported using AsciiDoc inter-document cross references. Target pages are

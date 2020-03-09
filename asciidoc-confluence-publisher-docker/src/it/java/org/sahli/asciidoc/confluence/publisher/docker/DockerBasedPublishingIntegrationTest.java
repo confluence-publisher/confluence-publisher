@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.docker;
 
+import com.github.dockerjava.api.exception.ConflictException;
 import io.restassured.specification.RequestSpecification;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -219,6 +220,8 @@ public class DockerBasedPublishingIntegrationTest {
 
             publisher.start();
             runnable.run();
+        } catch (ConflictException ignored) {
+            // avoid test failures due to issues with already terminated confluence publisher container
         }
     }
 

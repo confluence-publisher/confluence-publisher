@@ -157,6 +157,13 @@ public class MyCode {
 ----
 
 
+== Source Highlighting
+
+AsciiDoc source highlighters (e.g. CodeRay) are not supported, in favor of using the source highlighting
+support of Confluence. Thus, any configured AsciiDoc source highlighter is automatically disabled when publishing to
+Confluence.
+
+
 [WARNING]
 ====
 Other advanced features like listing file names or callouts are not supported.

@@ -145,11 +145,20 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_multiplePageWithAncestorIdAndReplaceAncestorStrategy_delegatesToConfluenceRestClient() {
+    public void publish_multipleRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
         this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("Multiple root pages detected: 'Some Confluence Content', 'Some Other Confluence Content', but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
+        this.expectedException.expectMessage("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id-replace", null, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", REPLACE_ANCESTOR, null, null, "version message");
+        confluencePublisher.publish();
+    }
+
+    @Test
+    public void publish_noRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
+        this.expectedException.expect(IllegalArgumentException.class);
+        this.expectedException.expectMessage("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page");
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", null, REPLACE_ANCESTOR);
         confluencePublisher.publish();
     }
 
@@ -258,7 +267,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR, "version message");
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR, "version message");
 
         // act
         confluencePublisher.publish();
@@ -283,7 +292,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id-replace", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
 
         // act
         confluencePublisher.publish();
@@ -487,7 +496,7 @@ public class ConfluencePublisherTest {
     @Test
     public void publish_metadataWithOneExistingPageButConfluencePageHasMissingHashPropertyValue_pageIsUpdatedAndHashPropertyIsSet() {
         // arrange
-        ConfluencePage existingPage = new ConfluencePage("12", "Some Confluence Content", "<h1>Some Confluence Content</1>", 1);
+        ConfluencePage existingPage = new ConfluencePage("12", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 1);
 
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingPage));
@@ -505,52 +514,63 @@ public class ConfluencePublisherTest {
     }
 
     @Test
-    public void publish_metadataWithMultipleRemovedPagesInHierarchy_sendsDeletePageRequestForEachRemovedPage() {
+    public void publish_metadataWithMultipleRemovedPagesInHierarchyForAppendToAncestorPublishingStrategy_sendsDeletePageRequestForEachRemovedPage() {
         // arrange
-        ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2);
-        ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</1>", 3);
+        ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2);
+        ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</h1>", 3);
+        ConfluencePage existingChildChildPage = new ConfluencePage("4567", "Some Child Child Content", "<h1>Some Child Child Content</h1>", 3);
 
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingParentPage));
         when(confluenceRestClientMock.getChildPages("2345")).thenReturn(singletonList(existingChildPage));
+        when(confluenceRestClientMock.getChildPages("3456")).thenReturn(singletonList(existingChildChildPage));
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", confluenceRestClientMock, confluencePublisherListenerMock);
 
         // act
         confluencePublisher.publish();
 
         // assert
         verify(confluenceRestClientMock, times(1)).deletePage(eq("2345"));
+        verify(confluenceRestClientMock, times(1)).deletePage(eq("3456"));
+        verify(confluenceRestClientMock, times(1)).deletePage(eq("4567"));
 
-        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2)));
-        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</1>", 3)));
+        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</h1>", 3)));
+        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("4567", "Some Child Child Content", "<h1>Some Child Child Content</h1>", 3)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
         verifyNoMoreInteractions(confluencePublisherListenerMock);
     }
 
     @Test
-    public void publish_metadataWithMultipleRemovedPagesInHierarchy_sendsDeletePageRequestForEachRemovedPageExpectAncestor() {
+    public void publish_metadataWithMultipleRemovedPagesInHierarchyForReplaceAncestorPublishingStrategy_sendsDeletePageRequestForEachRemovedPageExceptAncestor() {
         // arrange
-        ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2);
-        ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</1>", 3);
+        ConfluencePage ancestorPage = new ConfluencePage("1234", "Some Ancestor Content", "<h1>Some Ancestor Content</h1>", 1);
+        ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2);
+        ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</h1>", 3);
 
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageWithContentAndVersionById("1234")).thenReturn(ancestorPage);
         when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingParentPage));
         when(confluenceRestClientMock.getChildPages("2345")).thenReturn(singletonList(existingChildPage));
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page-space-key-replace", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("ancestor-only", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
 
         // act
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, times(0)).deletePage(eq("2345"));
+        verify(confluenceRestClientMock, times(1)).updatePage(eq("1234"), eq(null), eq("Ancestor Page"), eq("<h1>Some Ancestor Content</h1>"), eq(2), eq("version message"));
+        verify(confluenceRestClientMock, times(1)).deletePage(eq("2345"));
+        verify(confluenceRestClientMock, times(1)).deletePage(eq("3456"));
 
-        verify(confluencePublisherListenerMock, times(0)).pageDeleted(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(ancestorPage), eq(new ConfluencePage("1234", "Ancestor Page", "<h1>Some Ancestor Content</h1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2)));
+        verify(confluencePublisherListenerMock, times(1)).pageDeleted(eq(new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</h1>", 3)));
         verify(confluencePublisherListenerMock, times(1)).publishCompleted();
         verifyNoMoreInteractions(confluencePublisherListenerMock);
     }

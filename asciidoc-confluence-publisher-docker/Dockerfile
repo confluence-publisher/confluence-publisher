@@ -18,6 +18,7 @@ ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
     PAGE_TITLE_PREFIX=""  \
     PAGE_TITLE_SUFFIX="" \
     PUBLISHING_STRATEGY="" \
+    ORPHAN_REMOVAL_STRATEGY="" \
     VERSION_MESSAGE="" \
     ATTRIBUTES="" \
     PROXY_SCHEME="" \

@@ -60,6 +60,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher.CONTENT_HASH_PROPERTY_KEY;
 import static org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher.INITIAL_PAGE_VERSION;
+import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.KEEP_ORPHANS;
+import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
@@ -149,7 +151,7 @@ public class ConfluencePublisherTest {
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", REPLACE_ANCESTOR, null, null, "version message");
+        ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", REPLACE_ANCESTOR, "version message");
         confluencePublisher.publish();
     }
 
@@ -545,6 +547,31 @@ public class ConfluencePublisherTest {
     }
 
     @Test
+    public void publish_metadataWithMultipleRemovedPagesInHierarchyForAppendToAncestorPublishingStrategyAndKeepOrphansEnabled_doesNotDeleteRemovedPages() {
+        // arrange
+        ConfluencePage existingParentPage = new ConfluencePage("2345", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2);
+        ConfluencePage existingChildPage = new ConfluencePage("3456", "Some Child Content", "<h1>Some Child Content</h1>", 3);
+        ConfluencePage existingChildChildPage = new ConfluencePage("4567", "Some Child Child Content", "<h1>Some Child Child Content</h1>", 3);
+
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getChildPages("1234")).thenReturn(singletonList(existingParentPage));
+        when(confluenceRestClientMock.getChildPages("2345")).thenReturn(singletonList(existingChildPage));
+        when(confluenceRestClientMock.getChildPages("3456")).thenReturn(singletonList(existingChildChildPage));
+
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", APPEND_TO_ANCESTOR, KEEP_ORPHANS, confluenceRestClientMock, confluencePublisherListenerMock, "version message");
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        verify(confluenceRestClientMock, times(0)).deletePage(eq("2345"));
+        verify(confluenceRestClientMock, times(0)).deletePage(eq("3456"));
+        verify(confluenceRestClientMock, times(0)).deletePage(eq("4567"));
+    }
+
+    @Test
     public void publish_metadataWithMultipleRemovedPagesInHierarchyForReplaceAncestorPublishingStrategy_sendsDeletePageRequestForEachRemovedPageExceptAncestor() {
         // arrange
         ConfluencePage ancestorPage = new ConfluencePage("1234", "Some Ancestor Content", "<h1>Some Ancestor Content</h1>", 1);
@@ -641,13 +668,17 @@ public class ConfluencePublisherTest {
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, PublishingStrategy publishingStrategy, String versionMessage) {
+        return confluencePublisher(qualifier, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient, confluencePublisherListener, versionMessage);
+    }
+
+    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, OrphanRemovalStrategy orphanRemovalStrategy, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionMessage) {
         Path metadataFilePath = Paths.get(TEST_RESOURCES + "/metadata-" + qualifier + ".json");
         Path contentRoot = metadataFilePath.getParent().toAbsolutePath();
 
         ConfluencePublisherMetadata metadata = readConfig(metadataFilePath);
         resolveAbsoluteContentFileAndAttachmentsPath(metadata.getPages(), contentRoot);
 
-        return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
+        return new ConfluencePublisher(metadata, publishingStrategy, orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
     }
 
     private static ConfluencePublisherMetadata readConfig(Path metadataFile) {

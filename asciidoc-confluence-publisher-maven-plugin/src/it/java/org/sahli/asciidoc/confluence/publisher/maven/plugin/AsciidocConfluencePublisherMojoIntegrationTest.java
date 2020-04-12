@@ -155,6 +155,24 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryProperties();
+        env.put("orphanRemovalStrategy", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
+        });
+    }
+
+    @Test
     public void publish_withVersionMessage_addsVersionMessageToConfluencePage() {
         // arrange
         publish("version-message", mandatoryProperties());

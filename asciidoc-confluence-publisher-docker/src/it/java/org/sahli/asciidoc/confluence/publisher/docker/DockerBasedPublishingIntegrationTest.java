@@ -128,6 +128,24 @@ public class DockerBasedPublishingIntegrationTest {
     }
 
     @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("ORPHAN_REMOVAL_STRATEGY", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
+        });
+    }
+
+    @Test
     public void publish_withVersionMessage_addsVersionMessageToConfluencePage() {
         // arrange
         publish("version-message", mandatoryEnvVars());

@@ -23,6 +23,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
+import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
@@ -39,6 +40,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
+import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 
 /**
  * @author Alain Sahli
@@ -75,6 +77,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     @Parameter(property = PREFIX + "publishingStrategy", defaultValue = "APPEND_TO_ANCESTOR")
     private PublishingStrategy publishingStrategy;
+
+    @Parameter(defaultValue = "REMOVE_ORPHANS")
+    private OrphanRemovalStrategy orphanRemovalStrategy;
 
     @Parameter(property = PREFIX + "versionMessage")
     private String versionMessage;
@@ -138,7 +143,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
                 ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
                 ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
                 confluencePublisher.publish();
             }
         } catch (Exception e) {

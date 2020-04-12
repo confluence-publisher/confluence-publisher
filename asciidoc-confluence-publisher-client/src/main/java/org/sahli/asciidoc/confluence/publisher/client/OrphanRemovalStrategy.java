@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package org.sahli.asciidoc.confluence.publisher.client;
 
 /**
- * @author Laurent Verbruggen
+ * @author Christian Stettler
  */
-public enum PublishingStrategy {
+public enum OrphanRemovalStrategy {
 
-    APPEND_TO_ANCESTOR,
-    REPLACE_ANCESTOR
+    REMOVE_ORPHANS,
+    KEEP_ORPHANS;
 
 }

@@ -52,7 +52,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/asciidoc-confluence-publisher", readonly = true)
     private File confluencePublisherBuildFolder;
 
-    @Parameter(property = PREFIX + "rootFolder")
+    @Parameter(property = PREFIX + "asciidocRootFolder")
     private File asciidocRootFolder;
 
     @Parameter(property = PREFIX + "sourceEncoding", defaultValue = "UTF-8")

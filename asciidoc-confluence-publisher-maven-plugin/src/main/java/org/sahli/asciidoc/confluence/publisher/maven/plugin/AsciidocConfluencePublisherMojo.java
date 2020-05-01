@@ -47,7 +47,7 @@ import static java.util.Collections.emptyMap;
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
-    static final String PREFIX = "asciidoctor.confluence.";
+    static final String PREFIX = "asciidoc-confluence-publisher.";
 
     @Parameter(defaultValue = "${project.build.directory}/asciidoc-confluence-publisher", readonly = true)
     private File confluencePublisherBuildFolder;

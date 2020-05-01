@@ -211,7 +211,7 @@ remove all orphaned pages (requires the documentation source structure to contai
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
 configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
-help of `-D` prefix when invoking Maven.
+help of `-Dasciidoctor.confluence.` prefix when invoking Maven.
 
 
 == Maven Plugin Execution

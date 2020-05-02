@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
 import io.restassured.specification.RequestSpecification;
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.junit.Before;
@@ -30,6 +31,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
@@ -221,18 +224,37 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     private static void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
         try {
             File projectDir = ResourceExtractor.extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder());
-            Files.write(projectDir.toPath().resolve("pom.xml"), generatePom(properties).getBytes(UTF_8));
-
-            Verifier verifier = new Verifier(projectDir.getAbsolutePath());
-            verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
-
-            verifier.verifyErrorFreeLog();
-            verifier.displayStreamBuffers();
-
-            runnable.run();
+            publishAndVerify(projectDir, properties, emptyMap(), runnable);
+            publishAndVerify(projectDir, emptyMap(), properties, runnable);
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);
         }
+    }
+
+    private static void publishAndVerify(File projectDir, Map<String, String> pomProperties, Map<String, String> commandLineArguments, Runnable runnable) throws IOException, VerificationException {
+        Files.write(projectDir.toPath().resolve("pom.xml"), generatePom(pomProperties).getBytes(UTF_8));
+
+        Verifier verifier = new Verifier(projectDir.getAbsolutePath());
+
+        commandLineArguments.forEach((key, value) -> {
+            if (value.contains("//")) {
+                // maven verifier cli options parsing replaces // with /
+                value = value.replaceAll("//", "////");
+            }
+
+            if (value.contains(" ")) {
+                value = "'" + value + "'";
+            }
+
+            verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
+        });
+
+        verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
+
+        verifier.verifyErrorFreeLog();
+        verifier.displayStreamBuffers();
+
+        runnable.run();
     }
 
     private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, PortAwareRunnable runnable) throws Exception {
@@ -308,6 +330,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         properties.put("ancestorId", "327706");
         properties.put("username", "confluence-publisher-it");
         properties.put("password", "1234");
+        properties.put("asciidocRootFolder", ".");
 
         return properties;
     }
@@ -332,7 +355,6 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 "                <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>" +
                 "                <version>" + pluginVersion + "</version>" +
                 "                <configuration>" +
-                "                    <asciidocRootFolder>.</asciidocRootFolder>" +
 
                 properties.entrySet().stream()
                         .map((property) -> "<" + property.getKey() + "  xml:space=\"preserve\">" + property.getValue() + "</" + property.getKey() + ">")

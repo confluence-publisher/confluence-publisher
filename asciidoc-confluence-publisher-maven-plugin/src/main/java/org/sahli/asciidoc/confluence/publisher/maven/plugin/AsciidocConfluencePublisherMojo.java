@@ -47,61 +47,63 @@ import static java.util.Collections.emptyMap;
 @Mojo(name = "publish")
 public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
+    static final String PREFIX = "asciidoc-confluence-publisher.";
+
     @Parameter(defaultValue = "${project.build.directory}/asciidoc-confluence-publisher", readonly = true)
     private File confluencePublisherBuildFolder;
 
-    @Parameter
+    @Parameter(property = PREFIX + "asciidocRootFolder")
     private File asciidocRootFolder;
 
-    @Parameter(defaultValue = "UTF-8")
+    @Parameter(property = PREFIX + "sourceEncoding", defaultValue = "UTF-8")
     private String sourceEncoding;
 
-    @Parameter
+    @Parameter(property = PREFIX + "rootConfluenceUrl")
     private String rootConfluenceUrl;
 
-    @Parameter(defaultValue = "false")
+    @Parameter(property = PREFIX + "skipSslVerification", defaultValue = "false")
     private boolean skipSslVerification;
 
-    @Parameter(required = true)
+    @Parameter(property = PREFIX + "spaceKey", required = true)
     private String spaceKey;
 
-    @Parameter(required = true)
+    @Parameter(property = PREFIX + "ancestorId", required = true)
     private String ancestorId;
 
-    @Parameter(defaultValue = "APPEND_TO_ANCESTOR")
+    @Parameter(property = PREFIX + "publishingStrategy", defaultValue = "APPEND_TO_ANCESTOR")
     private PublishingStrategy publishingStrategy;
 
-    @Parameter
+    @Parameter(property = PREFIX + "versionMessage")
     private String versionMessage;
 
-    @Parameter
+    @Parameter(property = PREFIX + "username")
     private String username;
 
-    @Parameter
+    @Parameter(property = PREFIX + "password")
     private String password;
 
-    @Parameter
+    @Parameter(property = PREFIX + "pageTitlePrefix")
     private String pageTitlePrefix;
 
-    @Parameter
+    @Parameter(property = PREFIX + "pageTitleSuffix")
     private String pageTitleSuffix;
 
-    @Parameter(defaultValue = "false")
+    @Parameter(property = PREFIX + "skip", defaultValue = "false")
     private boolean skip;
 
-    @Parameter
+    @Parameter(property = PREFIX + "proxyScheme")
     private String proxyScheme;
 
-    @Parameter
+    @Parameter(property = PREFIX + "proxyHost")
     private String proxyHost;
 
-    @Parameter
+    @Parameter(property = PREFIX + "proxyPort")
     private Integer proxyPort;
 
-    @Parameter
+    @Parameter(property = PREFIX + "proxyUsername")
     private String proxyUsername;
 
-    @Parameter
+    @Parameter(property = PREFIX + "proxyPassword")
     private String proxyPassword;
 
     @Parameter

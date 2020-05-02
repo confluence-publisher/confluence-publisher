@@ -57,10 +57,6 @@ public class ConfluencePublisher {
     private final ConfluencePublisherListener confluencePublisherListener;
     private final String versionMessage;
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient) {
-        this(metadata, publishingStrategy, confluenceClient, null, null);
-    }
-
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy,
                                ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener,
                                String versionMessage) {

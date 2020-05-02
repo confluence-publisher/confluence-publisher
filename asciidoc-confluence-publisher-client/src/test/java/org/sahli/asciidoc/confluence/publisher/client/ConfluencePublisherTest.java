@@ -619,11 +619,7 @@ public class ConfluencePublisherTest {
         ConfluencePublisherMetadata metadata = readConfig(metadataFilePath);
         resolveAbsoluteContentFileAndAttachmentsPath(metadata.getPages(), contentRoot);
 
-        if (confluencePublisherListener != null) {
-            return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
-        }
-
-        return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient);
+        return new ConfluencePublisher(metadata, publishingStrategy, confluenceRestClient, confluencePublisherListener, versionMessage);
     }
 
     private static ConfluencePublisherMetadata readConfig(Path metadataFile) {

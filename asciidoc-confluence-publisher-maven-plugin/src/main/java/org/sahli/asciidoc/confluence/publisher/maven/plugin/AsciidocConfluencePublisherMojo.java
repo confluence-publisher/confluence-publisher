@@ -40,7 +40,6 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
-import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 
 /**
  * @author Alain Sahli
@@ -78,7 +77,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "publishingStrategy", defaultValue = "APPEND_TO_ANCESTOR")
     private PublishingStrategy publishingStrategy;
 
-    @Parameter(defaultValue = "REMOVE_ORPHANS")
+    @Parameter(property = PREFIX + "orphanRemovalStrategy", defaultValue = "REMOVE_ORPHANS")
     private OrphanRemovalStrategy orphanRemovalStrategy;
 
     @Parameter(property = PREFIX + "versionMessage")

@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -42,6 +43,9 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
 public class AsciidocConfluenceConverterTest {
 
     private static final String DOCUMENTATION_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/converter/doc";
+
+    @ClassRule
+    public static final GraphvizInstallationCheck GRAPHVIZ_INSTALLATION_CHECK = new GraphvizInstallationCheck();
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();

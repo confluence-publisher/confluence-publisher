@@ -62,6 +62,9 @@ public class AsciidocConfluencePageTest {
     private static final Path TEMPLATES_FOLDER = Paths.get("src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates");
 
     @ClassRule
+    public static final GraphvizInstallationCheck GRAPHVIZ_INSTALLATION_CHECK = new GraphvizInstallationCheck();
+
+    @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
 
     @Rule

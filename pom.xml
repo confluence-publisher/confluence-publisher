@@ -50,6 +50,11 @@
             <email>cstettler@imap.ch</email>
             <organizationUrl>https://github.com/cstettler</organizationUrl>
         </developer>
+        <developer>
+            <name>Joern Muehlencord</name>
+            <email>joern@muehlencord.de</email>
+            <organizationUrl>https://github.com/jomu78</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
@@ -172,6 +177,13 @@
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctorj-diagram</artifactId>
                 <version>1.5.18</version>
+                <scope>compile</scope>
+            </dependency>
+            <!-- required for encrypted passwords in security-settings.xml -->
+            <dependency>
+                <groupId>org.sonatype.plexus</groupId>
+                <artifactId>plexus-sec-dispatcher</artifactId>
+                <version>1.4</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>

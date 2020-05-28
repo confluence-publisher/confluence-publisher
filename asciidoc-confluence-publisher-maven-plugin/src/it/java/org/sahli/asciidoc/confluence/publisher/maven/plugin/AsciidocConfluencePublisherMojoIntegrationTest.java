@@ -174,19 +174,16 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
     @Test
     public void publish_withMaxRequestsPerSecond() throws Exception {
-        // arrange
-        withReverseProxyEnabled("localhost", 8443, "host.testcontainers.internal", 8090, (proxyPort) -> {
-            Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "https://localhost:" + proxyPort);
-            properties.put("maxRequestsPerSecond", "1");
+            // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("maxRequestsPerSecond", "1");
 
-            // act
-            publishAndVerify("default", properties, () -> {
-                // assert
-                givenAuthenticatedAsPublisher()
-                        .when().get(childPages())
-                        .then().body("results.title", hasItem("Index"));
-            });
+        // act
+        publishAndVerify("default", properties, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
         });
     }
 

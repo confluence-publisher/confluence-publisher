@@ -57,17 +57,13 @@ public class ConfluencePublisher {
     private final ConfluencePublisherListener confluencePublisherListener;
     private final String versionMessage;
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, ConfluenceClient confluenceClient) {
-        this(metadata, publishingStrategy, confluenceClient, new NoOpConfluencePublisherListener(), null);
-    }
-
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy,
                                ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener,
                                String versionMessage) {
         this.metadata = metadata;
         this.publishingStrategy = publishingStrategy;
         this.confluenceClient = confluenceClient;
-        this.confluencePublisherListener = confluencePublisherListener;
+        this.confluencePublisherListener = confluencePublisherListener != null ? confluencePublisherListener : new NoOpConfluencePublisherListener();
         this.versionMessage = versionMessage;
     }
 

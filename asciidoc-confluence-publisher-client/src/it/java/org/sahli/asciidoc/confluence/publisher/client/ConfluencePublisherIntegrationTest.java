@@ -294,7 +294,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
-        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceRestClient());
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceRestClient(), null, null);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

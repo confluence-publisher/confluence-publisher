@@ -51,6 +51,8 @@ import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 /**
  * @author Alain Sahli
  * @author Christian Stettler
@@ -62,6 +64,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final String password;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
+    private RateLimiter rateLimiter = null;
 
     public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, String username, String password) {
         this(rootConfluenceUrl, null, disableSslVerification, username, password);
@@ -80,6 +83,17 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
         configureObjectMapper();
+    }
+
+    @Override
+    public void setMaxRequestsPerSecond(Integer maxRequestsPerSecond) {
+        if (maxRequestsPerSecond != null) {
+            if (this.rateLimiter != null) {
+                this.rateLimiter.setRate(maxRequestsPerSecond);
+            } else {
+                this.rateLimiter = RateLimiter.create(maxRequestsPerSecond);
+            }
+        }
     }
 
     private void configureObjectMapper() {
@@ -215,6 +229,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
+
+        if (this.rateLimiter != null) {
+            this.rateLimiter.acquire(1);
+        }
 
         try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);

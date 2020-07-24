@@ -128,6 +128,28 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
     }
 
     @Test
+    public void publish_withMaxRequestsPerSecond() throws Exception {
+        // arrange
+        String[] args = {
+                "rootConfluenceUrl=http://localhost:8090",
+                "username=confluence-publisher-it",
+                "password=1234",
+                "spaceKey=CPI",
+                "ancestorId=327706",
+                "asciidocRootFolder=src/it/resources/default",
+                "maxRequestsPerSecond=1"
+        };
+
+        // act
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(childPagesFor("327706"))
+                .then().body("results.title", hasItem("Index"));
+    }
+
+    @Test
     public void publish_proxySchemeHostAndPortProvided_publishesDocumentationViaProxyToConfluence() throws Exception {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {

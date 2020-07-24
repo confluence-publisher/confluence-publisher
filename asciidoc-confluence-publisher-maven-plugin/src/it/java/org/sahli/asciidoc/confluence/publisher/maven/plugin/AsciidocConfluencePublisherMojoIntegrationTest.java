@@ -173,6 +173,21 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     @Test
+    public void publish_withMaxRequestsPerSecond() throws Exception {
+            // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("maxRequestsPerSecond", "1");
+
+        // act
+        publishAndVerify("default", properties, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
+        });
+    }
+
+    @Test
     public void publish_withProxySchemeHostAndPort_allowsPublishingViaProxy() throws Exception {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {

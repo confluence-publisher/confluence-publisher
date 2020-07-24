@@ -162,6 +162,21 @@ public class DockerBasedPublishingIntegrationTest {
     }
 
     @Test
+    public void publish_withMaxRequestsPerSecond() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("MAX_REQUESTS_PER_SECOND", "1");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
+        });
+    }
+
+    @Test
     public void publish_withProxySchemeHostAndPort_allowsPublishingViaProxy() {
         // arrange
         withForwardProxyEnabled("proxy", 8443, () -> {

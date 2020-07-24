@@ -238,11 +238,11 @@ public final class AsciidocConfluenceConverter {
         }
     }
 
-    private static void createDirectories(Path templatesRootFolder) {
+    private static void createDirectories(Path directoryPath) {
         try {
-            Files.createDirectories(templatesRootFolder);
+            Files.createDirectories(directoryPath);
         } catch (IOException e) {
-            throw new RuntimeException("Could not create directory '" + templatesRootFolder.toAbsolutePath().toString() + "'", e);
+            throw new RuntimeException("Could not create directory '" + directoryPath.toAbsolutePath().toString() + "'", e);
         }
     }
 

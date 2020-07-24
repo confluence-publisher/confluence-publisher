@@ -129,9 +129,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
             ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.username, this.password);
-            confluenceRestClient.setMaxRequestsPerSecond(this.maxRequestsPerSecond);
-
+            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
             ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);

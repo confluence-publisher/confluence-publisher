@@ -64,36 +64,26 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final String password;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
-    private RateLimiter rateLimiter = null;
+    private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, String username, String password) {
-        this(rootConfluenceUrl, null, disableSslVerification, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Integer maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Integer maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Integer maxRequestsPerSecond, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
+        this.rateLimiter = maxRequestsPerSecond != null ? RateLimiter.create(maxRequestsPerSecond) : null;
         this.username = username;
         this.password = password;
 
         this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
         configureObjectMapper();
-    }
-
-    @Override
-    public void setMaxRequestsPerSecond(Integer maxRequestsPerSecond) {
-        if (maxRequestsPerSecond != null) {
-            if (this.rateLimiter != null) {
-                this.rateLimiter.setRate(maxRequestsPerSecond);
-            } else {
-                this.rateLimiter = RateLimiter.create(maxRequestsPerSecond);
-            }
-        }
     }
 
     private void configureObjectMapper() {

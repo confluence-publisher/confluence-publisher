@@ -24,8 +24,6 @@ import java.util.List;
  */
 public interface ConfluenceClient {
 
-    void setMaxRequestsPerSecond(Integer maxRequestsPerSecond);
-
     String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content, String versionMessage);
 
     void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage);

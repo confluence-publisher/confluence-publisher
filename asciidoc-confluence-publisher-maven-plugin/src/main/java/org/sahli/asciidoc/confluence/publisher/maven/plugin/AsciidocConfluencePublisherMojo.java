@@ -94,6 +94,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "skip", defaultValue = "false")
     private boolean skip;
 
+    @Parameter(property = PREFIX + "convertOnly", defaultValue = "false")
+    private boolean convertOnly;
+
     @Parameter(property = PREFIX + "proxyScheme")
     private String proxyScheme;
 
@@ -111,9 +114,6 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     @Parameter
     private Map<String, Object> attributes;
-
-    @Parameter(defaultValue = "false")
-    private boolean convertOnly;
 
     @Override
     public void execute() throws MojoExecutionException {

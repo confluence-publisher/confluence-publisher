@@ -256,6 +256,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         try {
             File projectDir = ResourceExtractor.extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder());
             publishAndVerify(projectDir, properties, emptyMap(), runnable);
+            publish("empty", mandatoryProperties());
             publishAndVerify(projectDir, emptyMap(), properties, runnable);
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);

@@ -235,8 +235,12 @@ public class DockerBasedPublishingIntegrationTest {
 
             publisher.start();
             runnable.run();
-        } catch (ConflictException ignored) {
-            // avoid test failures due to issues with already terminated confluence publisher container
+        } catch (Throwable t) {
+            if (hasCause(t, ConflictException.class)) {
+                // avoid test failures due to issues with already terminated confluence publisher container
+            } else {
+                throw t;
+            }
         }
     }
 
@@ -315,6 +319,18 @@ public class DockerBasedPublishingIntegrationTest {
         env.put("PASSWORD", "1234");
 
         return env;
+    }
+
+    private static boolean hasCause(Throwable t, Class<?> rootCause) {
+        while (t.getCause() != null && t.getCause() != t) {
+            if (rootCause.isInstance(t.getCause())) {
+                return true;
+            }
+
+            t = t.getCause();
+        }
+
+        return false;
     }
 
 }

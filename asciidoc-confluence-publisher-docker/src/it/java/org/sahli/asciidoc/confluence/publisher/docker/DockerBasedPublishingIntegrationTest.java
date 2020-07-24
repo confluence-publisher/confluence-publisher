@@ -247,7 +247,7 @@ public class DockerBasedPublishingIntegrationTest {
                 .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
-                .waitingFor(forLogMessage(".*Documentation successfully published to Confluence.*", 1))) {
+                .waitingFor(forLogMessage(isConvertOnly(env) ? ".*Publishing to Confluence skipped.*" : ".*Documentation successfully published to Confluence.*", 1))) {
 
             publisher.start();
             runnable.run();
@@ -302,6 +302,10 @@ public class DockerBasedPublishingIntegrationTest {
             proxy.start();
             runnable.run();
         }
+    }
+
+    private static boolean isConvertOnly(Map<String, String> env) {
+        return env.getOrDefault("CONVERT_ONLY", "false").equals("true");
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

@@ -268,25 +268,34 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
         Verifier verifier = new Verifier(projectDir.getAbsolutePath());
 
-        commandLineArguments.forEach((key, value) -> {
-            if (value.contains("//")) {
-                // maven verifier cli options parsing replaces // with /
-                value = value.replaceAll("//", "////");
-            }
+        try {
+            commandLineArguments.forEach((key, value) -> {
+                if (value.contains("//")) {
+                    // maven verifier cli options parsing replaces // with /
+                    value = value.replaceAll("//", "////");
+                }
 
-            if (value.contains(" ")) {
-                value = "'" + value + "'";
-            }
+                if (value.contains(" ")) {
+                    value = "'" + value + "'";
+                }
 
-            verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
-        });
+                verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
+            });
 
-        verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
+            verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
 
-        verifier.verifyErrorFreeLog();
-        verifier.displayStreamBuffers();
+            verifier.verifyErrorFreeLog();
+        } finally {
+            verifier.resetStreams();
+            displayMavenLog(verifier);
+        }
 
         runnable.run();
+    }
+
+    private static void displayMavenLog(Verifier verifier) throws IOException {
+        File logFile = new File(verifier.getBasedir(), verifier.getLogFileName());
+        Files.readAllLines(logFile.toPath()).forEach((line) -> System.out.println(line));
     }
 
     private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, PortAwareRunnable runnable) throws Exception {

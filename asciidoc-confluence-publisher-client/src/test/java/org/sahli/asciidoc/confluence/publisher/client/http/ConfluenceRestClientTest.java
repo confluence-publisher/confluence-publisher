@@ -399,6 +399,24 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
+    public void sendRequest_withRateLimitEnabled_blocksBeforeSendingSecondRequest() {
+        // arrange
+        CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient("http://confluence.com", closeableHttpClient, 1, null, null);
+        HttpGet httpRequest = new HttpGet("http://confluence.com");
+
+        // act
+        long startTime = currentTimeMillis();
+        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+        long endTime = currentTimeMillis();
+
+        // assert
+        long durationInMillisOfBothRequests = endTime - startTime;
+        assertThat(durationInMillisOfBothRequests, is(greaterThan(800L)));
+    }
+
+    @Test
     public void setPropertyByKey_withValidParameters_sendsPostRequestForPropertyCreation() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);

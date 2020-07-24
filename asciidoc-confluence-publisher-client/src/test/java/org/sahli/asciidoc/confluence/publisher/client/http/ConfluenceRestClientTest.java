@@ -402,7 +402,7 @@ public class ConfluenceRestClientTest {
     public void sendRequest_withRateLimitEnabled_blocksBeforeSendingSecondRequest() {
         // arrange
         CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient("http://confluence.com", closeableHttpClient, 1, null, null);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient("http://confluence.com", closeableHttpClient, 0.5, null, null);
         HttpGet httpRequest = new HttpGet("http://confluence.com");
 
         // act
@@ -413,7 +413,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         long durationInMillisOfBothRequests = endTime - startTime;
-        assertThat(durationInMillisOfBothRequests, is(greaterThan(800L)));
+        assertThat(durationInMillisOfBothRequests, is(greaterThan(1000L)));
     }
 
     @Test

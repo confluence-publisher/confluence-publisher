@@ -65,7 +65,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     private boolean skipSslVerification;
 
     @Parameter(property = PREFIX + "maxRequestsPerSecond")
-    private Integer maxRequestsPerSecond;
+    private Double maxRequestsPerSecond;
 
     @Parameter(property = PREFIX + "spaceKey", required = true)
     private String spaceKey;

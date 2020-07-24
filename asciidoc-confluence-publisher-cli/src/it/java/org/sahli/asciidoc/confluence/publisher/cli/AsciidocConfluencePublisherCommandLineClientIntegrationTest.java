@@ -137,7 +137,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "spaceKey=CPI",
                 "ancestorId=327706",
                 "asciidocRootFolder=src/it/resources/default",
-                "maxRequestsPerSecond=1"
+                "maxRequestsPerSecond=1.5"
         };
 
         // act

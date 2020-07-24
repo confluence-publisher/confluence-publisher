@@ -66,15 +66,15 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Integer maxRequestsPerSecond, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
         this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Integer maxRequestsPerSecond, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
         this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Integer maxRequestsPerSecond, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;

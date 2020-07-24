@@ -173,10 +173,10 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     @Test
-    public void publish_withMaxRequestsPerSecond() throws Exception {
-            // arrange
+    public void publish_withMaxRequestsPerSecond() {
+        // arrange
         Map<String, String> properties = mandatoryProperties();
-        properties.put("maxRequestsPerSecond", "1");
+        properties.put("maxRequestsPerSecond", "1.5");
 
         // act
         publishAndVerify("default", properties, () -> {

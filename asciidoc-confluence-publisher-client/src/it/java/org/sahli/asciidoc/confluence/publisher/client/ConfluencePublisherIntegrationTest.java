@@ -302,7 +302,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", false, "confluence-publisher-it", "1234");
+        return new ConfluenceRestClient("http://localhost:8090", false, null, "confluence-publisher-it", "1234");
     }
 
 }

@@ -81,6 +81,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
         <skipSslVerification>false</skipSslVerification>
+        <maxRequestsPerSecond>10</maxRequestsPerSecond>
         <spaceKey>SPACE</spaceKey>
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
@@ -120,6 +121,10 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | Defines whether to disable SSL certificate verification when connecting to Confluence via HTTPS while using self-
   signed certificates.
 | optional (defaults to `false`)
+
+| maxRequestsPerSecond
+| Defines the number (positive integer or double) of REST API calls to execute within a second.
+| optional (defaults to no rate limit)
 
 | spaceKey
 | The key of the Confluence space to publish to.
@@ -299,6 +304,7 @@ The following command shows an example for publishing AsciiDoc sources via the C
 ----
 docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e SKIP_SSL_VERIFICATION=false \
+   -e MAX_REQUESTS_PER_SECOND=10 \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \

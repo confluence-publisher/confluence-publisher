@@ -39,6 +39,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.createTempDirectory;
@@ -57,6 +58,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
+        Double maxRequestsPerSecond = argumentsParser.optionalArgument("maxRequestsPerSecond", args).map((value) -> parseDouble(value)).orElse(null);
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("publishingStrategy", args).orElse(APPEND_TO_ANCESTOR.name()));
 
         Path documentationRootFolder = Paths.get(argumentsParser.mandatoryArgument("asciidocRootFolder", args));
@@ -82,7 +84,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
 
             ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
-            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, username, password);
+            ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password);
             ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
             confluencePublisher.publish();
         } finally {

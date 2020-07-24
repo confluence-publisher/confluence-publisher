@@ -83,15 +83,75 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() {
+    public void render_asciidocWithTopLevelHeaderAndDocumentAttribute_returnsConfluencePageWithPageTitleFromTopLevelHeaderAndDocumentAttributeResolved() {
         // arrange
-        String adoc = "= Page title";
+        String adoc = ":attributeWithValue: test\n" +
+                ":attributeWithoutValue:\n" +
+                "= Page title ({attributeWithValue}{attributeWithoutValue}{unknownAttribute})";
 
         // act
         AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title"));
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (test{unknownAttribute})"));
+    }
+
+    @Test
+    public void render_asciidocWithTopLevelHeaderAndUserAttribute_returnsConfluencePageWithPageTitleFromTopLevelHeaderAndUserAttributeResolved() {
+        // arrange
+        String adoc = "= Page title ({attributeWithValue}{attributeWithoutValue}{unknownAttribute})";
+
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("attributeWithValue", "test");
+        userAttributes.put("attributeWithoutValue", null);
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), userAttributes);
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (test{unknownAttribute})"));
+    }
+
+    @Test
+    public void render_asciidocWithTitleMetaInformation_returnsConfluencePageWithPageTitleFromTitleMetaInformation() {
+        // arrange
+        String adoc = ":title: Page title (meta)";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (meta)"));
+    }
+
+    @Test
+    public void render_asciidocWithTitleMetaInformationAndDocumentAttribute_returnsConfluencePageWithPageTitleFromTitleMetaInformationAndDocumentAttributeResolved() {
+        // arrange
+        String adoc = ":attributeWithValue: test\n" +
+                ":attributeWithoutValue:\n" +
+                ":title: Page title ({attributeWithValue}{attributeWithoutValue}{unknownAttribute})";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (test{unknownAttribute})"));
+    }
+
+    @Test
+    public void render_asciidocWithTitleMetaInformationAndUserAttribute_returnsConfluencePageWithPageTitleFromTitleMetaInformationAndUserAttributeResolved() {
+        // arrange
+        String adoc = ":title: Page title ({attributeWithValue}{attributeWithoutValue}{unknownAttribute})";
+
+        Map<String, Object> userAttributes = new HashMap<>();
+        userAttributes.put("attributeWithValue", "test");
+        userAttributes.put("attributeWithoutValue", null);
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), userAttributes);
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page title (test{unknownAttribute})"));
     }
 
     @Test
@@ -165,17 +225,17 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithAttributes_returnsConfluencePageContentWithReplacedAttributes() {
         // arrange
-        String adocContent = prependTitle("Hello {user}. Today is {date}. {unknown}");
+        String adocContent = prependTitle("{attributeWithValue}{attributeWithoutValue}{unknownAttribute}");
 
         Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("user", "Nastya");
-        userAttributes.put("date", "28-02-2018");
+        userAttributes.put("attributeWithValue", "test");
+        userAttributes.put("attributeWithoutValue", null);
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), userAttributes);
 
         // assert
-        assertThat(asciidocConfluencePage.content(), is("<p>Hello Nastya. Today is 28-02-2018. {unknown}</p>"));
+        assertThat(asciidocConfluencePage.content(), is("<p>test{unknownAttribute}</p>"));
     }
 
     @Test

@@ -19,12 +19,15 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import io.restassured.specification.RequestSpecification;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
@@ -41,6 +44,7 @@ import static java.lang.String.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
+import static org.apache.maven.it.util.ResourceExtractor.extractResourcePath;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -48,12 +52,24 @@ import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
+@RunWith(Parameterized.class)
 public class AsciidocConfluencePublisherMojoIntegrationTest {
+
+    private static final String POM_PROPERTIES = "pomProperties";
+    private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
 
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
     }
+
+    @Parameters(name = "{0}")
+    public static Object[] parameters() {
+        return new Object[]{POM_PROPERTIES, COMMAND_LINE_ARGUMENTS};
+    }
+
+    @Parameter
+    public String propertiesMode;
 
     @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
@@ -247,17 +263,21 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         });
     }
 
-    private static void publish(String pathToContent, Map<String, String> properties) {
+    private void publish(String pathToContent, Map<String, String> properties) {
         publishAndVerify(pathToContent, properties, () -> {
         });
     }
 
-    private static void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
+    private void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
+        boolean usePomProperties = this.propertiesMode.equals(POM_PROPERTIES);
+
         try {
-            File projectDir = ResourceExtractor.extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder());
-            publishAndVerify(projectDir, properties, emptyMap(), runnable);
-            publish("empty", mandatoryProperties());
-            publishAndVerify(projectDir, emptyMap(), properties, runnable);
+            publishAndVerify(
+                    extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder()),
+                    usePomProperties ? properties : emptyMap(),
+                    usePomProperties ? emptyMap() : properties,
+                    runnable
+            );
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);
         }

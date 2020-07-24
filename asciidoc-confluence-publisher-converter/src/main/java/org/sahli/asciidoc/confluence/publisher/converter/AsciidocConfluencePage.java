@@ -54,6 +54,7 @@ import static java.util.regex.Pattern.DOTALL;
 import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.SafeMode.UNSAFE;
@@ -121,10 +122,11 @@ public class AsciidocConfluencePage {
 
             Map<String, String> attachmentCollector = new HashMap<>();
 
-            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributes);
-            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, pageTitlePostProcessor, sourceEncoding);
+            Map<String, Object> userAttributesWithMaskedNullValues = maskNullWithEmptyString(userAttributes);
+            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributesWithMaskedNullValues);
+            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding);
 
-            String pageTitle = pageTitle(asciidocContent, pageTitlePostProcessor);
+            String pageTitle = pageTitle(asciidocContent, userAttributesWithMaskedNullValues, pageTitlePostProcessor);
 
             List<String> keywords = keywords(asciidocContent);
 
@@ -138,10 +140,10 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
+    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
         String content = ASCIIDOCTOR.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
-                replaceCrossReferenceTargets(pagePath, pageTitlePostProcessor, sourceEncoding),
+                replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding),
                 collectAndReplaceAttachmentFileNames(attachmentCollector),
                 unescapeCdataHtmlContent()
         );
@@ -182,9 +184,10 @@ public class AsciidocConfluencePage {
         return stream(postProcessors).reduce(initialContent, (accumulator, postProcessor) -> postProcessor.apply(accumulator), unusedCombiner());
     }
 
-    private static String pageTitle(String pageContent, PageTitlePostProcessor pageTitlePostProcessor) {
+    private static String pageTitle(String pageContent, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor) {
         return Optional.ofNullable(ASCIIDOCTOR.readDocumentHeader(pageContent).getDocumentTitle())
                 .map(title -> title.getMain())
+                .map(title -> replaceUserAttributes(title, userAttributes))
                 .map((pageTitle) -> pageTitlePostProcessor.process(pageTitle))
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
@@ -212,14 +215,14 @@ public class AsciidocConfluencePage {
                 .get();
     }
 
-    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
+    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
                 String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()), sourceEncoding);
-                String referencedPageTitle = pageTitle(referencedPageContent, pageTitlePostProcessor);
+                String referencedPageTitle = pageTitle(referencedPageContent, userAttributes, pageTitlePostProcessor);
 
                 return "<ri:page ri:content-title=\"" + referencedPageTitle + "\"";
             } catch (FileNotFoundException e) {
@@ -228,8 +231,16 @@ public class AsciidocConfluencePage {
         });
     }
 
+    private static String replaceUserAttributes(String title, Map<String, Object> userAttributes) {
+        return userAttributes.entrySet().stream().reduce(title, (accumulator, entry) -> accumulator.replace("{" + entry.getKey() + "}", entry.getValue().toString()), unusedCombiner());
+    }
+
     private static BinaryOperator<String> unusedCombiner() {
         return (a, b) -> a;
+    }
+
+    private static Map<String, Object> maskNullWithEmptyString(Map<String, Object> userAttributes) {
+        return userAttributes.entrySet().stream().collect(toMap((entry) -> entry.getKey(), (entry) -> entry.getValue() != null ? entry.getValue() : ""));
     }
 
     private static String readIntoString(InputStream input, Charset encoding) {

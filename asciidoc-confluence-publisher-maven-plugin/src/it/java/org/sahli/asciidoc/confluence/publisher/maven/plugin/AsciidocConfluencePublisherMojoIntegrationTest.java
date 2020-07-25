@@ -47,6 +47,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.maven.it.util.ResourceExtractor.extractResourcePath;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;

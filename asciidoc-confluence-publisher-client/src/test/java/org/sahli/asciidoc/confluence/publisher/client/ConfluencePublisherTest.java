@@ -160,7 +160,7 @@ public class ConfluencePublisherTest {
         this.expectedException.expect(IllegalArgumentException.class);
         this.expectedException.expectMessage("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page");
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", null, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", REPLACE_ANCESTOR, "version message");
         confluencePublisher.publish();
     }
 
@@ -211,7 +211,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -269,7 +269,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR, "version message");
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, "version message");
 
         // act
         confluencePublisher.publish();
@@ -294,7 +294,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("existing-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -318,7 +318,7 @@ public class ConfluencePublisherTest {
         when(confluenceRestClientMock.getPropertyByKey("72189173", CONTENT_HASH_PROPERTY_KEY)).thenReturn(SOME_CONFLUENCE_CONTENT_SHA256_HASH);
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -344,7 +344,7 @@ public class ConfluencePublisherTest {
         when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "/download/attachmentTwo.txt", 1));
         when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(sha256Hex("attachment2"));
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock);
 
         // act
         confluencePublisher.publish();
@@ -369,7 +369,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -407,7 +407,7 @@ public class ConfluencePublisherTest {
         when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
         when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn("otherHash2");
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock);
 
         // act
         confluencePublisher.publish();
@@ -441,7 +441,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, null);
 
         // act
         confluencePublisher.publish();
@@ -479,7 +479,7 @@ public class ConfluencePublisherTest {
         when(confluenceRestClientMock.getAttachmentByFileName("72189173", "attachmentTwo.txt")).thenReturn(new ConfluenceAttachment("att2", "attachmentTwo.txt", "", 1));
         when(confluenceRestClientMock.getPropertyByKey("72189173", "attachmentTwo.txt-hash")).thenReturn(sha256Hex("attachment2"));
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", confluenceRestClientMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("root-ancestor-id-page-with-attachments", REPLACE_ANCESTOR, confluenceRestClientMock);
 
         // act
         confluencePublisher.publish();
@@ -529,7 +529,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", confluenceRestClientMock, confluencePublisherListenerMock);
+        ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", confluenceRestClientMock, confluencePublisherListenerMock, "version message");
 
         // act
         confluencePublisher.publish();
@@ -585,7 +585,7 @@ public class ConfluencePublisherTest {
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
-        ConfluencePublisher confluencePublisher = confluencePublisher("ancestor-only", confluenceRestClientMock, confluencePublisherListenerMock, REPLACE_ANCESTOR);
+        ConfluencePublisher confluencePublisher = confluencePublisher("ancestor-only", REPLACE_ANCESTOR, confluenceRestClientMock, confluencePublisherListenerMock, "version message");
 
         // act
         confluencePublisher.publish();
@@ -648,26 +648,22 @@ public class ConfluencePublisherTest {
     }
 
     private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient) {
-        return confluencePublisher(qualifier, confluenceRestClient, mock(ConfluencePublisherListener.class), APPEND_TO_ANCESTOR, null);
+        return confluencePublisher(qualifier, APPEND_TO_ANCESTOR, REMOVE_ORPHANS, confluenceRestClient, mock(ConfluencePublisherListener.class), null);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener) {
-        return confluencePublisher(qualifier, confluenceRestClient, confluencePublisherListener, APPEND_TO_ANCESTOR, null);
+    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, String versionMessage) {
+        return confluencePublisher(qualifier, publishingStrategy, REMOVE_ORPHANS, mock(ConfluenceRestClient.class), mock(ConfluencePublisherListener.class), versionMessage);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, PublishingStrategy publishingStrategy) {
-        return confluencePublisher(qualifier, confluenceRestClient, mock(ConfluencePublisherListener.class), publishingStrategy, null);
+    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, ConfluenceRestClient confluenceRestClient) {
+        return confluencePublisher(qualifier, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient, mock(ConfluencePublisherListener.class), null);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, PublishingStrategy publishingStrategy) {
-        return confluencePublisher(qualifier, confluenceRestClient, confluencePublisherListener, publishingStrategy, null);
+    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionedMessage) {
+        return confluencePublisher(qualifier, APPEND_TO_ANCESTOR, REMOVE_ORPHANS, confluenceRestClient, confluencePublisherListener, versionedMessage);
     }
 
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionMessage) {
-        return confluencePublisher(qualifier, confluenceRestClient, confluencePublisherListener, APPEND_TO_ANCESTOR, versionMessage);
-    }
-
-    private static ConfluencePublisher confluencePublisher(String qualifier, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, PublishingStrategy publishingStrategy, String versionMessage) {
+    private static ConfluencePublisher confluencePublisher(String qualifier, PublishingStrategy publishingStrategy, ConfluenceRestClient confluenceRestClient, ConfluencePublisherListener confluencePublisherListener, String versionMessage) {
         return confluencePublisher(qualifier, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient, confluencePublisherListener, versionMessage);
     }
 

@@ -192,6 +192,11 @@ remove all orphaned pages (requires the documentation source structure to contai
 | Defines whether the plugin execution should be skipped.
 | optional (defaults to `false`, only supported for Maven plugin)
 
+| convertOnly
+| Defines whether to only convert AsciiDoc sources, but not publish to Confluence (for checking documentation sanity
+  without publishing).
+| optional (defaults to `false`)
+
 | proxyScheme
 | The scheme (http or https) used to connect to a forward proxy (in case a forward proxy is required to access the
   Confluence instance).
@@ -317,6 +322,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PROXY_SCHEME=https \
    -e PROXY_HOST=my.proxy.com \
    -e PROXY_PORT=8443 \
+   -e CONVERT_ONLY=false \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

@@ -24,6 +24,7 @@ ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
     PROXY_HOST="" \
     PROXY_PORT="" \
     PROXY_USERNAME="" \
-    PROXY_PASSWORD=""
+    PROXY_PASSWORD="" \
+    CONVERT_ONLY="false"
 
 ENTRYPOINT ["publish.sh"]

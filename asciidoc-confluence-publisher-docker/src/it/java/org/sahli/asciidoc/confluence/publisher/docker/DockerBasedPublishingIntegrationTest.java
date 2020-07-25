@@ -33,6 +33,7 @@ import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.Network.SHARED;
@@ -220,6 +221,21 @@ public class DockerBasedPublishingIntegrationTest {
         });
     }
 
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("CONVERT_ONLY", "true");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results", hasSize(0));
+        });
+    }
+
     private static void publish(String pathToContent, Map<String, String> env) {
         publishAndVerify(pathToContent, env, () -> {
         });
@@ -231,7 +247,7 @@ public class DockerBasedPublishingIntegrationTest {
                 .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
-                .waitingFor(forLogMessage(".*Documentation successfully published to Confluence.*", 1))) {
+                .waitingFor(forLogMessage(isConvertOnly(env) ? ".*Publishing to Confluence skipped.*" : ".*Documentation successfully published to Confluence.*", 1))) {
 
             publisher.start();
             runnable.run();
@@ -286,6 +302,10 @@ public class DockerBasedPublishingIntegrationTest {
             proxy.start();
             runnable.run();
         }
+    }
+
+    private static boolean isConvertOnly(Map<String, String> env) {
+        return env.getOrDefault("CONVERT_ONLY", "false").equals("true");
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

@@ -94,6 +94,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "skip", defaultValue = "false")
     private boolean skip;
 
+    @Parameter(property = PREFIX + "convertOnly", defaultValue = "false")
+    private boolean convertOnly;
+
     @Parameter(property = PREFIX + "proxyScheme")
     private String proxyScheme;
 
@@ -115,7 +118,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         if (this.skip) {
-            getLog().info("Publishing to Confluence skipped");
+            getLog().info("Publishing to Confluence skipped ('skip' is enabled)");
             return;
         }
 
@@ -128,12 +131,16 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
-            ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
-            ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
+            if (this.convertOnly) {
+                getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
+            } else {
+                ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
+                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
+                ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
-            confluencePublisher.publish();
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
+                confluencePublisher.publish();
+            }
         } catch (Exception e) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Publishing to Confluence failed", e);

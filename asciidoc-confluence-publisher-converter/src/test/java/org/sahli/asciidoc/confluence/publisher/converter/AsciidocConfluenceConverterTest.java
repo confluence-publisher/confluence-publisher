@@ -19,13 +19,13 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +34,7 @@ import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.rules.ExpectedException.none;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
@@ -49,6 +50,9 @@ public class AsciidocConfluenceConverterTest {
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Rule
+    public final ExpectedException expectedException = none();
 
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
@@ -93,6 +97,23 @@ public class AsciidocConfluenceConverterTest {
 
         assertAttachmentFilePath(subPageMetadata, "attachmentOne.txt", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "attachmentOne.txt"));
         assertAttachmentFilePath(subPageMetadata, "embedded-diagram.png", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram.png"));
+    }
+
+    @Test
+    public void convertAndBuildConfluencePages_withPageReferencingNonExistingAttachment_throwsException() throws Exception {
+        // arrange
+        Path documentationRootFolder = Paths.get("src/test/resources/non-existing-attachment").toAbsolutePath();
+        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+
+        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+
+        // assert
+        this.expectedException.expect(RuntimeException.class);
+        this.expectedException.expectMessage("Attachment 'non-existing-attachment.png' does not exist");
+
+        // act
+        AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
+        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
     }
 
     @Test

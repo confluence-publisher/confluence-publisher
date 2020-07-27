@@ -16,6 +16,11 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
+import static java.util.Collections.emptyMap;
+
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.Map;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -25,6 +30,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
+import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
@@ -35,15 +41,9 @@ import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureP
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
-
-import java.io.File;
-import java.nio.charset.Charset;
-import java.util.Map;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
-
-import static java.util.Collections.emptyMap;
 
 /**
  * @author Alain Sahli
@@ -69,6 +69,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "skipSslVerification", defaultValue = "false")
     private boolean skipSslVerification;
 
+    @Parameter(property = PREFIX + "maxRequestsPerSecond")
+    private Double maxRequestsPerSecond;
+
     @Parameter(property = PREFIX + "spaceKey", required = true)
     private String spaceKey;
 
@@ -77,6 +80,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     @Parameter(property = PREFIX + "publishingStrategy", defaultValue = "APPEND_TO_ANCESTOR")
     private PublishingStrategy publishingStrategy;
+
+    @Parameter(property = PREFIX + "orphanRemovalStrategy", defaultValue = "REMOVE_ORPHANS")
+    private OrphanRemovalStrategy orphanRemovalStrategy;
 
     @Parameter(property = PREFIX + "versionMessage")
     private String versionMessage;
@@ -106,6 +112,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "skip", defaultValue = "false")
     private boolean skip;
 
+    @Parameter(property = PREFIX + "convertOnly", defaultValue = "false")
+    private boolean convertOnly;
+
     @Parameter(property = PREFIX + "proxyScheme")
     private String proxyScheme;
 
@@ -127,7 +136,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         if (this.skip) {
-            getLog().info("Publishing to Confluence skipped");
+            getLog().info("Publishing to Confluence skipped ('skip' is enabled)");
             return;
         }
 
@@ -140,16 +149,20 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
-            if ((this.username == null) || (this.password == null)) {
-                applyUsernameAndPasswordFromSettings();
+          if ((this.username == null) || (this.password == null)) {
+            applyUsernameAndPasswordFromSettings();
+          }
+
+            if (this.convertOnly) {
+                getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
+            } else {
+                ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
+                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
+                ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
+
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
+                confluencePublisher.publish();
             }
-
-            ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-            ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.username, this.password);
-            ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
-
-            ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
-            confluencePublisher.publish();
         } catch (Exception e) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Publishing to Confluence failed", e);

@@ -38,6 +38,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
 
@@ -294,7 +296,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
-        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, confluenceRestClient(), null, null);
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient(), null, null);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
@@ -302,7 +304,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", false, "confluence-publisher-it", "1234");
+        return new ConfluenceRestClient("http://localhost:8090", false, null, "confluence-publisher-it", "1234");
     }
 
 }

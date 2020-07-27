@@ -33,6 +33,8 @@ import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.Network.SHARED;
@@ -127,6 +129,24 @@ public class DockerBasedPublishingIntegrationTest {
     }
 
     @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("ORPHAN_REMOVAL_STRATEGY", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
+        });
+    }
+
+    @Test
     public void publish_withVersionMessage_addsVersionMessageToConfluencePage() {
         // arrange
         publish("version-message", mandatoryEnvVars());
@@ -158,6 +178,21 @@ public class DockerBasedPublishingIntegrationTest {
                         .when().get(childPages())
                         .then().body("results.title", hasItem("Index"));
             });
+        });
+    }
+
+    @Test
+    public void publish_withMaxRequestsPerSecond() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("MAX_REQUESTS_PER_SECOND", "1");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
         });
     }
 
@@ -205,6 +240,21 @@ public class DockerBasedPublishingIntegrationTest {
         });
     }
 
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("CONVERT_ONLY", "true");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results", hasSize(0));
+        });
+    }
+
     private static void publish(String pathToContent, Map<String, String> env) {
         publishAndVerify(pathToContent, env, () -> {
         });
@@ -216,12 +266,16 @@ public class DockerBasedPublishingIntegrationTest {
                 .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
-                .waitingFor(forLogMessage(".*Documentation successfully published to Confluence.*", 1))) {
+                .waitingFor(forLogMessage(isConvertOnly(env) ? ".*Publishing to Confluence skipped.*" : ".*Documentation successfully published to Confluence.*", 1))) {
 
             publisher.start();
             runnable.run();
-        } catch (ConflictException ignored) {
-            // avoid test failures due to issues with already terminated confluence publisher container
+        } catch (Throwable t) {
+            if (hasCause(t, ConflictException.class)) {
+                // avoid test failures due to issues with already terminated confluence publisher container
+            } else {
+                throw t;
+            }
         }
     }
 
@@ -269,6 +323,10 @@ public class DockerBasedPublishingIntegrationTest {
         }
     }
 
+    private static boolean isConvertOnly(Map<String, String> env) {
+        return env.getOrDefault("CONVERT_ONLY", "false").equals("true");
+    }
+
     private static RequestSpecification givenAuthenticatedAsPublisher() {
         return given().auth().preemptive().basic("confluence-publisher-it", "1234");
     }
@@ -300,6 +358,18 @@ public class DockerBasedPublishingIntegrationTest {
         env.put("PASSWORD", "1234");
 
         return env;
+    }
+
+    private static boolean hasCause(Throwable t, Class<?> rootCause) {
+        while (t.getCause() != null && t.getCause() != t) {
+            if (rootCause.isInstance(t.getCause())) {
+                return true;
+            }
+
+            t = t.getCause();
+        }
+
+        return false;
     }
 
 }

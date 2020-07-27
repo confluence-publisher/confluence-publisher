@@ -81,6 +81,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
         <skipSslVerification>false</skipSslVerification>
+        <maxRequestsPerSecond>10</maxRequestsPerSecond>
         <spaceKey>SPACE</spaceKey>
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
@@ -140,6 +141,10 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
   signed certificates.
 | optional (defaults to `false`)
 
+| maxRequestsPerSecond
+| Defines the number (positive integer or double) of REST API calls to execute within a second.
+| optional (defaults to no rate limit)
+
 | spaceKey
 | The key of the Confluence space to publish to.
 | mandatory
@@ -180,11 +185,21 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | publishingStrategy
 a| The strategy to use when publishing to confluence. Possible values:
 
-* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and remove all orphaned pages
-* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page and
-remove all orphaned pages (requires the documentation source structure to contain exactly one single root page)
+* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor
+* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page (requires
+  the documentation source structure to contain exactly one single root page)
 
 | optional (defaults to `APPEND_TO_ANCESTOR`)
+
+| orphanRemovalStrategy
+a| The strategy to use when detecting orphan pages (pages in Confluence not / no longer part of the documentation source
+structure) while publishing. Possible values:
+
+* `REMOVE_ORPHANS`: remove all orphan pages under the ancestor from Confluence
+* `KEEP_ORPHANS`: keep all orphan pages under the ancestor in Confluence (this might require manual cleanup of orphan
+pages in order to avoid future page name conflicts or obsolete pages)
+
+| optional (defaults to `REMOVE_ORPHANS`)
 
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
@@ -219,6 +234,11 @@ remove all orphaned pages (requires the documentation source structure to contai
 | skip
 | Defines whether the plugin execution should be skipped.
 | optional (defaults to `false`, only supported for Maven plugin)
+
+| convertOnly
+| Defines whether to only convert AsciiDoc sources, but not publish to Confluence (for checking documentation sanity
+  without publishing).
+| optional (defaults to `false`)
 
 | proxyScheme
 | The scheme (http or https) used to connect to a forward proxy (in case a forward proxy is required to access the
@@ -332,6 +352,7 @@ The following command shows an example for publishing AsciiDoc sources via the C
 ----
 docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e SKIP_SSL_VERIFICATION=false \
+   -e MAX_REQUESTS_PER_SECOND=10 \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \
@@ -339,11 +360,13 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PAGE_TITLE_PREFIX="Draft - " \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
+   -e ORPHAN_REMOVAL_STRATEGY=KEEP_ORPHANS \
    -e VERSION_MESSAGE="V 1.0" \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -e PROXY_SCHEME=https \
    -e PROXY_HOST=my.proxy.com \
    -e PROXY_PORT=8443 \
+   -e CONVERT_ONLY=false \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

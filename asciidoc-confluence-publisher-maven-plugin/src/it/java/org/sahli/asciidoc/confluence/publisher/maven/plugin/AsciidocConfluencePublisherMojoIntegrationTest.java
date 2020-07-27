@@ -19,12 +19,15 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import io.restassured.specification.RequestSpecification;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
@@ -41,18 +44,33 @@ import static java.lang.String.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
+import static org.apache.maven.it.util.ResourceExtractor.extractResourcePath;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
+@RunWith(Parameterized.class)
 public class AsciidocConfluencePublisherMojoIntegrationTest {
+
+    private static final String POM_PROPERTIES = "pomProperties";
+    private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
 
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
     }
+
+    @Parameters(name = "{0}")
+    public static Object[] parameters() {
+        return new Object[]{POM_PROPERTIES, COMMAND_LINE_ARGUMENTS};
+    }
+
+    @Parameter
+    public String propertiesMode;
 
     @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
@@ -138,6 +156,24 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryProperties();
+        env.put("orphanRemovalStrategy", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
+        });
+    }
+
+    @Test
     public void publish_withVersionMessage_addsVersionMessageToConfluencePage() {
         // arrange
         publish("version-message", mandatoryProperties());
@@ -169,6 +205,21 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                         .when().get(childPages())
                         .then().body("results.title", hasItem("Index"));
             });
+        });
+    }
+
+    @Test
+    public void publish_withMaxRequestsPerSecond() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("maxRequestsPerSecond", "1.5");
+
+        // act
+        publishAndVerify("default", properties, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
         });
     }
 
@@ -216,16 +267,36 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         });
     }
 
-    private static void publish(String pathToContent, Map<String, String> properties) {
+    @Test
+    public void publish_withConvertOnly_doesNotPublishPages() {
+        // arrange
+        Map<String, String> env = mandatoryProperties();
+        env.put("convertOnly", "true");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results", hasSize(0));
+        });
+    }
+
+    private void publish(String pathToContent, Map<String, String> properties) {
         publishAndVerify(pathToContent, properties, () -> {
         });
     }
 
-    private static void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
+    private void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
+        boolean usePomProperties = this.propertiesMode.equals(POM_PROPERTIES);
+
         try {
-            File projectDir = ResourceExtractor.extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder());
-            publishAndVerify(projectDir, properties, emptyMap(), runnable);
-            publishAndVerify(projectDir, emptyMap(), properties, runnable);
+            publishAndVerify(
+                    extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder()),
+                    usePomProperties ? properties : emptyMap(),
+                    usePomProperties ? emptyMap() : properties,
+                    runnable
+            );
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);
         }
@@ -236,25 +307,34 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
         Verifier verifier = new Verifier(projectDir.getAbsolutePath());
 
-        commandLineArguments.forEach((key, value) -> {
-            if (value.contains("//")) {
-                // maven verifier cli options parsing replaces // with /
-                value = value.replaceAll("//", "////");
-            }
+        try {
+            commandLineArguments.forEach((key, value) -> {
+                if (value.contains("//")) {
+                    // maven verifier cli options parsing replaces // with /
+                    value = value.replaceAll("//", "////");
+                }
 
-            if (value.contains(" ")) {
-                value = "'" + value + "'";
-            }
+                if (value.contains(" ")) {
+                    value = "'" + value + "'";
+                }
 
-            verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
-        });
+                verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
+            });
 
-        verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
+            verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
 
-        verifier.verifyErrorFreeLog();
-        verifier.displayStreamBuffers();
+            verifier.verifyErrorFreeLog();
+        } finally {
+            verifier.resetStreams();
+            displayMavenLog(verifier);
+        }
 
         runnable.run();
+    }
+
+    private static void displayMavenLog(Verifier verifier) throws IOException {
+        File logFile = new File(verifier.getBasedir(), verifier.getLogFileName());
+        Files.readAllLines(logFile.toPath()).forEach((line) -> System.out.println(line));
     }
 
     private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, PortAwareRunnable runnable) throws Exception {

@@ -3,8 +3,8 @@
   "ancestorId": "1234",
   "pages": [
     {
-      "title": "Existing Page",
-      "contentFilePath": "some-confluence-content.html"
+      "title": "Ancestor Page",
+      "contentFilePath": "some-ancestor-content.html"
     }
   ]
 }

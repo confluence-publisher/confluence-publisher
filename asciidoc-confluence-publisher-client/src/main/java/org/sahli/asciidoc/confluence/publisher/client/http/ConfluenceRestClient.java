@@ -51,6 +51,8 @@ import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 /**
  * @author Alain Sahli
  * @author Christian Stettler
@@ -62,19 +64,21 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final String password;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
+    private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, String username, String password) {
-        this(rootConfluenceUrl, null, disableSslVerification, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
+        this.rateLimiter = maxRequestsPerSecond != null ? RateLimiter.create(maxRequestsPerSecond) : null;
         this.username = username;
         this.password = password;
 
@@ -215,6 +219,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
+
+        if (this.rateLimiter != null) {
+            this.rateLimiter.acquire(1);
+        }
 
         try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);

@@ -4,6 +4,7 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     sourceEncoding="$SOURCE_ENCODING" \
     rootConfluenceUrl="$ROOT_CONFLUENCE_URL" \
     skipSslVerification="$SKIP_SSL_VERIFICATION" \
+    maxRequestsPerSecond="$MAX_REQUESTS_PER_SECOND" \
     spaceKey="$SPACE_KEY" \
     ancestorId="$ANCESTOR_ID" \
     username="$USERNAME" \
@@ -11,10 +12,12 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     pageTitlePrefix="$PAGE_TITLE_PREFIX" \
     pageTitleSuffix="$PAGE_TITLE_SUFFIX" \
     publishingStrategy="$PUBLISHING_STRATEGY" \
+    orphanRemovalStrategy="$ORPHAN_REMOVAL_STRATEGY" \
     versionMessage="$VERSION_MESSAGE" \
     attributes="$ATTRIBUTES" \
     proxyScheme="$PROXY_SCHEME" \
     proxyHost="$PROXY_HOST" \
     proxyPort="$PROXY_PORT" \
     proxyUsername="$PROXY_USERNAME" \
-    proxyPassword="$PROXY_PASSWORD"
+    proxyPassword="$PROXY_PASSWORD" \
+    convertOnly="$CONVERT_ONLY"

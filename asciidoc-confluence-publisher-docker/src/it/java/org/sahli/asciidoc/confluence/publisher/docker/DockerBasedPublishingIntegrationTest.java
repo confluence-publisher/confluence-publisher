@@ -33,6 +33,7 @@ import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
@@ -124,6 +125,24 @@ public class DockerBasedPublishingIntegrationTest {
                     .when().get(rootPage())
                     .then().body("title", is("ReplaceAncestor"))
                     .and().body("body.view.value", containsString("Content of ReplaceAncestor"));
+        });
+    }
+
+    @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("ORPHAN_REMOVAL_STRATEGY", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
         });
     }
 

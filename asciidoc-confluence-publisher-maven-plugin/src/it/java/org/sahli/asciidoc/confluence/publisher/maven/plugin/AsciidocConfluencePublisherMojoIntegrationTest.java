@@ -47,6 +47,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.maven.it.util.ResourceExtractor.extractResourcePath;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
@@ -151,6 +152,24 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                     .when().get(rootPage())
                     .then().body("title", is("ReplaceAncestor"))
                     .and().body("body.view.value", containsString("Content of ReplaceAncestor"));
+        });
+    }
+
+    @Test
+    public void publish_withKeepOrphansRemovalStrategy_doesNotRemoveOrphans() {
+        // arrange
+        Map<String, String> env = mandatoryProperties();
+        env.put("orphanRemovalStrategy", "KEEP_ORPHANS");
+
+        publishAndVerify("default", env, () -> {
+        });
+
+        // act
+        publishAndVerify("keep-orphans", env, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItems("Index", "Keep Orphans"));
         });
     }
 

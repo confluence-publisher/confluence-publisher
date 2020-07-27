@@ -38,6 +38,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
@@ -53,15 +54,17 @@ public class ConfluencePublisher {
 
     private final ConfluencePublisherMetadata metadata;
     private final PublishingStrategy publishingStrategy;
+    private final OrphanRemovalStrategy orphanRemovalStrategy;
     private final ConfluenceClient confluenceClient;
     private final ConfluencePublisherListener confluencePublisherListener;
     private final String versionMessage;
 
-    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy,
+    public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, OrphanRemovalStrategy orphanRemovalStrategy,
                                ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener,
                                String versionMessage) {
         this.metadata = metadata;
         this.publishingStrategy = publishingStrategy;
+        this.orphanRemovalStrategy = orphanRemovalStrategy;
         this.confluenceClient = confluenceClient;
         this.confluencePublisherListener = confluencePublisherListener != null ? confluencePublisherListener : new NoOpConfluencePublisherListener();
         this.versionMessage = versionMessage;
@@ -93,14 +96,14 @@ public class ConfluencePublisher {
                     .map(page -> "'" + page.getTitle() + "'")
                     .collect(joining(", "));
 
-            throw new IllegalArgumentException("Multiple root pages detected: " + rootPageTitles + ", but '" + REPLACE_ANCESTOR + "' publishing strategy only supports one single root page");
+            throw new IllegalArgumentException("Multiple root pages found (" + rootPageTitles + "), but '" + REPLACE_ANCESTOR + "' publishing strategy only supports one single root page");
         }
 
-        if (rootPages.size() == 1) {
-            return rootPages.get(0);
+        if (rootPages.isEmpty()) {
+            throw new IllegalArgumentException("No root page found, but '" + REPLACE_ANCESTOR + "' publishing strategy requires one single root page");
         }
 
-        return null;
+        return rootPages.get(0);
     }
 
     private void startPublishingReplacingAncestorId(ConfluencePageMetadata rootPage, String spaceKey, String ancestorId) {
@@ -117,7 +120,9 @@ public class ConfluencePublisher {
     }
 
     private void startPublishingUnderAncestorId(List<ConfluencePageMetadata> pages, String spaceKey, String ancestorId) {
-        deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
+        if (this.orphanRemovalStrategy == REMOVE_ORPHANS) {
+            deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
+        }
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 

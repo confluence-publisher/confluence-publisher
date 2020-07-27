@@ -12,6 +12,7 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     pageTitlePrefix="$PAGE_TITLE_PREFIX" \
     pageTitleSuffix="$PAGE_TITLE_SUFFIX" \
     publishingStrategy="$PUBLISHING_STRATEGY" \
+    orphanRemovalStrategy="$ORPHAN_REMOVAL_STRATEGY" \
     versionMessage="$VERSION_MESSAGE" \
     attributes="$ATTRIBUTES" \
     proxyScheme="$PROXY_SCHEME" \

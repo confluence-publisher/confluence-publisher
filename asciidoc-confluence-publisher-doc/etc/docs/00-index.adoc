@@ -152,11 +152,21 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | publishingStrategy
 a| The strategy to use when publishing to confluence. Possible values:
 
-* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor and remove all orphaned pages
-* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page and
-remove all orphaned pages (requires the documentation source structure to contain exactly one single root page)
+* `APPEND_TO_ANCESTOR`: append the published pages to the ancestor
+* `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page (requires
+  the documentation source structure to contain exactly one single root page)
 
 | optional (defaults to `APPEND_TO_ANCESTOR`)
+
+| orphanRemovalStrategy
+a| The strategy to use when detecting orphan pages (pages in Confluence not / no longer part of the documentation source
+structure) while publishing. Possible values:
+
+* `REMOVE_ORPHANS`: remove all orphan pages under the ancestor from Confluence
+* `KEEP_ORPHANS`: keep all orphan pages under the ancestor in Confluence (this might require manual cleanup of orphan
+pages in order to avoid future page name conflicts or obsolete pages)
+
+| optional (defaults to `REMOVE_ORPHANS`)
 
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
@@ -317,6 +327,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PAGE_TITLE_PREFIX="Draft - " \
    -e PAGE_TITLE_SUFFIX=" (V 1.0)" \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
+   -e ORPHAN_REMOVAL_STRATEGY=KEEP_ORPHANS \
    -e VERSION_MESSAGE="V 1.0" \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -e PROXY_SCHEME=https \

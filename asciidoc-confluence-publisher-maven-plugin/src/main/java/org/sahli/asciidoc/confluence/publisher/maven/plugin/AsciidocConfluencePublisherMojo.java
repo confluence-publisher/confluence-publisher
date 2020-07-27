@@ -140,7 +140,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
-            if (((this.username == null) || (this.password == null)) && this.mavenSettings != null) {
+            if ((this.username == null) || (this.password == null)) {
                 applyUsernameAndPasswordFromSettings();
             }
 
@@ -187,7 +187,11 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
           throw new MojoExecutionException(String.format("'password' neither defined by server '%s' nor provided", serverId));
         } else {
           if (securityDispatcher instanceof DefaultSecDispatcher) {
-            ((DefaultSecDispatcher) securityDispatcher).setConfigurationFile("~/.m2/settings-security.xml");
+            String userHome = System.getProperty("user.home");
+            String configurationFile = String.format("%s/.m2/settings-security.xml", userHome);
+            ((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(configurationFile);
+            getLog().info("Using maven security settings from " + configurationFile);
+            getLog().info (String.format ("Using username = %s for server = %s", this.username, this.serverId));
           }
           password = securityDispatcher.decrypt(server.getPassword());
         }

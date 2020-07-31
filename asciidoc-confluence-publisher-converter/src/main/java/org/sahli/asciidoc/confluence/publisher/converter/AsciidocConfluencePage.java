@@ -131,8 +131,8 @@ public class AsciidocConfluencePage {
             List<String> keywords = keywords(asciidocContent);
 
             return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector, keywords);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create asciidoc confluence page", e);
+        } catch (Exception e) {
+            throw new RuntimeException("failed to create confluence page for asciidoc content in '" + asciidocPage.path().toAbsolutePath() + " '", e);
         }
     }
 

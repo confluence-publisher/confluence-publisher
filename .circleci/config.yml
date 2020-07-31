@@ -14,10 +14,6 @@ jobs:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
 
       - run:
-          name: Download Maven dependencies
-          command: ./mvnw dependency:go-offline
-
-      - run:
           name: Set version (tag build only)
           command: if [ -n "$CIRCLE_TAG" ]; then ./mvnw versions:set -DnewVersion=$CIRCLE_TAG -nsu; fi
 

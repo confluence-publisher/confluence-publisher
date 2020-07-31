@@ -24,10 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
@@ -53,24 +49,14 @@ import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
-@RunWith(Parameterized.class)
 public class AsciidocConfluencePublisherMojoIntegrationTest {
 
-    private static final String POM_PROPERTIES = "pomProperties";
-    private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
+    private static final String USE_COMMAND_LINE_ARGUMENTS = "useCommandLineArguments";
 
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
     }
-
-    @Parameters(name = "{0}")
-    public static Object[] parameters() {
-        return new Object[]{POM_PROPERTIES, COMMAND_LINE_ARGUMENTS};
-    }
-
-    @Parameter
-    public String propertiesMode;
 
     @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
@@ -288,13 +274,13 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     private void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
-        boolean usePomProperties = this.propertiesMode.equals(POM_PROPERTIES);
+        boolean useCommandLineArguments = System.getProperty(USE_COMMAND_LINE_ARGUMENTS, "false").equals("true");
 
         try {
             publishAndVerify(
                     extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder()),
-                    usePomProperties ? properties : emptyMap(),
-                    usePomProperties ? emptyMap() : properties,
+                    useCommandLineArguments ? emptyMap() :properties,
+                    useCommandLineArguments ? properties : emptyMap(),
                     runnable
             );
         } catch (Exception e) {

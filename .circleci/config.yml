@@ -44,7 +44,7 @@ jobs:
           paths:
             - ~/.m2
 
-  integration-test-maven:
+  integration-test-maven-pom-properties:
     machine:
       java:
         version: openjdk8
@@ -66,11 +66,39 @@ jobs:
           command: sudo apt-get install graphviz
 
       - run:
-          name: Execute integration tests (Maven)
+          name: Execute integration tests (Maven, POM Properties)
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
-            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -DuseCommandLineArguments=false -nsu
+
+  integration-test-maven-command-line-arguments:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+            key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Execute integration tests (Maven, Command Line Arguments)
+          command: |
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -DuseCommandLineArguments=true -nsu
 
   integration-test-docker:
     machine:
@@ -176,7 +204,15 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - integration-test-maven:
+      - integration-test-maven-pom-properties:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - integration-test-maven-command-line-arguments:
           requires:
             - build
           filters:
@@ -202,7 +238,8 @@ workflows:
               only: /.*/
       - release:
           requires:
-            - integration-test-maven
+            - integration-test-maven-pom-properties
+            - integration-test-maven-command-line-arguments
             - integration-test-docker
             - integration-test-docs
           filters:

@@ -294,7 +294,10 @@ workflows:
               only: /.*/
       - smoke-test-doc-publish-via-maven:
           requires:
-            - build
+            - integration-test-maven-pom-properties
+            - integration-test-maven-command-line-arguments
+            - integration-test-cli
+            - integration-test-docker
           filters:
             branches:
               only: /.*/
@@ -302,7 +305,10 @@ workflows:
               only: /.*/
       - smoke-test-doc-publish-via-docker:
           requires:
-            - build
+            - integration-test-maven-pom-properties
+            - integration-test-maven-command-line-arguments
+            - integration-test-cli
+            - integration-test-docker
           filters:
             branches:
               only: /.*/
@@ -310,10 +316,6 @@ workflows:
               only: /.*/
       - release:
           requires:
-            - integration-test-maven-pom-properties
-            - integration-test-maven-command-line-arguments
-            - integration-test-cli
-            - integration-test-docker
             - smoke-test-doc-publish-via-maven
             - smoke-test-doc-publish-via-docker
           filters:

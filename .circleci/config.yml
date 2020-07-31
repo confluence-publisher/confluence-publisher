@@ -70,7 +70,7 @@ jobs:
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
-            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -DuseCommandLineArguments=false -nsu
+            ./mvnw -Pintegration-tests -pl asciidoc-confluence-publisher-maven-plugin failsafe:integration-test failsafe:verify -DuseCommandLineArguments=false -nsu
 
   integration-test-maven-command-line-arguments:
     machine:
@@ -98,7 +98,35 @@ jobs:
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
-            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -DuseCommandLineArguments=true -nsu
+            ./mvnw -Pintegration-tests -pl asciidoc-confluence-publisher-maven-plugin failsafe:integration-test failsafe:verify -DuseCommandLineArguments=true -nsu
+
+  integration-test-cli:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Execute integration tests (CLI)
+          command: |
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./mvnw -Pintegration-tests -pl asciidoc-confluence-publisher-cli failsafe:integration-test failsafe:verify -nsu
 
   integration-test-docker:
     machine:
@@ -126,9 +154,9 @@ jobs:
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
-            ./publishWithDockerImage.sh
+            ./mvnw -Pintegration-tests -pl asciidoc-confluence-publisher-docker failsafe:integration-test failsafe:verify -nsu
 
-  integration-test-docs:
+  smoke-test-doc-publish-via-maven:
     machine:
       java:
         version: openjdk8
@@ -150,11 +178,39 @@ jobs:
           command: sudo apt-get install graphviz
 
       - run:
-          name: Execute integration tests (documentation)
+          name: Smoke test documentation (Maven)
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
             ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  smoke-test-doc-publish-via-docker:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Smoke test documentation (Docker)
+          command: |
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./publishWithDockerImage.sh
 
   release:
     machine:
@@ -220,6 +276,14 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
+      - integration-test-cli:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
       - integration-test-docker:
           requires:
             - build
@@ -228,7 +292,15 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - integration-test-docs:
+      - smoke-test-doc-publish-via-maven:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - smoke-test-doc-publish-via-docker:
           requires:
             - build
           filters:
@@ -240,8 +312,10 @@ workflows:
           requires:
             - integration-test-maven-pom-properties
             - integration-test-maven-command-line-arguments
+            - integration-test-cli
             - integration-test-docker
-            - integration-test-docs
+            - smoke-test-doc-publish-via-maven
+            - smoke-test-doc-publish-via-docker
           filters:
             branches:
               only: /.*/

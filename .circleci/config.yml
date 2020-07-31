@@ -25,14 +25,19 @@ jobs:
           name: Execute build and unit tests
           command: ./mvnw clean install jacoco:report coveralls:report -nsu
 
-      - run:
-          name: Prepare cache
-          command: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
-
       - save_cache:
           key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/confluence-publisher
+
+      - save_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
+
+      - run:
+          name: Prepare cache
+          command: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
 
       - save_cache:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
@@ -49,6 +54,9 @@ jobs:
     steps:
       - restore_cache:
             key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
 
       - restore_cache:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
@@ -76,6 +84,9 @@ jobs:
           key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
 
       - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
 
       - run:
@@ -101,6 +112,9 @@ jobs:
           key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
 
       - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
 
       - run:
@@ -124,6 +138,9 @@ jobs:
     steps:
       - restore_cache:
           key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-artifacts-{{ .Environment.CIRCLE_SHA1 }}
 
       - restore_cache:
           key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}

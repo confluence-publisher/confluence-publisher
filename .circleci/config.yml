@@ -5,11 +5,13 @@ jobs:
       java:
         version: openjdk8
 
+    working_directory: ~/confluence-publisher
+
     steps:
       - checkout
 
       - restore_cache:
-          key: confluence-publisher-{{ checksum "pom.xml" }}
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
 
       - run:
           name: Set version (tag build only)
@@ -24,13 +26,111 @@ jobs:
           command: ./mvnw clean install jacoco:report coveralls:report -nsu
 
       - run:
-          name: Execute integration tests
+          name: Prepare cache
+          command: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
+
+      - save_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/confluence-publisher
+
+      - save_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2
+
+  integration-test-maven:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+            key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Execute integration tests (Maven)
           command: |
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
             ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
-            ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  integration-test-docker:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Execute integration tests (Docker)
+          command: |
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
             ./publishWithDockerImage.sh
+
+  integration-test-docs:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
+
+      - run:
+          name: Execute integration tests (documentation)
+          command: |
+            docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+            ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  release:
+    machine:
+      java:
+        version: openjdk8
+
+    working_directory: ~/confluence-publisher
+
+    steps:
+      - restore_cache:
+          key: confluence-publisher-workspace-{{ .Environment.CIRCLE_SHA1 }}
+
+      - restore_cache:
+          key: confluence-publisher-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Install prerequisites
+          command: sudo apt-get install graphviz
 
       - run:
           name: Sign and publish artifacts (master or tag builds only)
@@ -48,21 +148,46 @@ jobs:
           name: Publish documentation to Atlassian Confluence (tag build only)
           command: if [ -n "$CIRCLE_TAG" ]; then ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
 
-      - run:
-          name: Prepare cache
-          command: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher
-
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: confluence-publisher-{{ checksum "pom.xml" }}
-
 workflows:
   version: 2
 
   main:
     jobs:
       - build:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - integration-test-maven:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - integration-test-docker:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - integration-test-docs:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - release:
+          requires:
+            - integration-test-maven
+            - integration-test-docker
+            - integration-test-docs
           filters:
             branches:
               only: /.*/

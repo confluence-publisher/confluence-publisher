@@ -1,12 +1,12 @@
 require 'asciidoctor'
 require 'json'
 
-if Gem::Version.new(Asciidoctor::VERSION) <= Gem::Version.new('1.5.1')
-  fail 'asciidoctor: FAILED: HTML5/Slim backend needs Asciidoctor >=1.5.2!'
+if Gem::Version.new(Asciidoctor::VERSION) <= Gem::Version.new('2.0.0')
+  fail 'asciidoctor: FAILED: HTML5/Slim backend needs Asciidoctor >=1.0.0!'
 end
 
 unless defined? Slim::Include
-  fail 'asciidoctor: FAILED: HTML5/Slim backend needs Slim >= 2.1.0!'
+  fail 'asciidoctor: FAILED: HTML5/Slim backend needs Slim >= 4.0.0!'
 end
 
 # Add custom functions to this module that you want to use in your Slim
@@ -64,13 +64,12 @@ module Slim::Helpers
   end
 
   ##
-  # Conditionally wraps a block in an element. If condition is +true+ then it
-  # renders the specified tag with optional attributes and the given
-  # block inside, otherwise it just renders the block.
+  # Conditionally wraps a block in an a element. If condition is +true+ then it
+  # renders the a tag and the given block inside, otherwise it just renders the block.
   #
   # For example:
   #
-  #    = html_tag_if link?, 'a', {class: 'image', href: (attr :link)}
+  #    = html_a_tag_if link?
   #      img src='./img/tux.png'
   #
   # will produce:
@@ -86,15 +85,13 @@ module Slim::Helpers
   # otherwise.
   #
   # @param condition [Boolean] the condition to test to determine whether to
-  #        render the enclosing tag.
-  # @param name (see #html_tag)
-  # @param attributes (see #html_tag)
+  #        render the enclosing a tag.
   # @yield (see #html_tag)
   # @return [String] a rendered HTML fragment.
   #
-  def html_tag_if(condition, name, attributes = {}, &block)
+  def html_a_tag_if(condition, &block)
     if condition
-      html_tag name, attributes, &block
+      html_tag :a, {href: (attr :link)}, &block
     else
       yield
     end
@@ -148,7 +145,12 @@ module Slim::Helpers
   #
   # @return [String, nil] text of the xref anchor, or +nil+ if not found.
   def xref_text
-    str = text || document.references[:ids][attr :refid || target]
+    if attributes[:refid] == text
+      ref = document.catalog[:refs][attributes['refid'] || target]
+      str = (ref ? ref.xreftext : text)
+    else
+      str = text
+    end
     str.tr_s("\n", ' ') if str
   end
 

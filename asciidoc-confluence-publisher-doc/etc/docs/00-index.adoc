@@ -86,7 +86,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
         <password>password</password> <!-- or read from property -->
-        <serverId>myServerId</serverId>
+        <serverId>myServerId</serverId> <!-- requires server definition in settings.xml -->
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
         <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
         <versionMessage>Version ${project.version}</versionMessage>
@@ -99,6 +99,8 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
   </plugins>
 </build>
 ----
+
+When relying on Maven support for encrypted credentials using the `serverId` configuration property, username and password need to be defined in `settings.xml`:
 
 [source, xml]
 .settings.xml
@@ -175,12 +177,12 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 | mandatory, if serverId is not specified
 
 | serverId
-| the id of the server defined in settings.xml
+| The id of the server with username and encrypted password defined in settings.xml
   +
   +
   _Note:_ see https://maven.apache.org/guides/mini/guide-encryption.html[Maven Password Encryption Guide] for details
   how to setup a server with username and encrypted password.
-| optional (defaults to empty)
+| optional (defaults to not set, only supported for Maven plugin)
 
 | publishingStrategy
 a| The strategy to use when publishing to confluence. Possible values:
@@ -264,7 +266,7 @@ pages in order to avoid future page name conflicts or obsolete pages)
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
 configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
-help of `-Dasciidoc-confluence-publisher.` prefix when invoking
+help of `-Dasciidoc-confluence-publisher.` prefix.
 
 
 == Maven Plugin Execution

@@ -179,13 +179,6 @@
                 <version>1.5.18</version>
                 <scope>compile</scope>
             </dependency>
-            <!-- required for encrypted passwords in security-settings.xml -->
-            <dependency>
-                <groupId>org.sonatype.plexus</groupId>
-                <artifactId>plexus-sec-dispatcher</artifactId>
-                <version>1.4</version>
-                <scope>compile</scope>
-            </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
@@ -203,6 +196,12 @@
                 <artifactId>slf4j-simple</artifactId>
                 <version>1.7.25</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.sonatype.plexus</groupId>
+                <artifactId>plexus-sec-dispatcher</artifactId>
+                <version>1.4</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>

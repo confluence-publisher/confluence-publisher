@@ -16,11 +16,18 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
+import static java.util.Collections.emptyMap;
+
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.Map;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.Server;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
@@ -34,12 +41,9 @@ import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureP
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
-
-import java.io.File;
-import java.nio.charset.Charset;
-import java.util.Map;
-
-import static java.util.Collections.emptyMap;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 /**
  * @author Alain Sahli
@@ -89,6 +93,16 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "password")
     private String password;
 
+    // support settings.xml
+    @Parameter(readonly = true, property = "settings")
+    protected org.apache.maven.settings.Settings mavenSettings;
+
+    @Parameter(property = PREFIX + "serverId")
+    private String serverId;
+
+    @Component(role = org.sonatype.plexus.components.sec.dispatcher.SecDispatcher.class, hint = "default")
+    private SecDispatcher securityDispatcher;
+
     @Parameter(property = PREFIX + "pageTitlePrefix")
     private String pageTitlePrefix;
 
@@ -135,6 +149,10 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
+          if ((this.username == null) || (this.password == null)) {
+            applyUsernameAndPasswordFromSettings();
+          }
+
             if (this.convertOnly) {
                 getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
             } else {
@@ -155,6 +173,46 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
     }
+
+  private void applyUsernameAndPasswordFromSettings() throws MojoExecutionException {
+    if (this.serverId == null) {
+      throw new MojoExecutionException("'serverId' must be set, if username/password are not provided");
+    }
+
+    Server server = this.mavenSettings.getServer(this.serverId);
+    if (server == null) {
+      throw new MojoExecutionException(String.format("server with id '%s' not found in settings", serverId));
+    }
+
+    // take username from settings.xml if not provided
+    if (this.username == null) {
+      if (server.getUsername() == null) {
+        throw new MojoExecutionException(String.format("'username' neither defined by server '%s' nor provided", serverId));
+      } else {
+        this.username = server.getUsername();
+      }
+    }
+
+    // take password from settings.xml if not provided
+    try {
+      if (this.password == null) {
+        if (server.getPassword() == null) {
+          throw new MojoExecutionException(String.format("'password' neither defined by server '%s' nor provided", serverId));
+        } else {
+          if (securityDispatcher instanceof DefaultSecDispatcher) {
+            String userHome = System.getProperty("user.home");
+            String configurationFile = String.format("%s/.m2/settings-security.xml", userHome);
+            ((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(configurationFile);
+            getLog().info("Using maven security settings from " + configurationFile);
+            getLog().info (String.format ("Using username = %s for server = %s", this.username, this.serverId));
+          }
+          password = securityDispatcher.decrypt(server.getPassword());
+        }
+      }
+    } catch (SecDispatcherException ex) {
+      throw new MojoExecutionException(ex.getMessage());
+    }
+  }
 
 
     private static class LoggingConfluencePublisherListener implements ConfluencePublisherListener {

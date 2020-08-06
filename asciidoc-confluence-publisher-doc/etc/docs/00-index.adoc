@@ -86,6 +86,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <ancestorId>327706</ancestorId>
         <username>username</username> <!-- or read from property -->
         <password>password</password> <!-- or read from property -->
+        <serverId>myServerId</serverId>
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
         <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
         <versionMessage>Version ${project.version}</versionMessage>
@@ -97,6 +98,24 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
     </plugin>
   </plugins>
 </build>
+----
+
+[source, xml]
+.settings.xml
+----
+<settings>
+...
+  <servers>
+...
+    <server>
+      <id>myServerId</id>
+      <username>myusername</username>
+      <password>myEncryptedPassword</password>
+    </server>
+...
+  </servers>
+...
+</settings>
 ----
 
 |===
@@ -139,7 +158,10 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
 
 | username
 | The username of the user to use for publishing.
-| mandatory
+  +
+  +
+  _Note:_ Overrules username defined by serverId, when set in conjunction with serverId
+| mandatory, if serverId is not specified
 
 | password
 | The password of the user to use for publishing.
@@ -147,7 +169,18 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
   +
   _Note:_ when publishing to Confluence Cloud, an API token generated via the corresponding Atlassian account has to
   be used as password.
-| mandatory
+  +
+  +
+  _Note:_ Overrules password defined by serverId, when set in conjunction with serverId
+| mandatory, if serverId is not specified
+
+| serverId
+| the id of the server defined in settings.xml
+  +
+  +
+  _Note:_ see https://maven.apache.org/guides/mini/guide-encryption.html[Maven Password Encryption Guide] for details
+  how to setup a server with username and encrypted password.
+| optional (defaults to empty)
 
 | publishingStrategy
 a| The strategy to use when publishing to confluence. Possible values:
@@ -231,7 +264,7 @@ pages in order to avoid future page name conflicts or obsolete pages)
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
 configuration, defined as separate Maven properties, read from the `settings.xml` or passed as system properties with
-help of `-Dasciidoc-confluence-publisher.` prefix when invoking Maven.
+help of `-Dasciidoc-confluence-publisher.` prefix when invoking
 
 
 == Maven Plugin Execution

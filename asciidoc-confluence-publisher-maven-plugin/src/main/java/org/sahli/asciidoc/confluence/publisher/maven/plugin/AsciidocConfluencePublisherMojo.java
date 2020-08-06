@@ -19,8 +19,11 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
@@ -34,6 +37,9 @@ import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureP
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -89,6 +95,12 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "password")
     private String password;
 
+    @Parameter(readonly = true, property = "settings")
+    protected Settings mavenSettings;
+
+    @Parameter(property = PREFIX + "serverId")
+    private String serverId;
+
     @Parameter(property = PREFIX + "pageTitlePrefix")
     private String pageTitlePrefix;
 
@@ -119,6 +131,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private Map<String, Object> attributes;
 
+    @Component(role = SecDispatcher.class, hint = "default")
+    private DefaultSecDispatcher securityDispatcher;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (this.skip) {
@@ -134,6 +149,10 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
+
+            if ((this.username == null) || (this.password == null)) {
+                applyUsernameAndPasswordFromSettings();
+            }
 
             if (this.convertOnly) {
                 getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
@@ -153,6 +172,39 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             }
 
             throw new MojoExecutionException("Publishing to Confluence failed", e);
+        }
+    }
+
+    private void applyUsernameAndPasswordFromSettings() throws MojoExecutionException {
+        if (this.serverId == null) {
+            throw new MojoExecutionException("'serverId' must be set, if username/password are not provided via configuration properties");
+        }
+
+        Server server = this.mavenSettings.getServer(this.serverId);
+
+        if (server == null) {
+            throw new MojoExecutionException("server with id '" + this.serverId + "' not found in settings.xml");
+        }
+
+        if (this.username == null) {
+            if (server.getUsername() == null) {
+                throw new MojoExecutionException("'username' neither defined by server '" + this.serverId + "' nor provided via configuration properties");
+            }
+
+            this.username = server.getUsername();
+        }
+
+        try {
+            if (this.password == null) {
+                if (server.getPassword() == null) {
+                    throw new MojoExecutionException("'password' neither defined by server '" + this.serverId + "' nor provided via configuration properties");
+                }
+
+                this.securityDispatcher.setConfigurationFile(System.getProperty("user.home") + "/.m2/settings-security.xml");
+                this.password = this.securityDispatcher.decrypt(server.getPassword());
+            }
+        } catch (SecDispatcherException ex) {
+            throw new MojoExecutionException(ex.getMessage());
         }
     }
 

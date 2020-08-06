@@ -50,6 +50,11 @@
             <email>cstettler@imap.ch</email>
             <organizationUrl>https://github.com/cstettler</organizationUrl>
         </developer>
+        <developer>
+            <name>Joern Muehlencord</name>
+            <email>joern@muehlencord.de</email>
+            <organizationUrl>https://github.com/jomu78</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
@@ -191,6 +196,12 @@
                 <artifactId>slf4j-simple</artifactId>
                 <version>1.7.25</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.sonatype.plexus</groupId>
+                <artifactId>plexus-sec-dispatcher</artifactId>
+                <version>1.4</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>

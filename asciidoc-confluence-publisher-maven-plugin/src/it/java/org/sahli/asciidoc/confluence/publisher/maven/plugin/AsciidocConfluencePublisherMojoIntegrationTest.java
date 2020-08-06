@@ -36,6 +36,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -270,15 +271,81 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     @Test
     public void publish_withConvertOnly_doesNotPublishPages() {
         // arrange
-        Map<String, String> env = mandatoryProperties();
-        env.put("convertOnly", "true");
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("convertOnly", "true");
 
         // act
-        publishAndVerify("default", env, () -> {
+        publishAndVerify("default", properties, () -> {
             // assert
             givenAuthenticatedAsPublisher()
                     .when().get(childPages())
                     .then().body("results", hasSize(0));
+        });
+    }
+
+    @Test
+    public void publish_withUsernameAndPlainTextPasswordInSettings_publishesDocumentationToConfluence() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.remove("username");
+        properties.remove("password");
+        properties.put("serverId", "usernameAndPasswordServer");
+
+        Map<String, String> serverProperties = new HashMap<>();
+        serverProperties.put("id", "usernameAndPasswordServer");
+        serverProperties.put("username", "confluence-publisher-it");
+        serverProperties.put("password", "1234");
+
+        // act
+        publishAndVerify("default", properties, serverProperties, null, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
+        });
+    }
+
+    @Test
+    public void publish_withUsernameAndEncryptedPasswordInSettings_publishesDocumentationToConfluence() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.remove("username");
+        properties.remove("password");
+        properties.put("serverId", "usernameAndPasswordServer");
+
+        Map<String, String> serverProperties = new HashMap<>();
+        serverProperties.put("id", "usernameAndPasswordServer");
+        serverProperties.put("username", "confluence-publisher-it");
+        serverProperties.put("password", "{3ddzJwZi04gHy8WJMQ0C9N4FgT5VzpFW975lyFXLenY=}");
+
+        String encryptedMasterPassword = "{dXtQ9/Xk/ZwHrozpmlDcatoR8eOZrTB9JRaIUaCI0hM=}";
+
+        // act
+        publishAndVerify("default", properties, serverProperties, encryptedMasterPassword, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
+        });
+    }
+
+    @Test
+    public void publish_withUsernameAndPasswordBothAsConfigurationPropertiesAndInSettings_usesUsernameAndPasswordFromConfigurationProperties() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("serverId", "usernameAndPasswordServer");
+
+        Map<String, String> serverProperties = new HashMap<>();
+        serverProperties.put("id", "usernameAndPasswordServer");
+        serverProperties.put("username", "wrong-user-name");
+        serverProperties.put("password", "wrong-password");
+
+        // act
+        publishAndVerify("default", properties, serverProperties, null, () -> {
+            // assert
+            givenAuthenticatedAsPublisher()
+                    .when().get(childPages())
+                    .then().body("results.title", hasItem("Index"));
         });
     }
 
@@ -287,40 +354,59 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         });
     }
 
-    private void publishAndVerify(String pathToContent, Map<String, String> properties, Runnable runnable) {
-        boolean usePomProperties = this.propertiesMode.equals(POM_PROPERTIES);
+    private void publishAndVerify(String pathToContent, Map<String, String> pomProperties, Runnable runnable) {
+        publishAndVerify(pathToContent, pomProperties, emptyMap(), null, runnable);
+    }
+
+    private void publishAndVerify(String pathToContent, Map<String, String> pomProperties, Map<String, String> serverProperties, String encryptedMasterPassword, Runnable runnable) {
+        boolean useCommandLineArguments = this.propertiesMode.equals(COMMAND_LINE_ARGUMENTS);
 
         try {
-            publishAndVerify(
-                    extractResourcePath("/" + pathToContent, TEMPORARY_FOLDER.newFolder()),
-                    usePomProperties ? properties : emptyMap(),
-                    usePomProperties ? emptyMap() : properties,
-                    runnable
-            );
+            File projectDir = extractResourcePath(getClass(), "/" + pathToContent, TEMPORARY_FOLDER.newFolder(), true);
+            publishAndVerify(projectDir, pomProperties, serverProperties, encryptedMasterPassword, useCommandLineArguments, runnable);
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);
         }
     }
 
-    private static void publishAndVerify(File projectDir, Map<String, String> pomProperties, Map<String, String> commandLineArguments, Runnable runnable) throws IOException, VerificationException {
-        Files.write(projectDir.toPath().resolve("pom.xml"), generatePom(pomProperties).getBytes(UTF_8));
+    private static void publishAndVerify(File projectDir, Map<String, String> mavenProperties, Map<String, String> serverProperties, String encryptedMasterPassword, boolean useCommandLineArguments, Runnable runnable) throws IOException, VerificationException {
+        Map<String, String> pomProperties = useCommandLineArguments ? emptyMap() : mavenProperties;
+
+        Path pomPath = projectDir.toPath().resolve("pom.xml");
+        Files.write(pomPath, generatePom(pomProperties).getBytes(UTF_8));
+
+        Path settingsPath = projectDir.toPath().resolve("settings.xml");
+        Files.write(settingsPath, generateSettings(serverProperties).getBytes(UTF_8));
 
         Verifier verifier = new Verifier(projectDir.getAbsolutePath());
 
+        if (encryptedMasterPassword != null) {
+            Path mavenSettingsDirectoryPath = projectDir.toPath().resolve(".m2");
+            Files.createDirectories(mavenSettingsDirectoryPath);
+
+            Path securitySettingsPath = mavenSettingsDirectoryPath.resolve("settings-security.xml");
+            Files.write(securitySettingsPath, generateSecuritySettings(encryptedMasterPassword).getBytes(UTF_8));
+
+            verifier.addCliOption("-Duser.home=" + projectDir.getAbsolutePath());
+        }
+
         try {
-            commandLineArguments.forEach((key, value) -> {
-                if (value.contains("//")) {
-                    // maven verifier cli options parsing replaces // with /
-                    value = value.replaceAll("//", "////");
-                }
+            if (useCommandLineArguments) {
+                mavenProperties.forEach((key, value) -> {
+                    if (value.contains("//")) {
+                        // maven verifier cli options parsing replaces // with /
+                        value = value.replaceAll("//", "////");
+                    }
 
-                if (value.contains(" ")) {
-                    value = "'" + value + "'";
-                }
+                    if (value.contains(" ")) {
+                        value = "'" + value + "'";
+                    }
 
-                verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
-            });
+                    verifier.addCliOption("-Dasciidoc-confluence-publisher." + key + "=" + value);
+                });
+            }
 
+            verifier.addCliOption("-s " + settingsPath.toAbsolutePath().toString());
             verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
 
             verifier.verifyErrorFreeLog();
@@ -446,6 +532,28 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 "    </build>" +
                 "" +
                 "</project>";
+    }
+
+    private static String generateSettings(Map<String, String> properties) {
+        return "<settings xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\"\n" +
+                "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "  xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd\">\n" +
+                "  <servers>\n" +
+                "    <server>\n" +
+
+                properties.entrySet().stream()
+                        .map((property) -> "<" + property.getKey() + ">" + property.getValue() + "</" + property.getKey() + ">")
+                        .collect(joining("")) +
+
+                "    </server>\n" +
+                "  </servers>\n" +
+                "</settings>";
+    }
+
+    private static String generateSecuritySettings(String encryptedMasterPassword) {
+        return "<settingsSecurity>\n" +
+                "  <master>" + encryptedMasterPassword + "</master>\n" +
+                "</settingsSecurity>";
     }
 
 

@@ -6,13 +6,13 @@
       ac:plain-text-link-body
         <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
   - else
-    ac:link ac:anchor=(anchor_name @target)
+    ac:link ac:anchor=(anchor_name target || id)
       ac:plain-text-link-body
         <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
 - when :ref
   ac:structured-macro ac:name="anchor"
     ac:parameter ac:name=""
-     =(anchor_name target)
+     =(anchor_name target || id)
 - when :link
   - if uriish? target
     a href=target

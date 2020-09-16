@@ -1,4 +1,4 @@
-= html_tag_if (attr? :link), :a, {href: (attr :link)}
+= html_a_tag_if (attr? :link)
   ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt)
     - if uriish? target
       ri:url ri:value=(target)

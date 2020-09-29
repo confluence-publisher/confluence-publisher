@@ -25,6 +25,7 @@ public class Version {
 
     private int number;
     private String message;
+    private Boolean minorEdit;
 
     @RuntimeUse
     public int getNumber() {
@@ -41,5 +42,13 @@ public class Version {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Boolean getMinorEdit() {
+        return minorEdit;
+    }
+
+    public void setMinorEdit(Boolean minorEdit) {
+        this.minorEdit = minorEdit;
     }
 }

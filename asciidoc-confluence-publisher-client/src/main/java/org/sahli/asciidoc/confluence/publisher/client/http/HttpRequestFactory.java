@@ -93,7 +93,7 @@ class HttpRequestFactory {
                 .content(content)
                 .version(INITAL_VERSION)
                 .versionMessage(versionMessage)
-                .minorEdit(minorEdit) // NB: not supported by confluence at page creation yet
+                .minorEdit(this.minorEdit)
                 .build();
 
         return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
@@ -109,7 +109,7 @@ class HttpRequestFactory {
                 .content(content)
                 .version(newVersion)
                 .versionMessage(versionMessage)
-                .minorEdit(minorEdit)
+                .minorEdit(this.minorEdit)
                 .build();
 
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
@@ -133,7 +133,7 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, minorEdit);
+        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, this.minorEdit);
 
         attachmentPostRequest.setEntity(multipartEntity);
 
@@ -148,7 +148,7 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, minorEdit);
+        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, this.minorEdit);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
@@ -452,7 +452,7 @@ class HttpRequestFactory {
                     versionContainer.setMessage(this.versionMessage);
                 }
                 pagePayload.setVersion(versionContainer);
-                if (minorEdit) {
+                if (this.minorEdit) {
                     versionContainer.setMinorEdit(true);
                 }
             }

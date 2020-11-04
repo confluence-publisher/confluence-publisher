@@ -90,6 +90,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
         <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
         <versionMessage>Version ${project.version}</versionMessage>
+        <minorEdit>false</minorEdit> <!-- notify page subscribers -->
         <attributes>
             <version>${project.version}</version>
             <someOtherKey>value</someOtherKey>
@@ -262,6 +263,12 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | proxyPassword
 | The password of the forward proxy (in case the forward proxy requires basic authentication).
 | optional (defaults to empty)
+
+| minorEdits
+| Defines whether to not notify page/space subscribers upon export.
+
+If `true`, subscribers will not receive notifications, except for new page creations.
+| optional (defaults to false)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
@@ -368,6 +375,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PROXY_SCHEME=https \
    -e PROXY_HOST=my.proxy.com \
    -e PROXY_PORT=8443 \
+   -e MINOR_EDIT=false \
    -e CONVERT_ONLY=false \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT

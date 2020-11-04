@@ -20,4 +20,5 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     proxyPort="$PROXY_PORT" \
     proxyUsername="$PROXY_USERNAME" \
     proxyPassword="$PROXY_PASSWORD" \
+    minorEdit="$MINOR_EDIT" \
     convertOnly="$CONVERT_ONLY"

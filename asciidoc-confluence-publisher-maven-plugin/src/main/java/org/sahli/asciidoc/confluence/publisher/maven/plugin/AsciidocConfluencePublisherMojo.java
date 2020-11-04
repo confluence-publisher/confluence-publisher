@@ -128,6 +128,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "proxyPassword")
     private String proxyPassword;
 
+    @Parameter(property = PREFIX + "minorEdit")
+    private boolean minorEdit;
+
     @Parameter
     private Map<String, Object> attributes;
 
@@ -158,7 +161,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
                 getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
             } else {
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
+                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password, this.minorEdit);
                 ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
                 ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);

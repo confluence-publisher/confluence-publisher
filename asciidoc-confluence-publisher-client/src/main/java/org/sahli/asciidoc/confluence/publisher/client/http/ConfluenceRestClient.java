@@ -66,15 +66,19 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
+        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password, minorEdit);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password, minorEdit);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, httpClient, maxRequestsPerSecond, username, password, false);
+    }
+    
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
@@ -82,7 +86,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         this.username = username;
         this.password = password;
 
-        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
+        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl, minorEdit);
         configureObjectMapper();
     }
 

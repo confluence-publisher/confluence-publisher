@@ -20,13 +20,13 @@ ENV ASCIIDOC_ROOT_FOLDER="/var/asciidoc-root-folder" \
     PUBLISHING_STRATEGY="" \
     ORPHAN_REMOVAL_STRATEGY="" \
     VERSION_MESSAGE="" \
+    NOTIFY_WATCHERS="true" \
     ATTRIBUTES="" \
     PROXY_SCHEME="" \
     PROXY_HOST="" \
     PROXY_PORT="" \
     PROXY_USERNAME="" \
     PROXY_PASSWORD="" \
-    MINOR_EDIT="false" \
     CONVERT_ONLY="false"
 
 ENTRYPOINT ["publish.sh"]

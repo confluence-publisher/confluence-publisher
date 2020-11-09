@@ -146,10 +146,10 @@ public class HttpRequestFactoryTest {
         String content = "content";
         Integer version = 2;
         String versionMessage = "version message";
-        boolean minorEdit = true;
+        boolean notifyWatchers = false;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, minorEdit);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, notifyWatchers);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -170,10 +170,10 @@ public class HttpRequestFactoryTest {
         String content = "content";
         Integer version = 2;
         String versionMessage = null;
-        boolean minorEdit = false;
+        boolean notifyWatchers = true;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, minorEdit);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, notifyWatchers);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -192,7 +192,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message", false);
+        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message", true);
     }
 
     @Test
@@ -202,7 +202,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("title must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message", false);
+        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message", true);
     }
 
     @Test
@@ -281,15 +281,15 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withValidParametersAndMinorEditSet_returnsHttpPutRequestWithMultipartEntity() throws Exception {
+    public void updateAttachmentContentRequest_withValidParametersAndNotifyWatchersOff_returnsHttpPutRequestWithMultipartEntity() throws Exception {
         // arrange
         String contentId = "1234";
         String attachmentId = "45";
         InputStream attachmentContent = new ByteArrayInputStream("hello".getBytes());
-        boolean minorEdit = true;
+        boolean notifyWatchers = false;
 
         // act
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, minorEdit);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
 
         // assert
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
@@ -304,15 +304,15 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withValidParametersAndMinorEditNotSet_returnsHttpPutRequestWithMultipartEntity() throws Exception {
+    public void updateAttachmentContentRequest_withValidParametersAndNotifyWatchersOn_returnsHttpPutRequestWithMultipartEntity() throws Exception {
         // arrange
         String contentId = "1234";
         String attachmentId = "45";
         InputStream attachmentContent = new ByteArrayInputStream("hello".getBytes());
-        boolean minorEdit = false;
+        boolean notifyWatchers = true;
 
         // act
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, minorEdit);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
 
         // assert
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
@@ -333,7 +333,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), false);
+        this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), true);
     }
 
     @Test
@@ -343,7 +343,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), false);
+        this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), true);
     }
 
     @Test
@@ -353,7 +353,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentContent");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, false);
+        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, true);
     }
 
     @Test

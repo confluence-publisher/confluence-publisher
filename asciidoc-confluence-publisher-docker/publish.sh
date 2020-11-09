@@ -14,11 +14,11 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     publishingStrategy="$PUBLISHING_STRATEGY" \
     orphanRemovalStrategy="$ORPHAN_REMOVAL_STRATEGY" \
     versionMessage="$VERSION_MESSAGE" \
+    notifyWatchers="$NOTIFY_WATCHERS" \
     attributes="$ATTRIBUTES" \
     proxyScheme="$PROXY_SCHEME" \
     proxyHost="$PROXY_HOST" \
     proxyPort="$PROXY_PORT" \
     proxyUsername="$PROXY_USERNAME" \
     proxyPassword="$PROXY_PASSWORD" \
-    minorEdit="$MINOR_EDIT" \
     convertOnly="$CONVERT_ONLY"

@@ -79,7 +79,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String proxyPassword = argumentsParser.optionalArgument("proxyPassword", args).orElse(null);
 
         boolean convertOnly = argumentsParser.optionalBooleanArgument("convertOnly", args).orElse(false);
-        boolean minorEdit = argumentsParser.optionalBooleanArgument("minorEdit", args).orElse(false);
+        boolean notifyWatchers = argumentsParser.optionalBooleanArgument("notifyWatchers", args).orElse(true);
 
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
@@ -94,7 +94,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
                 ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password);
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, minorEdit);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, notifyWatchers);
                 confluencePublisher.publish();
             }
         } finally {

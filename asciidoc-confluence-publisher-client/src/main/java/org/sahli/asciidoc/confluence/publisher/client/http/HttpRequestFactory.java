@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -87,13 +86,13 @@ class HttpRequestFactory {
                 .content(content)
                 .version(INITAL_VERSION)
                 .versionMessage(versionMessage)
-                .minorEdit(false)
+                .notifyWatchers(true)
                 .build();
 
         return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
     }
 
-    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean minorEdit) {
+    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
@@ -103,7 +102,7 @@ class HttpRequestFactory {
                 .content(content)
                 .version(newVersion)
                 .versionMessage(versionMessage)
-                .minorEdit(minorEdit)
+                .notifyWatchers(notifyWatchers)
                 .build();
 
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
@@ -133,7 +132,7 @@ class HttpRequestFactory {
         return attachmentPostRequest;
     }
 
-    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean minorEdit) {
+    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
         assertMandatoryParameter(attachmentContent != null, "attachmentContent");
@@ -141,7 +140,7 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, minorEdit);
+        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, notifyWatchers);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
@@ -341,7 +340,7 @@ class HttpRequestFactory {
         }
     }
 
-    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean minorEdit) {
+    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         multipartEntityBuilder.setCharset(UTF_8);
@@ -355,7 +354,7 @@ class HttpRequestFactory {
 
         multipartEntityBuilder.addPart("file", inputStreamBody);
 
-        if (minorEdit) {
+        if (!notifyWatchers) {
             multipartEntityBuilder.addPart("minorEdit", new StringBody("true", ContentType.DEFAULT_TEXT));
         }
 
@@ -371,7 +370,7 @@ class HttpRequestFactory {
         private String ancestorId;
         private Integer version;
         private String versionMessage;
-        private boolean minorEdit;
+        private boolean notifyWatchers;
 
         public PagePayloadBuilder title(String title) {
             this.title = title;
@@ -409,8 +408,8 @@ class HttpRequestFactory {
             return this;
         }
 
-        public PagePayloadBuilder minorEdit(boolean minorEdit) {
-            this.minorEdit = minorEdit;
+        public PagePayloadBuilder notifyWatchers(boolean notifyWatchers) {
+            this.notifyWatchers = notifyWatchers;
 
             return this;
         }
@@ -444,7 +443,7 @@ class HttpRequestFactory {
                 if (this.versionMessage != null) {
                     versionContainer.setMessage(this.versionMessage);
                 }
-                if (this.minorEdit) {
+                if (!this.notifyWatchers) {
                     versionContainer.setMinorEdit(true);
                 }
                 pagePayload.setVersion(versionContainer);

@@ -939,10 +939,10 @@ public class AsciidocConfluencePageTest {
         AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page.adoc");
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
 
         // assert
-        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\"></ri:page>" +
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"></ri:page>" +
                 "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
                 "</ac:link> to the target page.</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -955,12 +955,12 @@ public class AsciidocConfluencePageTest {
         AsciidocPage asciidocPageTwo = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-two.adoc"));
 
         // act
-        AsciidocConfluencePage asciidocConfluencePageOne = newAsciidocConfluencePage(asciidocPageOne, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageOne));
-        AsciidocConfluencePage asciidocConfluencePageTwo = newAsciidocConfluencePage(asciidocPageTwo, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageTwo));
+        AsciidocConfluencePage asciidocConfluencePageOne = newAsciidocConfluencePage(asciidocPageOne, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageOne), "TEST");
+        AsciidocConfluencePage asciidocConfluencePageTwo = newAsciidocConfluencePage(asciidocPageTwo, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageTwo), "TEST");
 
         // assert
-        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\">"));
-        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\">"));
+        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\" ri:space-key=\"TEST\">"));
+        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\" ri:space-key=\"TEST\">"));
     }
 
     @Test

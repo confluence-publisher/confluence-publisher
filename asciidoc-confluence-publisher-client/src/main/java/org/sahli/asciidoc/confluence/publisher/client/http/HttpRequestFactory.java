@@ -67,18 +67,12 @@ class HttpRequestFactory {
     private static final int INITAL_VERSION = 1;
     private final String rootConfluenceUrl;
     private final String confluenceRestApiEndpoint;
-    private final boolean minorEdit;
 
     HttpRequestFactory(String rootConfluenceUrl) {
-        this(rootConfluenceUrl, false);
-    }
-
-    HttpRequestFactory(String rootConfluenceUrl, boolean minorEdit) {
         assertMandatoryParameter(isNotBlank(rootConfluenceUrl), "rootConfluenceUrl");
 
         this.rootConfluenceUrl = rootConfluenceUrl;
         this.confluenceRestApiEndpoint = rootConfluenceUrl + REST_API_CONTEXT;
-        this.minorEdit = minorEdit;
     }
 
     HttpPost addPageUnderAncestorRequest(String spaceKey, String ancestorId, String title, String content, String versionMessage) {
@@ -93,13 +87,13 @@ class HttpRequestFactory {
                 .content(content)
                 .version(INITAL_VERSION)
                 .versionMessage(versionMessage)
-                .minorEdit(this.minorEdit)
+                .minorEdit(false)
                 .build();
 
         return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
     }
 
-    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
+    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean minorEdit) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
@@ -109,7 +103,7 @@ class HttpRequestFactory {
                 .content(content)
                 .version(newVersion)
                 .versionMessage(versionMessage)
-                .minorEdit(this.minorEdit)
+                .minorEdit(minorEdit)
                 .build();
 
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
@@ -133,14 +127,13 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, this.minorEdit);
-
+        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, false);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
     }
 
-    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent) {
+    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean minorEdit) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
         assertMandatoryParameter(attachmentContent != null, "attachmentContent");
@@ -148,7 +141,7 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, this.minorEdit);
+        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, minorEdit);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
@@ -351,7 +344,7 @@ class HttpRequestFactory {
     private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean minorEdit) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
+        multipartEntityBuilder.setCharset(UTF_8);
 
         InputStreamBody inputStreamBody;
         if (isNotBlank(attachmentFileName)) {
@@ -451,10 +444,10 @@ class HttpRequestFactory {
                 if (this.versionMessage != null) {
                     versionContainer.setMessage(this.versionMessage);
                 }
-                pagePayload.setVersion(versionContainer);
                 if (this.minorEdit) {
                     versionContainer.setMinorEdit(true);
                 }
+                pagePayload.setVersion(versionContainer);
             }
 
             return pagePayload;

@@ -296,7 +296,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
-        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient(), null, null);
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient(), null, null, false);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
@@ -304,7 +304,7 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", false, null, "confluence-publisher-it", "1234", false);
+        return new ConfluenceRestClient("http://localhost:8090", false, null, "confluence-publisher-it", "1234");
     }
 
 }

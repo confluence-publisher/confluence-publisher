@@ -16,9 +16,6 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,21 +26,14 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.internal.util.io.IOUtil;
-import org.sahli.asciidoc.confluence.publisher.client.http.payloads.PagePayload;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -120,7 +110,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2, "Version Message");
+        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2, "Version Message", true);
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPut.class));
@@ -193,7 +183,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()));
+        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()), true);
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPost.class));
@@ -583,86 +573,6 @@ public class ConfluenceRestClientTest {
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpDelete.class));
-    }
-
-    @Test
-    public void minorEditObeyed_onPageUpdate() throws Exception {
-        // arrange
-        final ArgumentCaptor<HttpPut> captor = ArgumentCaptor.forClass(HttpPut.class);
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null, true);
-
-        // act
-        confluenceRestClient.updatePage("123456", "whatever", "foo", "bar", 2, "versionMessage");
-
-        // assert
-        verify(httpClientMock, times(1)).execute(captor.capture());
-        PagePayload pagePayload = parsePagePayload(captor.getValue().getEntity());
-        Assert.assertTrue(pagePayload.getVersion().getMinorEdit());
-    }
-
-    @Test
-    public void minorEditObeyed_onAttachmentUpdate() throws Exception {
-        // arrange
-        final ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null, true);
-
-        // act
-        byte[] content = "attachment-content".getBytes(UTF_8);
-        confluenceRestClient.updateAttachmentContent("123456","whatever", new ByteArrayInputStream(content));
-
-        // assert
-        verify(httpClientMock, times(1)).execute(captor.capture());
-
-        List<String> lines = new ArrayList<>(httpEntityToLines(captor.getValue().getEntity()));
-        int pos = indexOf("Content-Disposition: form-data; name=\"minorEdit\"", lines);
-        Assert.assertNotEquals("`minorEdit` part should exist", -1, pos);
-        Assert.assertEquals("`minorEdit` part should be `true`", "true", lines.get(pos + 2));
-    }
-
-    @Test
-    public void minorEditObeyed_onAttachmentCreate() throws Exception {
-        // arrange
-        final ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("", 200);
-        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null, true);
-
-        // act
-        byte[] content = "attachment-content".getBytes(UTF_8);
-        confluenceRestClient.addAttachment("123456","whatever", new ByteArrayInputStream(content));
-
-        // assert
-        verify(httpClientMock, times(1)).execute(captor.capture());
-
-        List<String> lines = new ArrayList<>(httpEntityToLines(captor.getValue().getEntity()));
-        int pos = indexOf("Content-Disposition: form-data; name=\"minorEdit\"", lines);
-        Assert.assertNotEquals("`minorEdit` part should exist", -1, pos);
-        Assert.assertEquals("`minorEdit` part should be `true`", "true", lines.get(pos + 2));
-    }
-
-
-    private static Collection<String> httpEntityToLines(HttpEntity entity) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        entity.writeTo(baos);
-        return IOUtil.readLines(new ByteArrayInputStream(baos.toByteArray()));
-    }
-
-
-    private static int indexOf(String pattern, List<String> lines) {
-        for (int i = 0; i < lines.size(); i++)
-        {
-            if (Objects.equals(pattern, lines.get(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static PagePayload parsePagePayload(HttpEntity entity) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return mapper.readValue(entity.getContent(), PagePayload.class);
     }
 
     private String generateJsonAttachmentResults(int numberOfAttachment) {

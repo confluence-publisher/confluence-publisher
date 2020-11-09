@@ -35,6 +35,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
@@ -145,9 +146,10 @@ public class HttpRequestFactoryTest {
         String content = "content";
         Integer version = 2;
         String versionMessage = "version message";
+        boolean minorEdit = true;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, minorEdit);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -168,9 +170,10 @@ public class HttpRequestFactoryTest {
         String content = "content";
         Integer version = 2;
         String versionMessage = null;
+        boolean minorEdit = false;
 
         // act
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage);
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, version, versionMessage, minorEdit);
 
         // assert
         assertThat(updatePageRequest.getMethod(), is("PUT"));
@@ -189,7 +192,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message");
+        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message", false);
     }
 
     @Test
@@ -199,7 +202,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("title must be set");
 
         // arrange + act
-        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message");
+        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message", false);
     }
 
     @Test
@@ -278,14 +281,15 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
-    public void updateAttachmentContentRequest_withValidParameters_returnsHttpPutRequestWithMultipartEntity() throws Exception {
+    public void updateAttachmentContentRequest_withValidParametersAndMinorEditSet_returnsHttpPutRequestWithMultipartEntity() throws Exception {
         // arrange
         String contentId = "1234";
         String attachmentId = "45";
         InputStream attachmentContent = new ByteArrayInputStream("hello".getBytes());
+        boolean minorEdit = true;
 
         // act
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, minorEdit);
 
         // assert
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
@@ -295,7 +299,31 @@ public class HttpRequestFactoryTest {
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         updateAttachmentContentRequest.getEntity().writeTo(entityContent);
         String multiPartPayload = entityContent.toString("UTF-8");
-        assertThat(multiPartPayload, containsString("hello"));
+        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
+        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"minorEdit\"\r\n\r\ntrue"));
+    }
+
+    @Test
+    public void updateAttachmentContentRequest_withValidParametersAndMinorEditNotSet_returnsHttpPutRequestWithMultipartEntity() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String attachmentId = "45";
+        InputStream attachmentContent = new ByteArrayInputStream("hello".getBytes());
+        boolean minorEdit = false;
+
+        // act
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, minorEdit);
+
+        // assert
+        assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
+        assertThat(updateAttachmentContentRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data"));
+        assertThat(updateAttachmentContentRequest.getFirstHeader("X-Atlassian-Token").getValue(), is("no-check"));
+
+        ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
+        updateAttachmentContentRequest.getEntity().writeTo(entityContent);
+        String multiPartPayload = entityContent.toString("UTF-8");
+        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
+        assertThat(multiPartPayload, not(containsString("Content-Disposition: form-data; name=\"minorEdit\"")));
     }
 
     @Test
@@ -305,7 +333,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("contentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()));
+        this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), false);
     }
 
     @Test
@@ -315,7 +343,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentId must be set");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()));
+        this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), false);
     }
 
     @Test
@@ -325,7 +353,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentContent");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null);
+        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, false);
     }
 
     @Test

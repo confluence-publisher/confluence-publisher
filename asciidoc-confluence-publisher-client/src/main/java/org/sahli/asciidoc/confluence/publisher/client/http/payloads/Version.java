@@ -25,7 +25,7 @@ public class Version {
 
     private int number;
     private String message;
-    private boolean minorEdit;
+    private Boolean minorEdit;
 
     @RuntimeUse
     public int getNumber() {
@@ -46,11 +46,11 @@ public class Version {
     }
 
     @RuntimeUse
-    public boolean getMinorEdit() {
+    public Boolean getMinorEdit() {
         return this.minorEdit;
     }
 
-    public void setMinorEdit(boolean minorEdit) {
+    public void setMinorEdit(Boolean minorEdit) {
         this.minorEdit = minorEdit;
     }
 

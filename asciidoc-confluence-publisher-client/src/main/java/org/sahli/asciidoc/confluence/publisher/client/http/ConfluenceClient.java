@@ -26,7 +26,7 @@ public interface ConfluenceClient {
 
     String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content, String versionMessage);
 
-    void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage);
+    void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean minorEdit);
 
     void deletePage(String contentId);
 
@@ -34,7 +34,7 @@ public interface ConfluenceClient {
 
     void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent);
 
-    void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent);
+    void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean minorEdit);
 
     void deleteAttachment(String attachmentId);
 

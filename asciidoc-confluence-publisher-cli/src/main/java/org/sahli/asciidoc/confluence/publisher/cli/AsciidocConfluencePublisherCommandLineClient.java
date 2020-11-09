@@ -93,8 +93,8 @@ public class AsciidocConfluencePublisherCommandLineClient {
             } else {
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
-                ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password, minorEdit);
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage);
+                ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, username, password);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, minorEdit);
                 confluencePublisher.publish();
             }
         } finally {

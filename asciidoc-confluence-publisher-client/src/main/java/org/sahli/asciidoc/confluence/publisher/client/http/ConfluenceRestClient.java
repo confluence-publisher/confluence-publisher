@@ -66,19 +66,15 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
-        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password, minorEdit);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password, minorEdit);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, httpClient, maxRequestsPerSecond, username, password, false);
-    }
-    
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password, boolean minorEdit) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
@@ -86,7 +82,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         this.username = username;
         this.password = password;
 
-        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl, minorEdit);
+        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
         configureObjectMapper();
     }
 
@@ -106,8 +102,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion, versionMessage);
+    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean minorEdit) {
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion, versionMessage, minorEdit);
         sendRequestAndFailIfNot20x(updatePageRequest);
     }
 
@@ -150,8 +146,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent) {
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
+    public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean minorEdit) {
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, minorEdit);
         sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
             closeInputStream(attachmentContent);
 

@@ -18,9 +18,7 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
@@ -45,12 +43,11 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -76,39 +73,38 @@ public class ConfluencePublisherTest {
     private static final String TEST_RESOURCES = "src/test/resources/org/sahli/asciidoc/confluence/publisher/client";
     private static final String SOME_CONFLUENCE_CONTENT_SHA256_HASH = "7a901829ba6a0b6f7f084ae4313bdb5d83bc2c4ea21b452ba7073c0b0c60faae";
 
-    @Rule
-    public final ExpectedException expectedException = none();
-
     @Test
     public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("spaceKey must be set");
-
-        // arrange + act
+        // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         ConfluencePublisher confluencePublisher = confluencePublisher("without-space-key", confluenceRestClientMock);
-        confluencePublisher.publish();
+
+        //act
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> confluencePublisher.publish());
+
+        //assert
+        assertThat(exception.getMessage(), is("spaceKey must be set"));
     }
 
     @Test
     public void publish_withMetadataMissingAncestorId_throwsIllegalArgumentException() {
-        // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("ancestorId must be set");
-
-        // arrange + act
+        // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
         ConfluencePublisher confluencePublisher = confluencePublisher("without-ancestor-id", confluenceRestClientMock);
-        confluencePublisher.publish();
+
+        //act
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> confluencePublisher.publish());
+
+        //assert
+        assertThat(exception.getMessage(), is("ancestorId must be set"));
     }
 
     @Test
     public void publish_oneNewPageWithAncestorId_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("2345");
+        when(confluenceRestClientMock.getPageByTitle(any(), any())).thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.addPageUnderAncestor(any(), any(), any(), any(), any())).thenReturn("2345");
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
@@ -128,8 +124,8 @@ public class ConfluencePublisherTest {
     public void publish_multiplePageWithAncestorId_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("2345", "3456");
+        when(confluenceRestClientMock.getPageByTitle(any(), any())).thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.addPageUnderAncestor(any(), any(), any(), any(), any())).thenReturn("2345", "3456");
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
@@ -149,28 +145,28 @@ public class ConfluencePublisherTest {
 
     @Test
     public void publish_multipleRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page");
-
         ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", REPLACE_ANCESTOR, "version message");
-        confluencePublisher.publish();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> confluencePublisher.publish());
+
+        assertThat(exception.getMessage(), is("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page"));
     }
 
     @Test
     public void publish_noRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page");
-
         ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", REPLACE_ANCESTOR, "version message");
-        confluencePublisher.publish();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> confluencePublisher.publish());
+
+        assertThat(exception.getMessage(), is("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page"));
     }
 
     @Test
     public void publish_multiplePagesInHierarchyWithAncestorIdAsRoot_delegatesToConfluenceRestClient() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("1234", "2345");
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.addPageUnderAncestor(any(), any(), any(), any(), any())).thenReturn("1234", "2345");
+        when(confluenceRestClientMock.getPageByTitle(any(), any())).thenThrow(new NotFoundException());
 
         ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
 
@@ -202,9 +198,9 @@ public class ConfluencePublisherTest {
     public void publish_metadataOnePageWithNewAttachmentsAndAncestorIdAsRoot_attachesAttachmentToContent() {
         // arrange
         ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
-        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("4321");
-        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString())).thenThrow(new NotFoundException());
-        when(confluenceRestClientMock.getAttachmentByFileName(anyString(), anyString())).thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.addPageUnderAncestor(any(), any(), any(), any(), any())).thenReturn("4321");
+        when(confluenceRestClientMock.getPageByTitle(any(), any())).thenThrow(new NotFoundException());
+        when(confluenceRestClientMock.getAttachmentByFileName(any(), any())).thenThrow(new NotFoundException());
 
         ArgumentCaptor<String> contentId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> attachmentFileName = ArgumentCaptor.forClass(String.class);
@@ -384,7 +380,7 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), any(FileInputStream.class), eq(true));
         verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
 
-        verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
+        verify(confluenceRestClientMock, never()).addAttachment(any(), any(), any(InputStream.class));
 
         verify(confluencePublisherListenerMock, times(1)).pageUpdated(eq(new ConfluencePage("72189173", "Existing Page (Old Title)", "<h1>Some Confluence Content</h1>", 1)), eq(new ConfluencePage("72189173", "Some Confluence Content", "<h1>Some Confluence Content</h1>", 2)));
         verify(confluencePublisherListenerMock, times(1)).attachmentUpdated(eq("attachmentOne.txt"), eq("72189173"));
@@ -425,7 +421,7 @@ public class ConfluencePublisherTest {
         verify(confluenceRestClientMock).setPropertyByKey("72189173", "attachmentTwo.txt-hash", sha256Hex("attachment2"));
         assertThat(inputStreamAsString(content.getValue(), UTF_8), is("attachment2"));
 
-        verify(confluenceRestClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
+        verify(confluenceRestClientMock, never()).addAttachment(any(), any(), any(InputStream.class));
     }
 
     @Test

@@ -19,7 +19,6 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
@@ -33,8 +32,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
@@ -50,9 +49,6 @@ public class AsciidocConfluenceConverterTest {
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Rule
-    public final ExpectedException expectedException = none();
 
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
@@ -107,13 +103,12 @@ public class AsciidocConfluenceConverterTest {
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
-        // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("Attachment 'non-existing-attachment.png' does not exist");
-
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap()));
+
+        // assert
+        assertThat(ex.getMessage(), is("Attachment 'non-existing-attachment.png' does not exist"));
     }
 
     @Test

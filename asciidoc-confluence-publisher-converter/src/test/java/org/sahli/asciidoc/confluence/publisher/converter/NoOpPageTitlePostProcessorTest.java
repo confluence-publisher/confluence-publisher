@@ -18,8 +18,8 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Christian Stettler

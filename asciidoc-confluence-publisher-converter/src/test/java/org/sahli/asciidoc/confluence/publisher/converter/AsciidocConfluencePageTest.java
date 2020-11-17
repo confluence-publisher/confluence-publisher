@@ -16,12 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
@@ -45,16 +41,12 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
-import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageTest.RootCauseMatcher.rootCauseWithMessage;
 
 /**
  * @author Alain Sahli
@@ -69,9 +61,6 @@ public class AsciidocConfluencePageTest {
 
     @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
-
-    @Rule
-    public final ExpectedException expectedException = none();
 
     @Test
     public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() {
@@ -217,13 +206,13 @@ public class AsciidocConfluencePageTest {
         // arrange
         String adoc = "Content";
 
-        // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("failed to create confluence page for asciidoc content in");
-        this.expectedException.expect(rootCauseWithMessage("top-level heading or title meta information must be set"));
-
         // act
-        newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath()));
+
+        // assert
+        assertThat(ex.getMessage(), startsWith("failed to create confluence page for asciidoc content in"));
+        assertThat(ex.getCause().getMessage(), is("top-level heading or title meta information must be set"));
     }
 
     @Test
@@ -1818,31 +1807,6 @@ public class AsciidocConfluencePageTest {
         } catch (Exception e) {
             throw new RuntimeException("Could not set default charset", e);
         }
-    }
-
-
-    static class RootCauseMatcher extends TypeSafeMatcher<Exception> {
-
-        private final String message;
-
-        private RootCauseMatcher(String message) {
-            this.message = message;
-        }
-
-        @Override
-        protected boolean matchesSafely(Exception exception) {
-            return exception.getCause().getMessage().equals(this.message);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("root cause with message '" + this.message + "'");
-        }
-
-        static RootCauseMatcher rootCauseWithMessage(String message) {
-            return new RootCauseMatcher(message);
-        }
-
     }
 
 }

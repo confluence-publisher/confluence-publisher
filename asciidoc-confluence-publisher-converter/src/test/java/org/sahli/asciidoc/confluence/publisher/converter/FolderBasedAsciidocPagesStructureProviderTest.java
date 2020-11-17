@@ -20,21 +20,20 @@ import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class FolderBasedAsciidocPagesStructureProviderTest {
 
-    private static AsciidocPage NON_EXISTING_ASCIIDOC_PAGE = mock(AsciidocPage.class);
+    private final static AsciidocPage NON_EXISTING_ASCIIDOC_PAGE = mock(AsciidocPage.class);
 
     @Test
     public void structure_nestedStructure_returnsAsciidocPagesStructureWithAllNonIncludeAdocFiles() {

@@ -1,0 +1,5 @@
+= Page
+
+Paragraph with inline jira:PRJ-123[] reference
+
+It's also possible to pass `server` attribute: jira:PRJ-124[On prem JIRA]

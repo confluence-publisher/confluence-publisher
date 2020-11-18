@@ -3,6 +3,7 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -36,9 +37,15 @@ public class JiraMacrosTest {
         ConfluencePublisherMetadata result = converter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
 
         //verify
-        String resultingContents = Jsoup.parse(fileContent(result.getPages().get(0).getContentFilePath())).normalise().toString();
-        String expectedContents = Jsoup.parse(testResource("macros/inline-jira.html")).normalise().toString();
+        String resultingContents = parseDocument(fileContent(result.getPages().get(0).getContentFilePath())).toString();
+        String expectedContents = parseDocument(testResource("macros/inline-jira.html")).toString();
         assertThat(resultingContents, Matchers.equalTo(expectedContents));
+    }
+
+    private Document parseDocument(String html) throws IOException {
+        Document document = Jsoup.parse(html);
+        document.outputSettings().syntax( Document.OutputSettings.Syntax.xml);
+        return document;
     }
 
     private String fileContent(String contentFilePath) throws IOException {

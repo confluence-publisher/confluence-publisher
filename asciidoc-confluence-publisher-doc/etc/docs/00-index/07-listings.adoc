@@ -60,9 +60,19 @@ public class MyCode {
 }
 ----
 
-Collapsing of code block is supported
+Collapsing of code block is supported with `collapse` option
 
-[source,java,collapse=true]
+[listing]
+....
+[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
+----
+public class MyCode  {
+    // long code block that should not be visible by default
+}
+----
+....
+
+[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
 ----
 public class MyCode  {
     // long code block that should not be visible by default

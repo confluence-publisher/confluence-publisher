@@ -60,6 +60,24 @@ public class MyCode {
 }
 ----
 
+Collapsing of code block is supported with `collapse` option
+
+[listing]
+....
+[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
+----
+public class MyCode  {
+    // long code block that should not be visible by default
+}
+----
+....
+
+[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
+----
+public class MyCode  {
+    // long code block that should not be visible by default
+}
+----
 
 == Source Blocks from External Files (Full Content)
 

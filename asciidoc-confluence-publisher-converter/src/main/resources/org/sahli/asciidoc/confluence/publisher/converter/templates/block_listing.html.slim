@@ -8,6 +8,8 @@
       ac:parameter ac:name="linenumbers" true
     - if attr? :start
       ac:parameter ac:name="firstline" =(attr :start)
+    - if attr? :collapse
+      ac:parameter ac:name="collapse" =(attr :collapse)
     ac:plain-text-body
       <![CDATA[#{content}]]>
 - else

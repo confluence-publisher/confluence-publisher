@@ -178,6 +178,12 @@ public class MyCode  {
 }
 ----
 
+[NOTE]
+====
+Collapsed source blocks are currently not supported by AsciiDoc directly, thus this is a non-standard feature only
+supported by the Confluence Publisher.
+====
+
 
 == Source Highlighting
 

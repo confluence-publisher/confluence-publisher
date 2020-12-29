@@ -60,24 +60,6 @@ public class MyCode {
 }
 ----
 
-Collapsing of code block is supported with `collapse` option
-
-[listing]
-....
-[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
-----
-public class MyCode  {
-    // long code block that should not be visible by default
-}
-----
-....
-
-[source,java,title="Some unimportant or lengthy code hidden by default",collapse=true]
-----
-public class MyCode  {
-    // long code block that should not be visible by default
-}
-----
 
 == Source Blocks from External Files (Full Content)
 
@@ -116,7 +98,7 @@ include::../files/SourceWithMethodTag.java[tags=myMethod]
 
 == Line Numbers
 
-Line numbers for source code blocks can be enabled either using the `:source-linenums-option:` attribute globally for
+Line numbers for source blocks can be enabled either using the `:source-linenums-option:` attribute globally for
 all source blocks on the page, or per source block using the `linenums` option:
 
 [listing]
@@ -171,6 +153,28 @@ public class MyCode {
 ----
 public class MyCode {
     // comment
+}
+----
+
+
+== Collapsed Source Blocks
+
+Collapsing of source blocks is supported via the custom `collapse` option:
+
+[listing]
+....
+[source,java,title="Collapsed Source Block",collapse=true]
+----
+public class MyCode  {
+    // long source block that should not be visible by default
+}
+----
+....
+
+[source,java,title="Collapsed Source Block",collapse=true]
+----
+public class MyCode  {
+    // long source block that should not be visible by default
 }
 ----
 

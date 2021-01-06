@@ -1,9 +1,24 @@
-= Additional features
+= Additional Features
 
-== Expand macro
+== Collapsible Example Blocks
 
-Asciidoctor's collapsible blocks are translated to Confluence expand macro with
-exception to `open` option - it's not supported as there is no such feature in confluece expand macro
+AsciiDoc collapsible example blocks are translated to Confluence with help of the expand macro.
+
+[listing]
+....
+[%collapsible]
+====
+This content is revealed when the label is clicked.
+====
+....
+
+[%collapsible]
+====
+This content is revealed when the label is clicked.
+====
+
+
+An optional block title can be specified:
 
 [listing]
 ....
@@ -20,47 +35,13 @@ This content is revealed when the "Toggle Me" label is clicked.
 This content is revealed when the "Toggle Me" label is clicked.
 ====
 
-Title is optional, so if you want to have just default text in expand block (one that rendered by Confluence) omit it in block
-
-[listing]
-....
-[%collapsible]
+[NOTE]
 ====
-Collapsible block with no title
-====
-....
-
-[%collapsible]
-====
-Collapsible block with no title
+Non-collapsible example blocks are currently converted to a tip admonition, since Confluence does not provide any
+specified example element.
 ====
 
-== Asciidoc example block
-
-There is not such feature as example block in confluence, so to provide at least some alternative
-`TIP` admonition is used for that
-
-[listing]
-....
-.Example title
+[NOTE]
 ====
-Simple example block
+Using the `open` option on collapsible expand blocks is currently not supported.
 ====
-....
-
-.Example title
-====
-Simple example block
-====
-
-[listing]
-....
-====
-Example block without title
-====
-....
-
-====
-Example block without title
-====
-

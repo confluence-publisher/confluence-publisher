@@ -90,6 +90,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
         <pageTitlePrefix xml:space="preserve">Doc :: </pageTitlePrefix>
         <pageTitleSuffix xml:space="preserve"> [${project.version}]</pageTitleSuffix>
         <versionMessage>Version ${project.version}</versionMessage>
+        <notifyWatchers>false</notifyWatchers>
         <attributes>
             <version>${project.version}</version>
             <someOtherKey>value</someOtherKey>
@@ -208,6 +209,11 @@ pages in order to avoid future page name conflicts or obsolete pages)
 
   Note: Confluence only supports version messages for updated pages, but not when creating new pages.
 | optional (defaults to empty)
+
+| notifyWatchers
+| Defines whether to notify page/space watchers upon changes when re-publishing. If set to `false`, subscribers will not
+  receive notifications, except for new page or attachment creations.
+| optional (defaults to true)
 
 | attributes| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
   +
@@ -364,6 +370,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PUBLISHING_STRATEGY=REPLACE_ANCESTOR \
    -e ORPHAN_REMOVAL_STRATEGY=KEEP_ORPHANS \
    -e VERSION_MESSAGE="V 1.0" \
+   -e NOTIFY_WATCHERS=true \
    -e ATTRIBUTES='{"attribute1": "value1", "attribute2": "value2"}' \
    -e PROXY_SCHEME=https \
    -e PROXY_HOST=my.proxy.com \

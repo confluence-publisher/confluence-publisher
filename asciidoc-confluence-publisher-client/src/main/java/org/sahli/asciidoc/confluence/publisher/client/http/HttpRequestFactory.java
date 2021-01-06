@@ -27,9 +27,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicHeader;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Ancestor;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Body;
@@ -45,7 +47,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -85,12 +86,13 @@ class HttpRequestFactory {
                 .content(content)
                 .version(INITAL_VERSION)
                 .versionMessage(versionMessage)
+                .notifyWatchers(true)
                 .build();
 
         return addPageHttpPost(this.confluenceRestApiEndpoint, pagePayload);
     }
 
-    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
+    HttpPut updatePageRequest(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
@@ -100,6 +102,7 @@ class HttpRequestFactory {
                 .content(content)
                 .version(newVersion)
                 .versionMessage(versionMessage)
+                .notifyWatchers(notifyWatchers)
                 .build();
 
         HttpPut updatePageRequest = new HttpPut(this.confluenceRestApiEndpoint + "/content/" + contentId);
@@ -123,13 +126,13 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent);
+        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, false);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
     }
 
-    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent) {
+    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
         assertMandatoryParameter(attachmentContent != null, "attachmentContent");
@@ -137,7 +140,7 @@ class HttpRequestFactory {
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(null, attachmentContent);
+        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, notifyWatchers);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;
@@ -337,10 +340,10 @@ class HttpRequestFactory {
         }
     }
 
-    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent) {
+    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        multipartEntityBuilder.setCharset(Charset.forName("UTF-8"));
+        multipartEntityBuilder.setCharset(UTF_8);
 
         InputStreamBody inputStreamBody;
         if (isNotBlank(attachmentFileName)) {
@@ -350,6 +353,10 @@ class HttpRequestFactory {
         }
 
         multipartEntityBuilder.addPart("file", inputStreamBody);
+
+        if (!notifyWatchers) {
+            multipartEntityBuilder.addPart("minorEdit", new StringBody("true", ContentType.DEFAULT_TEXT));
+        }
 
         return multipartEntityBuilder.build();
     }
@@ -363,6 +370,7 @@ class HttpRequestFactory {
         private String ancestorId;
         private Integer version;
         private String versionMessage;
+        private boolean notifyWatchers;
 
         public PagePayloadBuilder title(String title) {
             this.title = title;
@@ -400,6 +408,12 @@ class HttpRequestFactory {
             return this;
         }
 
+        public PagePayloadBuilder notifyWatchers(boolean notifyWatchers) {
+            this.notifyWatchers = notifyWatchers;
+
+            return this;
+        }
+
         private PagePayload build() {
             Storage storage = new Storage();
             storage.setValue(this.content);
@@ -428,6 +442,9 @@ class HttpRequestFactory {
                 versionContainer.setNumber(this.version);
                 if (this.versionMessage != null) {
                     versionContainer.setMessage(this.versionMessage);
+                }
+                if (!this.notifyWatchers) {
+                    versionContainer.setMinorEdit(true);
                 }
                 pagePayload.setVersion(versionContainer);
             }

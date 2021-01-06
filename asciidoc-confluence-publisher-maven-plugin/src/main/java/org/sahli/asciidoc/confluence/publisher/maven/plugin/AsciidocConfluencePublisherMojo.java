@@ -128,6 +128,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "proxyPassword")
     private String proxyPassword;
 
+    @Parameter(property = PREFIX + "notifyWatchers")
+    private boolean notifyWatchers;
+
     @Parameter
     private Map<String, Object> attributes;
 
@@ -161,7 +164,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
                 ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.maxRequestsPerSecond, this.username, this.password);
                 ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage, this.notifyWatchers);
                 confluencePublisher.publish();
             }
         } catch (Exception e) {

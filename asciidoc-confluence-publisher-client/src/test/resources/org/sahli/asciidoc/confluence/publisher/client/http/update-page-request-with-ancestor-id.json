@@ -8,7 +8,8 @@
   ],
   "version": {
     "number": 2,
-    "message": "version message"
+    "message": "version message",
+    "minorEdit": true
   },
   "body": {
     "storage": {

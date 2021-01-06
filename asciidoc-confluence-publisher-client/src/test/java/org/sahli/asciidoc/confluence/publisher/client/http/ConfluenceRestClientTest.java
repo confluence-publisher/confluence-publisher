@@ -110,7 +110,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2, "Version Message");
+        confluenceRestClient.updatePage("123", "1", "Hello", "Content", 2, "Version Message", false);
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPut.class));
@@ -183,7 +183,7 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()));
+        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()), true);
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPost.class));

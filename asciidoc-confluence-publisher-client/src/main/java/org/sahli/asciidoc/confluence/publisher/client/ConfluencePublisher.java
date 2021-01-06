@@ -58,16 +58,18 @@ public class ConfluencePublisher {
     private final ConfluenceClient confluenceClient;
     private final ConfluencePublisherListener confluencePublisherListener;
     private final String versionMessage;
+    private final boolean notifyWatchers;
 
     public ConfluencePublisher(ConfluencePublisherMetadata metadata, PublishingStrategy publishingStrategy, OrphanRemovalStrategy orphanRemovalStrategy,
                                ConfluenceClient confluenceClient, ConfluencePublisherListener confluencePublisherListener,
-                               String versionMessage) {
+                               String versionMessage, boolean notifyWatchers) {
         this.metadata = metadata;
         this.publishingStrategy = publishingStrategy;
         this.orphanRemovalStrategy = orphanRemovalStrategy;
         this.confluenceClient = confluenceClient;
         this.confluencePublisherListener = confluencePublisherListener != null ? confluencePublisherListener : new NoOpConfluencePublisherListener();
         this.versionMessage = versionMessage;
+        this.notifyWatchers = notifyWatchers;
     }
 
     public void publish() {
@@ -187,7 +189,7 @@ public class ConfluencePublisher {
         if (notSameHash(existingContentHash, newContentHash) || !existingPage.getTitle().equals(page.getTitle())) {
             this.confluenceClient.deletePropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
             int newPageVersion = existingPage.getVersion() + 1;
-            this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion, this.versionMessage);
+            this.confluenceClient.updatePage(contentId, ancestorId, page.getTitle(), content, newPageVersion, this.versionMessage, this.notifyWatchers);
             this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
             this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, newPageVersion));
         }
@@ -210,7 +212,7 @@ public class ConfluencePublisher {
                 if (existingAttachmentHash != null) {
                     this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
                 }
-                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath));
+                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
                 this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
             }

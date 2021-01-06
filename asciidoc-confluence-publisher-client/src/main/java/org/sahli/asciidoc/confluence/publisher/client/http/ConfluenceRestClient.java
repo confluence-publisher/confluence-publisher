@@ -102,8 +102,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage) {
-        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion, versionMessage);
+    public void updatePage(String contentId, String ancestorId, String title, String content, int newVersion, String versionMessage, boolean notifyWatchers) {
+        HttpPut updatePageRequest = this.httpRequestFactory.updatePageRequest(contentId, ancestorId, title, content, newVersion, versionMessage, notifyWatchers);
         sendRequestAndFailIfNot20x(updatePageRequest);
     }
 
@@ -146,8 +146,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent) {
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent);
+    public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
         sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
             closeInputStream(attachmentContent);
 

@@ -1,0 +1,13 @@
+- if (option? :collapsible)
+  ac:structured-macro ac:name="expand"
+    - if title?
+      ac:parameter ac:name="title" #{title}
+    ac:rich-text-body
+      = content
+- else
+    ac:structured-macro ac:name="tip"
+      - if title?
+        ac:parameter ac:name="title"
+          =title
+      ac:rich-text-body
+        =content

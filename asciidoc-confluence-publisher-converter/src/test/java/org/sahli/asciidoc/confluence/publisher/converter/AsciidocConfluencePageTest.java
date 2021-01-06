@@ -527,6 +527,80 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithExampleBlock_returnsConfluencePageContentWithTipAdmonition() {
+        // arrange
+        String adocContent = "====\n" +
+                "Content\n" +
+                "====";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"tip\">" +
+                "<ac:rich-text-body><p>Content</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithExampleBlockWithTitle_returnsConfluencePageContentWithTipAdmonitionWithTitle() {
+        // arrange
+        String adocContent = ".Title\n" +
+                "====\n" +
+                "Content\n" +
+                "====";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"tip\">" +
+                "<ac:parameter ac:name=\"title\">Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Content</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCollapsibleExampleBlock_returnsConfluencePageContentWithExpandMacro() {
+        // arrange
+        String adocContent = "[%collapsible]\n" +
+                "====\n" +
+                "Collapsed Content\n" +
+                "====";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"expand\">" +
+                "<ac:rich-text-body><p>Collapsed Content</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithCollapsibleExampleBlockWithTitle_returnsConfluencePageContentWithExpandMacroAndTitle() {
+        // arrange
+        String adocContent = ".Title\n" +
+                "[%collapsible]\n" +
+                "====\n" +
+                "Collapsed Content\n" +
+                "====";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"expand\">" +
+                "<ac:parameter ac:name=\"title\">Title</ac:parameter>" +
+                "<ac:rich-text-body><p>Collapsed Content</p></ac:rich-text-body>" +
+                "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithAllPossibleSectionLevels_returnsConfluencePageContentWithAllSectionHavingCorrectMarkup() {
         // arrange
         String adocContent = "= Title level 0\n\n" +

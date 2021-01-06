@@ -1,0 +1,47 @@
+= Additional Features
+
+== Collapsible Example Blocks
+
+AsciiDoc collapsible example blocks are translated to Confluence with help of the expand macro.
+
+[listing]
+....
+[%collapsible]
+====
+This content is revealed when the label is clicked.
+====
+....
+
+[%collapsible]
+====
+This content is revealed when the label is clicked.
+====
+
+
+An optional block title can be specified:
+
+[listing]
+....
+.Toggle Me
+[%collapsible]
+====
+This content is revealed when the "Toggle Me" label is clicked.
+====
+....
+
+.Toggle Me
+[%collapsible]
+====
+This content is revealed when the "Toggle Me" label is clicked.
+====
+
+[NOTE]
+====
+Non-collapsible example blocks are currently converted to a tip admonition, since Confluence does not provide any
+specified example element.
+====
+
+[NOTE]
+====
+Using the `open` option on collapsible expand blocks is currently not supported.
+====

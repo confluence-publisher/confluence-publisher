@@ -14,9 +14,11 @@ pipeline {
         label 'docker'
     }
     environment {
-        DOCKER_COORDS = 'mindcurv/confluence-publisher'
         DOCKER_REG_CREDS_ID = 'docker.io'
         TRY_COUNT = 5
+        AWS_REGISTRY = '736549184051.dkr.ecr.eu-central-1.amazonaws.com'
+        DOCKER_COORDS = "${env.AWS_REGISTRY}/confluence-publisher"
+	
     }
     parameters {
         booleanParam(name: 'DO_CLEAN', defaultValue: true, description: 'Whether or not to clean the workspace.')
@@ -70,16 +72,10 @@ pipeline {
         stage('Publish') {
             when { expression { params.DO_PUBLISH } }
             steps {
-                withCredentials([
-                        usernamePassword(credentialsId: env.DOCKER_REG_CREDS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
-                ]) {
+                    sh "aws ecr get-login-password --region ${env.AWS_PROD_ECR_PRIVATE_REGION} | docker login --username AWS --password-stdin $AWS_REGISTRY"
                     sh "docker tag ${env.DOCKER_COORDS}:${env.BUILD_VERSION} ${env.DOCKER_COORDS}:latest"
-                    sh 'echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin'
                     sh "docker push ${env.DOCKER_COORDS}:latest"
-                    sh 'echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin'
                     sh "docker push ${env.DOCKER_COORDS}:${env.BUILD_VERSION}"
-                    sh 'docker logout'
-                }
             }
         }
     }

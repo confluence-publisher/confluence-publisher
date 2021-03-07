@@ -22,7 +22,7 @@ The following secret environment variables have to be set on the build server:
 
 | Name                    | Description                                                | Value                                           |
 | ----------------------- |------------------------------------------------------------| ------------------------------------------------|
-| CODE_SIGNING_ID         | id of key pair (see gpg)                                   | BD2E698F (changes for each new key pair)        |	
+| CODE_SIGNING_ID         | id of key pair (see gpg)                                   | FD2EA172 (changes for each new key pair)        |	
 | CODE_SIGNING_IV         | initialization vector for key pair encryption              | (defined at key pair generation)                |
 | CODE_SIGNING_KEY        | encryption key for key pair encryption                     | (defined at key pair generation)                |	
 | CODE_SIGNING_PASSWORD	  | private key password                                       | (defined at key pair generation)                |	

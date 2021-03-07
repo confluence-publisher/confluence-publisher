@@ -5,12 +5,20 @@ image:https://coveralls.io/repos/github/alainsahli/confluence-publisher/badge.sv
 = Confluence Publisher
 
 The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
-to be published to a Confluence space.
+to be published to a Confluence space. It supports a "docs-as-code" approach.
 
 It converts the resulting AsciiDoc HTML output to XHTML compatible with
 Confluence, manages included resources as Confluence attachments and ensures that only content modified since the last
 publication is again re-published.
 
+== Vision and Scope
+
+The Confluence Publisher shall support writing conceptual and technical documentation such as design/architecture/product
+documentation. In doing so, it tries to balance a useful feature set with acceptable maintenance efforts for the software
+itself.
+
+As a consequence, the Confluence Publisher does neither aim to support every concept from AsciiDoc nor every feature or 
+macro found in Confluence.
 
 == Documentation
 
@@ -18,7 +26,11 @@ The documentation of the current release version is published to https://conflue
 
 == Contributing
 
-Please see the link:CONTRIBUTING.md[contribution guide] for instructions on how to build the Confluence Publisher locally and what to check before sending a pull request.
+Contributions are highly appreciated. In order to avoid lost efforts, consider first opening an issue describing
+your idea/requirement and discuss whether the feature fits the vision and scope of the Confluence Publisher.
+
+Please see the link:CONTRIBUTING.md[contribution guide] for instructions on how to build the Confluence Publisher 
+locally and what to check before sending a pull request. 
 
 == Acknowledgments
 

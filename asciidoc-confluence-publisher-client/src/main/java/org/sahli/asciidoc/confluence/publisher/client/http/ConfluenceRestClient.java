@@ -66,12 +66,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, null, disableSslVerification, maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, username, password);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification), maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String password) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties), maxRequestsPerSecond, username, password);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
@@ -390,7 +390,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient(ProxyConfiguration proxyConfiguration, boolean disableSslVerification) {
+    private static CloseableHttpClient defaultHttpClient(ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
@@ -399,6 +399,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
+
+        if (enableHttpClientSystemProperties) {
+            builder.useSystemProperties();
+        }
 
         if (proxyConfiguration != null) {
             if (proxyConfiguration.proxyHost() != null) {

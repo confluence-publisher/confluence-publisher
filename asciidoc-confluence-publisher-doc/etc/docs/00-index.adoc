@@ -144,6 +144,16 @@ When relying on Maven support for encrypted credentials using the `serverId` con
   signed certificates.
 | optional (defaults to `false`)
 
+| enableHttpClientSystemProperties
+| Defines whether to enable support for configuring the underlying HTTP client using system properties passed to Maven.
+  Useful for configuring custom keys and trust stores for SSL.
+  +
+  +
+  _Note:_ see https://hc.apache.org/httpcomponents-client-4.5.x/current/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html[HTTP client documentation]
+  for supported system properties. Also, mixing `skipSslVerification` or the `proxy`-related configuration options with
+  `enableHttpClientSystemProperties` is currently not supported.
+| optional (defaults to `false`, only supported for Maven plugin)
+
 | maxRequestsPerSecond
 | Defines the number (positive integer or double) of REST API calls to execute within a second.
 | optional (defaults to no rate limit)

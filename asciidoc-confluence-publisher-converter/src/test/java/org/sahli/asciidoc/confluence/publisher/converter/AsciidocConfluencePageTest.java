@@ -1587,6 +1587,44 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_codeCallouts() {
+        // arrange
+        String adocContent = "" +
+                "= Page\n" +
+                "\n" +
+                "[source,java]\n" +
+                "----\n" +
+                "public static void main(){\n" +
+                "    System.out.println(\"Hello world\"); //<1>\n" +
+                "} <2>\n" +
+                "----\n" +
+                "<1> Simple statement in java lang\n" +
+                "<2> Closing bracket\n" +
+                "\n" +
+                "[source,xml]\n" +
+                "----\n" +
+                "<div>some data</div> <!--1-->\n" +
+                "----\n" +
+                "<1> example of valid xml element\n" +
+                "\n" +
+                "Something else after\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<ac:structured-macro ac:name=\"code\"><ac:parameter ac:name=\"language\">java</ac:parameter><ac:plain-text-body><![CDATA[public static void main(){\n" +
+                "    System.out.println(\"Hello world\"); //(1)\n" +
+                "} (2)]]></ac:plain-text-body></ac:structured-macro>\n" +
+                "<div class=\"colist arabic\"><ol><li>Simple statement in java lang</li><li>Closing bracket</li></ol></div>\n" +
+                "<ac:structured-macro ac:name=\"code\"><ac:parameter ac:name=\"language\">xml</ac:parameter><ac:plain-text-body><![CDATA[<div>some data</div> <!--(1)-->]]></ac:plain-text-body></ac:structured-macro>\n" +
+                "<div class=\"colist arabic\"><ol><li>example of valid xml element</li></ol></div>\n" +
+                "<p>Something else after</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

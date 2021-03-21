@@ -156,6 +156,51 @@ public class MyCode {
 }
 ----
 
+== Callouts
+
+Callout are supported as well, but due to code blocks limitation in confluence it is highly advised to use guarded callouts (aka callout in comments)
+to render code blocks that are easy to copy with valid formatting:
+
+[listing,subs="none"]
+....
+[source,java,linenums]
+----
+public class MyCode { // <1>
+    System.out.println("Hello world!");// <2>
+} <3>
+----
+<1> standard definition of java class
+<2> good old hello world
+<3> this callout is an example of non-guarded. Code will be invalid if you copy it and paste in IDE
+....
+
+[source,java]
+----
+public class MyCode { //<1>
+    public static void main(String[] args){
+        System.out.println("Hello world!"); //<2>
+    }
+} <3>
+----
+<1> standard definition of java class
+<2> good old hello world
+<3> this callout is an example of non-guarded. Code will be invalid if you copy it and paste in IDE
+
+Guarded callouts in xml markup are supported as well
+[listing,subs="none"]
+....
+[source,xml]
+----
+&lt;hello>world&lt;/hello>&lt;!--1-->
+----
+<1> xml style of hello world
+....
+
+[source,xml]
+----
+<hello>world</hello><!--1-->
+----
+<1> xml style of hello world
 
 == Collapsed Source Blocks
 
@@ -191,8 +236,3 @@ AsciiDoc source highlighters (e.g. CodeRay) are not supported, in favor of using
 support of Confluence. Thus, any configured AsciiDoc source highlighter is automatically disabled when publishing to
 Confluence.
 
-
-[WARNING]
-====
-Other advanced features like listing file names or callouts are not supported.
-====

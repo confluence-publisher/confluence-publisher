@@ -1587,6 +1587,31 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_footnotes() {
+        // arrange
+        String adocContent = "" +
+                "= Page\n" +
+                "\n" +
+                "A statement.footnote:[Clarification about this statement.]\n" +
+                "\n" +
+                "A bold statement!footnote:disclaimer[Opinions are my own.]\n" +
+                "\n" +
+                "Another bold statement.footnote:disclaimer[]\n" +
+                "\n" +
+                "Unresolved clarification.footnote:myth[]";
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<p>A statement.<sup class=\"footnote\" title=\"View footnote.\">[<ac:link ac:anchor=\"_footnotedef_1\"><ac:plain-text-link-body><![CDATA[1]]></ac:plain-text-link-body></ac:link>]<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_footnoteref_1</ac:parameter></ac:structured-macro></sup></p>\n" +
+                "<p>A bold statement!<sup class=\"footnote\" title=\"View footnote.\">[<ac:link ac:anchor=\"_footnotedef_2\"><ac:plain-text-link-body><![CDATA[2]]></ac:plain-text-link-body></ac:link>]<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_footnote_disclaimer</ac:parameter></ac:structured-macro><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_footnoteref_2</ac:parameter></ac:structured-macro></sup></p>\n" +
+                "<p>Another bold statement.<sup class=\"footnoteref\" title=\"View footnote.\">[<ac:link ac:anchor=\"_footnotedef_2\"><ac:plain-text-link-body><![CDATA[2]]></ac:plain-text-link-body></ac:link>]</sup></p>\n" +
+                "<p>Unresolved clarification.<sup class=\"footnoteref\" style=\"color: rgb(255,0,0);\" title=\"Unresolved footnote reference.\">[myth]</sup></p><hr /><p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_footnotedef_1</ac:parameter></ac:structured-macro><ac:link ac:anchor=\"_footnoteref_1\"><ac:plain-text-link-body><![CDATA[1]]></ac:plain-text-link-body></ac:link>. Clarification about this statement.<br /><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_footnotedef_2</ac:parameter></ac:structured-macro><ac:link ac:anchor=\"_footnoteref_2\"><ac:plain-text-link-body><![CDATA[2]]></ac:plain-text-link-body></ac:link>. Opinions are my own.<br /></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

@@ -1,0 +1,7 @@
+hr
+p
+    - footnotes.each do |fn|
+      = anchor(footnote_id(fn.index))
+      = anchor_link(footnoteref_id(fn.index), fn.index)
+      |. #{fn.text}
+      br/

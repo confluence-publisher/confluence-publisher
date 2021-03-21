@@ -1,5 +1,20 @@
 = Additional Features
 
+== Footnotes
+
+Although footnotes is not a native construct in Confluence, they are supported and rendered as close as possible to
+default asciidoc html layout{_}footnote:[Although due to specifics of confluence links it looks more clumsy in edit mode
+and may produce some small visible space after the square brackets].
+
+[listing]
+....
+My sentence.footnote:[With footnote]
+....
+
+My sentence.footnote:[With footnote]
+
+As with regular asciidoc, footnotes can be turned off by defining `:nofootnotes:` attribute
+
 == Collapsible Example Blocks
 
 AsciiDoc collapsible example blocks are translated to Confluence with help of the expand macro.

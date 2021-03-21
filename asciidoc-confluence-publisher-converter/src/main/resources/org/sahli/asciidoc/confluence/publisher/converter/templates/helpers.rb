@@ -180,4 +180,37 @@ module Slim::Helpers
     end
   end
 
+  # generates confluence anchor macro
+  # @param name [String] id of anchor
+  def anchor(name)
+    %(<ac:structured-macro ac:name="anchor"><ac:parameter ac:name="">#{name}</ac:parameter></ac:structured-macro>)
+  end
+
+  # generates a link to confluence macro
+  # @param name [String] id of anchor
+  # @param body_text [String] text of generated link
+  def anchor_link(name, body_text)
+    %(<ac:link ac:anchor="#{name}"><ac:plain-text-link-body><![CDATA[#{body_text}]]></ac:plain-text-link-body></ac:link>)
+  end
+
+  ##
+  # @param index [Integer] the footnote's index.
+  # @return [String] footnote id to be used in a link.
+  def footnote_id(index = (attr :index))
+    %(_footnotedef_#{index})
+  end
+
+  ##
+  # @param index (see #footnote_id)
+  # @return [String] footnote anchor id
+  def footnoteref_id(index = (attr :index))
+    %(_footnoteref_#{index})
+  end
+
+  ## Surrounds passed block with strings
+  def surround(front, back = front)
+    [front, yield.chomp, back].join
+  end
+
+
 end

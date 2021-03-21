@@ -1,0 +1,14 @@
+- if type == :xref
+  - if attr :index
+    sup.footnoteref title="View footnote."
+      = surround '[', ']'
+        = anchor_link(footnote_id, (attr :index))
+  - else
+    sup.footnoteref style="color: rgb(255,0,0);" title="Unresolved footnote reference." [#{text}]
+- else
+  sup.footnote title="View footnote."
+    = surround '[', ']'
+      = anchor_link(footnote_id, (attr :index))
+    - if id
+      = anchor "_footnote_#{id}"
+    = anchor footnoteref_id

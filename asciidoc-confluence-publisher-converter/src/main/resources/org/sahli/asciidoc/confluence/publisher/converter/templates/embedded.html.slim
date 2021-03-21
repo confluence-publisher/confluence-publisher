@@ -3,3 +3,6 @@
     include _toc.html
 
 =content
+
+- unless !footnotes? || (attr? :nofootnotes)
+  include _footnotes.html

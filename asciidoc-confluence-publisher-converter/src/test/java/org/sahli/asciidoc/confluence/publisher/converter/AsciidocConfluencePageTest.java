@@ -1587,6 +1587,67 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_literalLine() {
+        // arrange
+        String adocContent = "" +
+                "= Page\n" +
+                "\n" +
+                "This is a paragraph\n" +
+                "\n" +
+                "  and this is literal\n" +
+                "  block of text\n" +
+                "\n" +
+                "Another regular paragraph goes here";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<p>This is a paragraph</p>\n" +
+                "<ac:structured-macro ac:name=\"noformat\"><ac:plain-text-body><![CDATA[and this is literal\n" +
+                "block of text]]></ac:plain-text-body></ac:structured-macro>\n" +
+                "<p>Another regular paragraph goes here</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_taskList() {
+        // arrange
+        String adocContent = "" +
+                "= Page\n" +
+                "\n" +
+                ".Title of task list\n" +
+                "- [ ] hello\n" +
+                "- [x] world\n" +
+                "- invalid task item with incomplete\n" +
+                "- [ ] mixed content\n" +
+                "\n" +
+                "  hello world\n" +
+                "\n" +
+                "- [x] another mixed content\n" +
+                "+\n" +
+                "[source]\n" +
+                "----\n" +
+                "example\n" +
+                "----\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<div class=\"cp-ulist-title\"><em>Title of task list</em></div><ac:task-list><ac:task>" +
+                "<ac:task-status>incomplete</ac:task-status><ac:task-body>hello</ac:task-body></ac:task>" +
+                "<ac:task><ac:task-status>complete</ac:task-status><ac:task-body>world</ac:task-body></ac:task>" +
+                "<ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>invalid task item with incomplete</ac:task-body></ac:task>" +
+                "<ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>mixed content<ac:structured-macro ac:name=\"noformat\"><ac:plain-text-body><![CDATA[hello world]]></ac:plain-text-body></ac:structured-macro></ac:task-body></ac:task>" +
+                "<ac:task><ac:task-status>complete</ac:task-status><ac:task-body>another mixed content<ac:structured-macro ac:name=\"code\"><ac:plain-text-body><![CDATA[example]]></ac:plain-text-body></ac:structured-macro></ac:task-body></ac:task>" +
+                "</ac:task-list>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

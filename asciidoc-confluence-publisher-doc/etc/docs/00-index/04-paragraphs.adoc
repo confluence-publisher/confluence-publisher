@@ -45,4 +45,4 @@ The title of a paragraph will rendered using a custom CSS class `cp-paragraph-ti
 ....
 
 .This the title of a paragraph
-The title of a paragraph will rendered using a custom CSS class `cp-paragraph-title`
+The title of a paragraph will be rendered using a custom CSS class `cp-paragraph-title`

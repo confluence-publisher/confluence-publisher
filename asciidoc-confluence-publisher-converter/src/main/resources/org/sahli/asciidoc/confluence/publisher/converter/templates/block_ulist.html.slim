@@ -1,9 +1,20 @@
 - if title?
   div class="cp-ulist-title"
     em =title
-ul
-  - items.each do |item|
-    li
-      =item.text
-      - if item.blocks?
-        =item.content
+- if (option? 'checklist')
+  ac:task-list
+    - items.each do |item|
+      ac:task
+        ac:task-status
+          = ((item.attr? :checked) ? 'complete' : 'incomplete')
+        ac:task-body
+          = item.text
+          - if item.blocks?
+            = item.content
+-else
+  ul
+    - items.each do |item|
+      li
+        =item.text
+        - if item.blocks?
+          =item.content

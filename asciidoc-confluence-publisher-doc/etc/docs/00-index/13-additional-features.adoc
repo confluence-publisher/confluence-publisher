@@ -45,3 +45,30 @@ specified example element.
 ====
 Using the `open` option on collapsible expand blocks is currently not supported.
 ====
+
+== Checklists
+
+Asciidoc's checklists are converted to Confluence task lists pretty natively with one limitation - non checklist items are
+converted to incomplete task.
+
+The reason is that Confluence don't support mixed list, so all items are either completed or incompleted task,
+while Asciidoc has reacher semantics and element in checklist can be a simple item that is not rendered
+as checked on unchecked.
+
+----
+
+- [ ] unchecked item
+- [x] checked item
+- non checkbox item, but in Confluence it's unchecked task
+- [x] mixed content is also supported
+
+ some literal block
+
+----
+
+- [ ] unchecked task
+- [x] checked task
+- non checkbox item, but in Confluence it's unchecked task
+- [x] mixed content is also supported
+
+ some literal block

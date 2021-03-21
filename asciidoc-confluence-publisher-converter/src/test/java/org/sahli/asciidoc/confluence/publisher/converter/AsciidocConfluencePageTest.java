@@ -1587,6 +1587,49 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_blockQuotes() {
+        // arrange
+        String adocContent = "" +
+                "= Page\n" +
+                "\n" +
+                "[quote, Abraham Lincoln, Address delivered at the dedication of the Cemetery at Gettysburg]\n" +
+                "____\n" +
+                "Four score and seven years ago our fathers brought forth\n" +
+                "on this continent a new nation...\n" +
+                "____\n" +
+                "\n" +
+                "[quote, Albert Einstein]\n" +
+                "A person who never made a mistake never tried anything new.\n" +
+                "\n" +
+                "____\n" +
+                "A person who never made a mistake never tried anything new.\n" +
+                "____\n" +
+                "\n" +
+                "[quote, Charles Lutwidge Dodgson, 'Mathematician and author, also known as https://en.wikipedia.org/wiki/Lewis_Carroll[Lewis Carroll]']\n" +
+                "____\n" +
+                "If you don't know where you are going, any road will get you there.\n" +
+                "____\n" +
+                "\n" +
+                "[quote, , Just a cite title]\n" +
+                "____\n" +
+                "Sample quote\n" +
+                "____\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<blockquote><p>Four score and seven years ago our fathers brought forth\n" +
+                "on this continent a new nation&#8230;&#8203;</p><cite>Abraham Lincoln, Address delivered at the dedication of the Cemetery at Gettysburg</cite></blockquote>\n" +
+                "<blockquote>A person who never made a mistake never tried anything new.<cite>Albert Einstein</cite></blockquote>\n" +
+                "<blockquote><p>A person who never made a mistake never tried anything new.</p></blockquote>\n" +
+                "<blockquote><p>If you don&#8217;t know where you are going, any road will get you there.</p><cite>Charles Lutwidge Dodgson, Mathematician and author, also known as <a href=\"https://en.wikipedia.org/wiki/Lewis_Carroll\">Lewis Carroll</a></cite></blockquote>\n" +
+                "<blockquote><p>Sample quote</p><cite>Just a cite title</cite></blockquote>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void attachments_asciiDocWithImage_returnsImageAsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "image::sunset.jpg[]";

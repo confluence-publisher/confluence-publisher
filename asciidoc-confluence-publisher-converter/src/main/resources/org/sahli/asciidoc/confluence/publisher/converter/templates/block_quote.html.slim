@@ -1,0 +1,12 @@
+blockquote
+  =content
+  - attribution = attr :attribution
+  - citetitle = attr :citetitle
+  - if attribution || citetitle
+    cite
+      - if attribution
+        |#{attribution}
+      - if citetitle
+        - if attribution
+          =", "
+        =citetitle

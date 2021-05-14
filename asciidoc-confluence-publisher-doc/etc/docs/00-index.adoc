@@ -184,6 +184,9 @@ When relying on Maven support for encrypted credentials using the `serverId` con
   be used as password.
   +
   +
+  _Note:_ when publishing to on-premise Confluence with an API token, leave the username empty ("").
+  +
+  +
   _Note:_ Overrules password defined by serverId, when set in conjunction with serverId
 | mandatory, if serverId is not specified
 

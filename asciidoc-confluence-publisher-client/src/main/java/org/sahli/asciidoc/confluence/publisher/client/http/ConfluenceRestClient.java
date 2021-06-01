@@ -242,7 +242,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
             List<ConfluencePage> nextChildPages = getNextChildPages(contentId, limit, start);
             childPages.addAll(nextChildPages);
 
-            start++;
+            start+=limit;
             fetchMore = nextChildPages.size() == limit;
         }
 

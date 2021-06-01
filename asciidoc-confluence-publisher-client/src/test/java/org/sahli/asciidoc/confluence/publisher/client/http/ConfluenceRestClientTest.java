@@ -292,7 +292,7 @@ public class ConfluenceRestClientTest {
         assertThat(childPages.size(), is(25));
         verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
-        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=25"));
     }
 
     @Test
@@ -314,7 +314,7 @@ public class ConfluenceRestClientTest {
         assertThat(childPages.size(), is(49));
         verify(httpClientMock, times(2)).execute(httpGetArgumentCaptor.capture());
         assertThat(httpGetArgumentCaptor.getAllValues().get(0).getURI().toString(), containsString("start=0"));
-        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=1"));
+        assertThat(httpGetArgumentCaptor.getAllValues().get(1).getURI().toString(), containsString("start=25"));
     }
 
     @Test

@@ -260,7 +260,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
             List<ConfluenceAttachment> nextAttachments = getNextAttachments(contentId, limit, start);
             attachments.addAll(nextAttachments);
 
-            start++;
+            start+=limit;
             fetchMore = nextAttachments.size() == limit;
         }
 

@@ -399,6 +399,26 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
+    public void sendRequest_withProvidedPasswordButNoUsername_setsCredentialsProvider() throws Exception {
+        // arrange
+        CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient("http://confluence.com", closeableHttpClient, null, "", "personalAccessToken");
+        HttpGet httpRequest = new HttpGet("http://confluence.com");
+        ArgumentCaptor<HttpRequestBase> httpRequestArgumentCaptor = ArgumentCaptor.forClass(HttpRequestBase.class);
+
+        // act
+        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+
+        // assert
+        verify(closeableHttpClient, times(1)).execute(httpRequestArgumentCaptor.capture());
+        HttpRequestBase httpRequestBase = httpRequestArgumentCaptor.getValue();
+
+        assertThat(httpRequestBase, is(httpRequest));
+        assertThat(httpRequestBase.getHeaders("Authorization").length, is(1));
+        assertThat(httpRequestBase.getFirstHeader("Authorization").getValue(), is("Bearer personalAccessToken"));
+    }
+
+    @Test
     public void sendRequest_withRateLimitEnabled_blocksBeforeSendingSecondRequest() {
         // arrange
         CloseableHttpClient closeableHttpClient = anyCloseableHttpClient();

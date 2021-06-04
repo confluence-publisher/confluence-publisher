@@ -61,26 +61,27 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     private final CloseableHttpClient httpClient;
     private final String username;
-    private final String password;
+    private final String passwordOrPersonalAccessToken;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, username, passwordOrPersonalAccessToken);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String password) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties), maxRequestsPerSecond, username, password);
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties), maxRequestsPerSecond, username,
+            passwordOrPersonalAccessToken);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String password) {
+    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
         this.rateLimiter = maxRequestsPerSecond != null ? RateLimiter.create(maxRequestsPerSecond) : null;
         this.username = username;
-        this.password = password;
+        this.passwordOrPersonalAccessToken = passwordOrPersonalAccessToken;
 
         this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
         configureObjectMapper();
@@ -218,7 +219,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
-        httpRequest.addHeader(AUTHORIZATION, basicAuthorizationHeaderValue(this.username, this.password));
+        httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
 
         if (this.rateLimiter != null) {
             this.rateLimiter.acquire(1);
@@ -416,7 +417,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
                     String proxyUsername = proxyConfiguration.proxyUsername();
                     String proxyPassword = proxyConfiguration.proxyPassword();
 
-                    builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, basicAuthorizationHeaderValue(proxyUsername, proxyPassword))));
+                    builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, authorizationHeaderValue(proxyUsername, proxyPassword))));
                 }
             }
         }
@@ -439,8 +440,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static String basicAuthorizationHeaderValue(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
+    private static String authorizationHeaderValue(String username, String password) {
+        if (username == null || username.isEmpty()) {
+            return "Bearer " + password;
+        } else {
+            return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
+        }
     }
 
 

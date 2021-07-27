@@ -14,6 +14,7 @@
 - configure private key password as `CODE_SIGNING_PASSWORD` secret variable in build server
 - configure key id as `CODE_SIGNING_ID` secret variable in build server
 - commit encrypted key pair `code-signing-key.asc.enc` (do **not** commit exported key pair in plain text)
+- publish public key to key server `gpg --send-keys --keyserver hkp://pgp.mit.edu <key-id>`
 
 
 ## Secret Environment Variables

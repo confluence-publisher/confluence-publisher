@@ -1236,7 +1236,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"174\" ac:width=\"56\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
         assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-diagram.png")), is(true));
     }
@@ -1251,7 +1251,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"174\" ac:width=\"56\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
     }
 

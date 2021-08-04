@@ -43,3 +43,32 @@ plantuml::../files/included-diagram.puml[]
 ....
 
 plantuml::../files/included-diagram.puml[]
+
+== C4-PlantUML
+
+https://github.com/plantuml-stdlib/C4-PlantUML[C4-PlantUML] diagrams are supported as well.
+
+----
+[plantuml, c4-diagram, png]
+....
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(personAlias, "Label", "Optional Description")
+Container(containerAlias, "Label", "Technology", "Optional Description")
+System(systemAlias, "Label", "Optional Description")
+
+Rel(personAlias, containerAlias, "Label", "Optional Technology")
+....
+----
+
+
+[plantuml, c4-diagram, png]
+....
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(personAlias, "Label", "Optional Description")
+Container(containerAlias, "Label", "Technology", "Optional Description")
+System(systemAlias, "Label", "Optional Description")
+
+Rel(personAlias, containerAlias, "Label", "Optional Technology")
+....

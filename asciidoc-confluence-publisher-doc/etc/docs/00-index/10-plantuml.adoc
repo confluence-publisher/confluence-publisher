@@ -62,7 +62,7 @@ Rel(personAlias, containerAlias, "Label", "Optional Technology")
 ----
 
 
-[plantuml, c4-diagram, svg]
+[plantuml, c4-diagram, png]
 ....
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 

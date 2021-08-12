@@ -647,6 +647,25 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
+    public void setPropertyByKeyRequest_withSpaceInKey_returnsHttpPostRequestWithUrlEncodedKey() throws Exception {
+        // arrange
+        String contentId = "1234";
+        String key = "key with space";
+        String value = "38495fsj98wgh";
+
+        // act
+        HttpPost setPropertyByKeyRequest = this.httpRequestFactory.setPropertyByKeyRequest(contentId, key, value);
+
+        // assert
+        assertThat(setPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property"));
+        assertThat(setPropertyByKeyRequest.getFirstHeader("Content-Type").getValue(), is(APPLICATION_JSON_UTF8));
+
+        String jsonPayload = inputStreamAsString(setPropertyByKeyRequest.getEntity().getContent(), UTF_8);
+        String expectedJsonPayload = fileContent(Paths.get(CLASS_LOCATION, "set-property-by-key-with-space-in-key-request-payload.json").toString(), UTF_8);
+        assertThat(jsonPayload, isSameJsonAs(expectedJsonPayload));
+    }
+
+    @Test
     public void getPropertyByKeyRequest_withValidParameters_returnsHttpGetRequest() {
         // arrange
         String contentId = "1234";
@@ -660,6 +679,19 @@ public class HttpRequestFactoryTest {
     }
 
     @Test
+    public void getPropertyByKeyRequest_withSpaceInKey_returnsHttpGetRequestWithUrlEncodedKey() {
+        // arrange
+        String contentId = "1234";
+        String key = "key with space";
+
+        // act
+        HttpGet getPropertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
+
+        // assert
+        assertThat(getPropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/key+with+space?expand=value"));
+    }
+
+    @Test
     public void deletePropertyByKeyRequest_withValidParameters_returnsHttpDeleteRequest() {
         // arrange
         String contentId = "1234";
@@ -670,6 +702,19 @@ public class HttpRequestFactoryTest {
 
         // assert
         assertThat(deletePropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/" + key));
+    }
+
+    @Test
+    public void deletePropertyByKeyRequest_withSpaceInKey_returnsHttpDeleteRequestWithUrlEncodedKey() {
+        // arrange
+        String contentId = "1234";
+        String key = "key with space";
+
+        // act
+        HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
+
+        // assert
+        assertThat(deletePropertyByKeyRequest.getURI().toString(), is(CONFLUENCE_REST_API_ENDPOINT + "/content/" + contentId + "/property/key+with+space"));
     }
 
     @Test

@@ -156,14 +156,7 @@ class HttpRequestFactory {
         assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
         assertMandatoryParameter(isNotBlank(title), "title");
 
-        String encodedTitle;
-        try {
-            encodedTitle = URLEncoder.encode(title, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Could not encode title", e);
-        }
-
-        String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + encodedTitle;
+        String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + urlEncode(title);
 
         return new HttpGet(searchQuery);
     }
@@ -261,14 +254,14 @@ class HttpRequestFactory {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(key), "key");
 
-        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + key + "?expand=value");
+        return new HttpGet(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + urlEncode(key) + "?expand=value");
     }
 
     public HttpDelete deletePropertyByKeyRequest(String contentId, String key) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(key), "key");
 
-        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + key);
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property/" + urlEncode(key));
     }
 
     public HttpPost setPropertyByKeyRequest(String contentId, String key, String value) {
@@ -277,7 +270,7 @@ class HttpRequestFactory {
         assertMandatoryParameter(isNotBlank(value), "value");
 
         PropertyPayload propertyPayload = new PropertyPayload();
-        propertyPayload.setKey(key);
+        propertyPayload.setKey(urlEncode(key));
         propertyPayload.setValue(value);
 
         HttpPost postRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/property");
@@ -310,7 +303,7 @@ class HttpRequestFactory {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(label), "label");
 
-        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label?name=" + label);
+        return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + contentId + "/label?name=" + urlEncode(label));
     }
 
     private static HttpPost addPageHttpPost(String confluenceRestApiEndpoint, PagePayload pagePayload) {
@@ -359,6 +352,14 @@ class HttpRequestFactory {
         }
 
         return multipartEntityBuilder.build();
+    }
+
+    private static String urlEncode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Could not url-encode value '" + value + "'", e);
+        }
     }
 
 

@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -152,7 +154,7 @@ public class AsciidocConfluencePage {
         String content = ASCIIDOCTOR.convert(adocContent, options);
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey),
-                collectAndReplaceAttachmentFileNames(attachmentCollector),
+                collectAndReplaceAttachmentFileNames(attachmentCollector, sourceEncoding),
                 unescapeCdataHtmlContent()
         );
 
@@ -163,9 +165,9 @@ public class AsciidocConfluencePage {
         return (content) -> replaceAll(content, CDATA_PATTERN, (matchResult) -> unescapeHtml(matchResult.group()));
     }
 
-    private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector) {
+    private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector, Charset sourceEncoding) {
         return (content) -> replaceAll(content, ATTACHMENT_PATH_PATTERN, (matchResult) -> {
-            String attachmentPath = matchResult.group(1);
+            String attachmentPath = urlDecode(matchResult.group(1), sourceEncoding);
             String attachmentFileName = deriveAttachmentName(attachmentPath);
 
             attachmentCollector.put(attachmentPath, attachmentFileName);
@@ -279,4 +281,13 @@ public class AsciidocConfluencePage {
                 .map(String::trim)
                 .collect(toList());
     }
+
+    private static String urlDecode(String value, Charset encoding) {
+        try {
+            return URLDecoder.decode(value, encoding.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Could not url-decode value '" + value + "'", e);
+        }
+    }
+
 }

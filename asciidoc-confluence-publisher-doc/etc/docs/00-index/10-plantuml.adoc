@@ -72,3 +72,48 @@ System(systemAlias, "Label", "Optional Description")
 
 Rel(personAlias, containerAlias, "Label", "Optional Technology")
 ....
+
+== Kroki.io
+
+The https://docs.asciidoctor.org/diagram-extension/latest/[asciidoctor-diagram] library used by Confluence Publisher is https://github.com/asciidoctor/asciidoctor-diagram/blob/master/docs/modules/ROOT/partials/advanced.adoc[configurable]. Through configuration options https://kroki.io[kroki.io] can be selected as an alternative diagramming service. This makes additional diagram types available to Confluence Publisher without having to install the required diagram specific image rendering software on the local machine.
+
+Interested in some Mermaid Gantt chart magic?
+
+[source,text]
+----
+[mermaid, mermaid-diagram-1, svg, server-url=https://kroki.io, server-type=kroki_io]
+....
+gantt
+    title A Gantt Diagram
+    dateFormat  YYYY-MM-DD
+    section Section
+    A task           :a1, 2014-01-01, 30d
+    Another task     :after a1, 20d
+    section Another
+    Task in sec      :2014-01-12, 12d
+    another task     :24d
+....
+----
+
+[mermaid, mermaid-diagram-1, svg, server-url=https://kroki.io, server-type=kroki_io]
+....
+gantt
+    title A Gantt Diagram
+    dateFormat  YYYY-MM-DD
+    section Section
+    A task           :a1, 2014-01-01, 30d
+    Another task     :after a1, 20d
+    section Another
+    Task in sec      :2014-01-12, 12d
+    another task     :24d
+....
+
+Attributes `server-url` and `server-type` can also be set in the document preamble to apply to all diagrams in the document.
+
+----
+= Page Title
+:server-url:  https://kroki.io
+:server-type: kroki_io
+----
+
+Set attributes `diagram-server-url` and `diagram-server-type` in the Maven `pom.xml` file or as parameters to the Docker command to enable  kroki.io globally for all Asciidoc pages.

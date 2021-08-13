@@ -116,4 +116,4 @@ Attributes `server-url` and `server-type` can also be set in the document preamb
 :server-type: kroki_io
 ----
 
-Set attributes `diagram-server-url` and `diagram-server-type` in the Maven `pom.xml` file or as parameters to the Docker command to enable  kroki.io globally for all Asciidoc pages.
+Set attributes `diagram-server-url` and `diagram-server-type` in the Maven `pom.xml` file or pass them as parameters to the Docker command to enable  the kroki.io diagramming service globally for all Asciidoc pages.

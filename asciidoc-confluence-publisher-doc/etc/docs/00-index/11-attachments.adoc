@@ -4,7 +4,7 @@ If an AsciiDoc file references a non-AsciiDoc file (e.g. a text file, PDF, ...) 
 added as an attachment to the corresponding Confluence page. Referenced non-AsciiDoc files are resolved relative to the
 location of the referencing AsciiDoc file.
 
-Attachment links may specify a label.
+Attachment links may specify a label:
 
 [listing]
 ....
@@ -14,7 +14,7 @@ link:../files/attachment.txt[Attachment]
 link:../files/attachment.txt[Attachment]
 
 
-If no label is specified, the attachment filename is used as the label.
+If no label is specified, the attachment filename is used as the label:
 
 [listing]
 ....
@@ -22,3 +22,12 @@ link:../files/attachment.txt[]
 ....
 
 link:../files/attachment.txt[]
+
+If the attachment filename contains special characters such as spaces, the attachment filename has to be URL-encoded:
+
+[listing]
+....
+link:../files/attachment%20with%20space%20in%20filename.txt[Attachment with space in filename]
+....
+
+link:../files/attachment%20with%20space%20in%20filename.txt[Attachment with space in filename]

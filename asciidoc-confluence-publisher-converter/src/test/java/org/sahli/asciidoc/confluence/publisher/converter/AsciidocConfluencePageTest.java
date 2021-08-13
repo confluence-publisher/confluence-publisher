@@ -1692,6 +1692,20 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void attachments_asciiDocWithAttachmentWithSpaceInName_returnsAttachmentWithPathAndName() {
+        // arrange
+        String adocContent = "link:attachment%20with%20space.txt[]";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        assertThat(asciidocConfluencePage.attachments().size(), is(1));
+        assertThat(asciidocConfluencePage.attachments(), hasEntry("attachment with space.txt", "attachment with space.txt"));
+    }
+
+    @Test
     public void keywords_singleKeyword_returnsSingleKeyword() {
         // arrange
         String adoc = "= Page Title\n"

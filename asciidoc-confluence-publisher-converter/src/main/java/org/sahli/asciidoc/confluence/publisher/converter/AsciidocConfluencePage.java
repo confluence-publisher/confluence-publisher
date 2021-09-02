@@ -17,8 +17,9 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.Attributes;
 import org.asciidoctor.Options;
-import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.ast.Document;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.io.BufferedReader;
@@ -134,11 +135,14 @@ public class AsciidocConfluencePage {
 
             Map<String, Object> userAttributesWithMaskedNullValues = maskNullWithEmptyString(userAttributes);
             Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributesWithMaskedNullValues);
-            String pageContent = convertedContent(asciidocContent, options, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey);
 
-            String pageTitle = pageTitle(asciidocContent, userAttributesWithMaskedNullValues, pageTitlePostProcessor);
+            Document document = ASCIIDOCTOR.load(asciidocContent, options);
 
-            List<String> keywords = keywords(asciidocContent);
+            String pageTitle = pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor);
+
+            String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey);
+
+            List<String> keywords = keywords(document);
 
             return new AsciidocConfluencePage(pageTitle, pageContent, attachmentCollector, keywords);
         } catch (Exception e) {
@@ -150,8 +154,8 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(String adocContent, Options options, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey) {
-        String content = ASCIIDOCTOR.convert(adocContent, options);
+    private static String convertedContent(Document document, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey) {
+        String content = document.convert();
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey),
                 collectAndReplaceAttachmentFileNames(attachmentCollector, sourceEncoding),
@@ -194,8 +198,8 @@ public class AsciidocConfluencePage {
         return stream(postProcessors).reduce(initialContent, (accumulator, postProcessor) -> postProcessor.apply(accumulator), unusedCombiner());
     }
 
-    private static String pageTitle(String pageContent, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor) {
-        return Optional.ofNullable(ASCIIDOCTOR.readDocumentHeader(pageContent).getDocumentTitle())
+    private static String pageTitle(Document document, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor) {
+        return Optional.ofNullable(document.getStructuredDoctitle())
                 .map(title -> title.getMain())
                 .map(title -> replaceUserAttributes(title, userAttributes))
                 .map((pageTitle) -> pageTitlePostProcessor.process(pageTitle))
@@ -211,18 +215,21 @@ public class AsciidocConfluencePage {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
-        Map<String, Object> attributes = new HashMap<>(userAttributes);
-        attributes.put("imagesoutdir", generatedAssetsTargetFolder.toString());
-        attributes.put("outdir", generatedAssetsTargetFolder.toString());
-        attributes.put("source-highlighter", "none");
+        Attributes attributes = Attributes.builder()
+                .attributes(userAttributes)
+                .attribute("imagesoutdir", generatedAssetsTargetFolder.toString())
+                .attribute("outdir", generatedAssetsTargetFolder.toString())
+                .attribute("source-highlighter", "none")
+                .build();
 
-        return OptionsBuilder.options()
+
+        return Options.builder()
                 .backend("xhtml5")
                 .safe(UNSAFE)
                 .baseDir(baseFolder.toFile())
                 .templateDirs(templatesFolder.toFile())
                 .attributes(attributes)
-                .get();
+                .build();
     }
 
     private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey) {
@@ -232,7 +239,8 @@ public class AsciidocConfluencePage {
 
             try {
                 String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()), sourceEncoding);
-                String referencedPageTitle = pageTitle(referencedPageContent, userAttributes, pageTitlePostProcessor);
+                Document referencedDocument = ASCIIDOCTOR.load(referencedPageContent, Options.builder().parseHeaderOnly(true).build());
+                String referencedPageTitle = pageTitle(referencedDocument, userAttributes, pageTitlePostProcessor);
 
                 /*
                     Currently the ri:space-key attribute is required in order
@@ -271,8 +279,8 @@ public class AsciidocConfluencePage {
         }
     }
 
-    private static List<String> keywords(String pageContent) {
-        String keywords = (String) ASCIIDOCTOR.readDocumentHeader(pageContent).getAttributes().get("keywords");
+    private static List<String> keywords(Document document) {
+        String keywords = (String) document.getAttribute("keywords");
         if (keywords == null) {
             return emptyList();
         }

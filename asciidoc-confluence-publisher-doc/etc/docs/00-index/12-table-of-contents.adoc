@@ -41,6 +41,39 @@ toc::[]
 
 The `toc::[]` macro must be surrounded by empty lines for the table of contents to be displayed.
 
+== Table of Contents (Title)
+
+A title for the Table of Contents can be specified as shown below.
+
+=== TOC Title - Option 1
+
+[listing]
+....
+= Page Title
+:toc: macro
+
+*My Table of Contents*
+
+toc::[]
+
+== Some Section
+....
+
+=== TOC Title - Option 2
+
+[listing]
+....
+= Page Title
+:toc: macro
+
+.My Table of Contents
+[%collapsible]
+====
+toc::[]
+====
+
+== Some Section
+....
 
 == Levels
 
@@ -55,8 +88,3 @@ customized using the `toclevels` attribute (for both default and macro mode):
 
 == Some Section
 ....
-
-[NOTE]
-====
-Specifying a title for the table of contents is currently not supported.
-====

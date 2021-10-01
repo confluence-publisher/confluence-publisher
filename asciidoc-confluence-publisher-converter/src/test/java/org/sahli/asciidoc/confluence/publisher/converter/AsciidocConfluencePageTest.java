@@ -187,6 +187,18 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void render_asciidocWithTopLevelHeaderWithHtmlCharacter_returnsConfluencePageWithPageTitleWithUnescapedHtmlCharacter() {
+        // arrange
+        String adoc = "= Page&title";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), emptyMap());
+
+        // assert
+        assertThat(asciiDocConfluencePage.pageTitle(), is("Page&title"));
+    }
+
+    @Test
     public void render_asciidocWithoutAttributes_returnsConfluencePageWithoutAttributes() {
         // arrange
         String adoc = prependTitle("Hello {user}");
@@ -1054,6 +1066,22 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"></ri:page>" +
+                "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
+                "</ac:link> to the target page.</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceToTargetPageWithHtmlCharacterInTitle_returnsConfluencePageWithLinkToReferencedPageByPageTitle() {
+        // arrange
+        Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
+        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page-with-reference-to-target-page-with-html-character-in-title.adoc");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
+
+        // assert
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target&amp;Page\" ri:space-key=\"TEST\"></ri:page>" +
                 "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
                 "</ac:link> to the target page.</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));

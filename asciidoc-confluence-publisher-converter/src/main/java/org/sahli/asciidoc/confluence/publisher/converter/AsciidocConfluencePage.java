@@ -138,8 +138,7 @@ public class AsciidocConfluencePage {
 
             Document document = ASCIIDOCTOR.load(asciidocContent, options);
 
-            String pageTitle = pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor);
-
+            String pageTitle = unescapeHtml(pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor));
             String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey);
 
             List<String> keywords = keywords(document);
@@ -202,7 +201,7 @@ public class AsciidocConfluencePage {
         return Optional.ofNullable(document.getStructuredDoctitle())
                 .map(title -> title.getMain())
                 .map(title -> replaceUserAttributes(title, userAttributes))
-                .map((pageTitle) -> pageTitlePostProcessor.process(pageTitle))
+                .map(pageTitle -> pageTitlePostProcessor.process(pageTitle))
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 

@@ -1,51 +1,9 @@
-= Table of Contents
-:toc:
+== Title for Table of Contents
 
-AsciiDoc table of contents are converted to the table of contents macro of Confluence. The table of contents displays
-the tree of sections for a specific page.
+Specifying a title for the table of contents using the `toc-title` attribute is currently not supported. Instead, when
+using the macro mode, a custom title can be emulated using arbitrary AsciiDoc markup.
 
-Table of contents can either be displayed at the very top of a page (default
-mode), or at a custom-defined location within the page (macro mode):
-
-
-== Table of Contents (Default)
-
-Displaying the table of contents at the top of a page can be done by specifying the `toc` AsciiDoc attribute:
-
-[listing]
-....
-= Page Title
-:toc:
-
-== Some Section
-....
-
-The `toc` attribute must follow the title without any additional empty line.
-
-
-== Table of Contents (Macro)
-
-Displaying the table of contents in any location other than the top of the page requires the `toc` AsciiDoc attribute
-to be set to `macro`. Once done, the table of content can be displayed in the requested location using the `toc::[]`
-macro:
-
-[listing]
-....
-= Page Title
-:toc: macro
-
-== Some Section
-
-toc::[]
-....
-
-The `toc::[]` macro must be surrounded by empty lines for the table of contents to be displayed.
-
-== Table of Contents (Title)
-
-A title for the Table of Contents can be specified as shown below.
-
-=== TOC Title - Option 1
+Custom table of contents title using some bold text:
 
 [listing]
 ....
@@ -59,7 +17,7 @@ toc::[]
 == Some Section
 ....
 
-=== TOC Title - Option 2
+Custom table of contents title using a collapsible block title:
 
 [listing]
 ....
@@ -67,24 +25,9 @@ toc::[]
 :toc: macro
 
 .My Table of Contents
-[%collapsible]
 ====
 toc::[]
 ====
-
-== Some Section
-....
-
-== Levels
-
-By default, sections of level 1 and 2 are contained in the table of contents. The number of levels displayed can be
-customized using the `toclevels` attribute (for both default and macro mode):
-
-[listing]
-....
-= Page Title
-:toc:
-:toclevels: 4
 
 == Some Section
 ....

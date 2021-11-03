@@ -43,7 +43,10 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 
@@ -137,6 +140,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter
     private Map<String, Object> attributes;
 
+    @Parameter(property = "attributesProperties")
+    private Properties attributesProperties;
+
     @Component(role = SecDispatcher.class, hint = "default")
     private DefaultSecDispatcher securityDispatcher;
 
@@ -153,7 +159,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath(), Charset.forName(this.sourceEncoding));
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
-            Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
+
+            Map<String, Object> attributes = getAttributes();
+
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
             if ((this.username == null) || (this.password == null)) {
@@ -179,6 +187,19 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
             throw new MojoExecutionException("Publishing to Confluence failed", e);
         }
+    }
+
+    private Map<String, Object> getAttributes() {
+        Properties attributesProperties = this.attributesProperties != null ? this.attributesProperties : new Properties();
+        Map<String, Object> attributesPropertiesMap = attributesProperties.entrySet().stream().collect(
+                Collectors.toMap(
+                        e -> String.valueOf(e.getKey()),
+                        e -> e.getValue(),
+                        (prev, next) -> next, HashMap::new
+                ));
+        Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
+        attributesPropertiesMap.putAll(attributes);
+        return attributesPropertiesMap;
     }
 
     private void applyUsernameAndPasswordFromSettings() throws MojoExecutionException {

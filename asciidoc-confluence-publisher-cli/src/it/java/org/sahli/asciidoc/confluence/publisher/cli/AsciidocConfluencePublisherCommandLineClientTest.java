@@ -68,7 +68,6 @@ public class AsciidocConfluencePublisherCommandLineClientTest {
                 "ancestorId",
                 "spaceKey",
                 "password",
-                "username",
                 "rootConfluenceUrl",
                 "asciidocRootFolder"
         );

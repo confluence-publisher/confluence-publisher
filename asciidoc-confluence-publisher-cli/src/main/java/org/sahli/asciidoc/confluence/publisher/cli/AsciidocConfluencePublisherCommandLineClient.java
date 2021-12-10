@@ -55,7 +55,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         ArgumentsParser argumentsParser = new ArgumentsParser();
         String rootConfluenceUrl = argumentsParser.mandatoryArgument("rootConfluenceUrl", args);
         boolean skipSslVerification = argumentsParser.optionalBooleanArgument("skipSslVerification", args).orElse(false);
-        String username = argumentsParser.mandatoryArgument("username", args);
+        String username = argumentsParser.optionalArgument("username", args).orElse(null);
         String password = argumentsParser.mandatoryArgument("password", args);
         String spaceKey = argumentsParser.mandatoryArgument("spaceKey", args);
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);

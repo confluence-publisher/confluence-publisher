@@ -1,7 +1,7 @@
 - if style == 'source'
   ac:structured-macro ac:name="code"
-    - if (confluence_supported_lang "#{source_lang}")
-      ac:parameter ac:name="language" #{source_lang}
+    - if (confluence_supported_lang "#{map_to_confluence_supported_lang source_lang}")
+      ac:parameter ac:name="language" #{map_to_confluence_supported_lang source_lang}
     - if title?
       ac:parameter ac:name="title" #{title}
     - if attr? :linenums

@@ -134,11 +134,36 @@ module Slim::Helpers
   def confluence_supported_lang(lang)
     supported = ['actionscript3','applescript','bash','c#','cpp','css',
                 'coldfusion','delphi','diff','erl','groovy',
-                'xml','java','jfx','js','php','perl',
+                'xml','java','jfx','js','matlab','php','perl',
                 'text','powershell','py','ruby','sql','sass',
                 'scala','vb','yml']
     supported.include? lang
   end
+
+  def map_to_confluence_supported_lang(lang)
+      # Mapping of Asciidoctor/highlight.js language names to Confluence language names
+      mapping = {
+        'actionscript' => 'actionscript3', 'as' => 'actionscript3',
+        'osascript' => 'applescript',
+        'sh' => 'bash', 'zsh' => 'bash',
+        'csharp' => 'c#', 'cs' => 'c#',
+        'hpp' => 'cpp', 'cc' => 'cpp', 'hh' => 'cpp', 'c++' => 'cpp', 'h++' => 'cpp', 'cxx' => 'cpp',  'hxx' => 'cpp',
+        'dpr' => 'delphi', 'dfm' => 'delphi', 'pas' => 'delphi', 'pascal' => 'delphi',
+        'patch' => 'diff',
+        'erlang' => 'erl',
+        'html' => 'xml', 'xhtml' => 'xml', 'rss' => 'xml', 'atom' => 'xml', 'xjb' => 'xml', 'xsd' => 'xml', 'xsl' => 'xml', 'plist' => 'xml', 'svg' => 'xml',
+        'jsp' => 'java',
+        'javascript' => 'js', 'jsx' => 'js', 'json' => 'js',
+        'pl' => 'perl', 'pm' => 'perl',
+        'plaintext' => 'text', 'txt' => 'text',
+        'ps' => 'powershell', 'ps1' => 'powershell',
+        'python' => 'py', 'gyp' => 'py',
+        'rb' => 'ruby', 'gemspec' => 'ruby', 'podspec' => 'ruby', 'thor' => 'ruby', 'irb' => 'ruby',
+        'vbnet' => 'vb', 'vbscript' => 'vb', 'vbs' => 'vb',
+        'yaml' => 'yml'
+      }
+      mapping[lang] || lang
+    end
 
   #--------------------------------------------------------
   # inline_anchor

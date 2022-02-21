@@ -21,6 +21,9 @@ import org.asciidoctor.Attributes;
 import org.asciidoctor.Options;
 import org.asciidoctor.ast.Document;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -28,6 +31,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -43,6 +49,17 @@ import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
@@ -158,10 +175,56 @@ public class AsciidocConfluencePage {
         String postProcessedContent = postProcessContent(content,
                 replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey),
                 collectAndReplaceAttachmentFileNames(attachmentCollector, sourceEncoding),
+                fixHtmlTags(),
                 unescapeCdataHtmlContent()
         );
 
         return postProcessedContent;
+    }
+
+    private static Function<String, String> fixHtmlTags() {
+        return content -> {
+            // Add ac namespace
+            final String header = "<root xmlns:ac=\"ac\" xmlns:ri=\"ri\">";
+            // Add space in case of empty content ... (forbid <root ... />)
+            final String footer = " </root>";
+            String xmlCompliantNamespace = header + content + footer;
+            try (
+                Reader reader = new StringReader(xmlCompliantNamespace);
+                StringWriter writer = new StringWriter()
+            ) {
+                final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                documentBuilderFactory.setNamespaceAware(true);
+                final org.w3c.dom.Document document = documentBuilderFactory.newDocumentBuilder()
+                                                                            .parse(new InputSource(reader));
+                XPath xpath = XPathFactory.newInstance().newXPath();
+                renameSpanWithClass(document, xpath, "underline", "u");
+                renameSpanWithClass(document, xpath, "line-through", "s");
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                transformer.setOutputProperty(OutputKeys.INDENT, "no");
+                transformer.transform(new DOMSource(document), new StreamResult(writer));
+                // Strip ac namesapce
+                final String newContent = writer.toString();
+                return newContent.substring(header.length(),newContent.length()-footer.length());
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to fixHtmlTag, maybe xml is malformed", e);
+            }
+        };
+    }
+
+    private static void renameSpanWithClass(final org.w3c.dom.Document document,
+                                            final XPath xpath,
+                                            final String classValue, final String newTagName)
+        throws XPathExpressionException
+    {
+        NodeList nodes = (NodeList) xpath.evaluate("//span[contains(@class, '" + classValue + "')]", document,
+            XPathConstants.NODESET);
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Element elt = (Element)nodes.item(i);
+            elt.removeAttribute("class");
+            document.renameNode(elt, "", newTagName);
+        }
     }
 
     private static Function<String, String> unescapeCdataHtmlContent() {

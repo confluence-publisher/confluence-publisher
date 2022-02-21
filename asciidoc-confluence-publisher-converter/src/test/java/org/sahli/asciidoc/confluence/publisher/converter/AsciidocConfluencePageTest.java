@@ -695,7 +695,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<a href=\"http://www.foo.ch\"><ac:image ac:height=\"200\" ac:width=\"300\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a>";
+        String expectedContent = "<a href=\"http://www.foo.ch\"><ac:image ac:height=\"200\" ac:width=\"300\"><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image></a>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -706,7 +706,7 @@ public class AsciidocConfluencePageTest {
 
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
-        String expectedContent = "<ac:image ac:title=\"A beautiful sunset\" ac:alt=\"A beautiful sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image><div class=\"cp-image-title\"><em>Figure 1. A beautiful sunset</em></div>";
+        String expectedContent = "<ac:image ac:alt=\"A beautiful sunset\" ac:title=\"A beautiful sunset\"><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image><div class=\"cp-image-title\"><em>Figure 1. A beautiful sunset</em></div>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -719,7 +719,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -732,7 +732,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1065,7 +1065,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
 
         // assert
-        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"></ri:page>" +
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"/>" +
                 "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
                 "</ac:link> to the target page.</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -1081,7 +1081,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
 
         // assert
-        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target&amp;Page\" ri:space-key=\"TEST\"></ri:page>" +
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target&amp;Page\" ri:space-key=\"TEST\"/>" +
                 "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
                 "</ac:link> to the target page.</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -1098,8 +1098,8 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePageTwo = newAsciidocConfluencePage(asciidocPageTwo, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageTwo), "TEST");
 
         // assert
-        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\" ri:space-key=\"TEST\">"));
-        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\" ri:space-key=\"TEST\">"));
+        assertThat(asciidocConfluencePageOne.content(), containsString("<ri:page ri:content-title=\"Page Two\" ri:space-key=\"TEST\"/>"));
+        assertThat(asciidocConfluencePageTwo.content(), containsString("<ri:page ri:content-title=\"Page One\" ri:space-key=\"TEST\"/>"));
     }
 
     @Test
@@ -1112,7 +1112,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment></ac:link></p>";
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"/></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1126,7 +1126,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment><ac:plain-text-link-body><![CDATA[Bar]]></ac:plain-text-link-body></ac:link></p>";
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"/><ac:plain-text-link-body><![CDATA[Bar]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1204,7 +1204,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"></ri:attachment></ac:link></p>";
+        String expectedContent = "<p><ac:link><ri:attachment ri:filename=\"foo.txt\"/></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1264,7 +1264,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"embedded-diagram.png\"/></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
         assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-diagram.png")), is(true));
     }
@@ -1279,7 +1279,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"included-diagram.png\"/></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
     }
 
@@ -1364,7 +1364,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1380,7 +1380,7 @@ public class AsciidocConfluencePageTest {
         // assert
         String expectedContent = "<p>Some text " +
                 "<ac:image ac:alt=\"GitHub mascot\">" +
-                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"></ri:url>" +
+                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"/>" +
                 "</ac:image></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
         assertThat(asciidocConfluencePage.attachments().size(), is(0));
@@ -1396,8 +1396,8 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:image ac:title=\"GitHub mascot\" ac:alt=\"GitHub mascot\">" +
-                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"></ri:url>" +
+        String expectedContent = "<ac:image ac:alt=\"GitHub mascot\" ac:title=\"GitHub mascot\">" +
+                "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"/>" +
                 "</ac:image>" +
                 "<div class=\"cp-image-title\"><em>Figure 1. GitHub mascot</em></div>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -1413,7 +1413,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><ac:image ac:height=\"20\" ac:width=\"16\" ac:alt=\"Sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a> with inline image</p>";
+        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><ac:image ac:alt=\"Sunset\" ac:height=\"20\" ac:width=\"16\"><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image></a> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1426,7 +1426,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"/></ac:image> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1764,6 +1764,33 @@ public class AsciidocConfluencePageTest {
         assertThat(asciidocConfluencePage.keywords().size(), is(2));
         assertThat(asciidocConfluencePage.keywords(), hasItem("foo"));
         assertThat(asciidocConfluencePage.keywords(), hasItem("bar"));
+    }
+
+    @Test
+    public void attachments_asciiDocWithUnderline() {
+        // arrange
+        String adocContent = "normal1 [.underline]#underlined# normal2";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<p>normal1 <u>underlined</u> normal2</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void attachments_asciiDocWithUnderline_multiline() {
+        // arrange
+        String adocContent = "normal1 [.underline]#underlined line1\n" +
+            "underlined line2# normal2";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<p>normal1 <u>underlined line1\nunderlined line2</u> normal2</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
     private static String prependTitle(String content) {

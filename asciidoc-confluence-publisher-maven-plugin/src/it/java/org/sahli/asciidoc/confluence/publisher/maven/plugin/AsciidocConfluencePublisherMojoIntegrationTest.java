@@ -20,7 +20,6 @@ import io.restassured.specification.RequestSpecification;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -28,8 +27,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.sahli.asciidoc.confluence.publisher.maven.plugin.testutils.ConfluenceServer;
+import org.sahli.asciidoc.confluence.publisher.maven.plugin.testutils.ConfluenceServerSetup;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
@@ -60,10 +60,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     private static final String POM_PROPERTIES = "pomProperties";
     private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
 
-    @BeforeClass
-    public static void exposeConfluenceServerPortOnHost() {
-        Testcontainers.exposeHostPorts(8090);
-    }
+    private static final ConfluenceServer confluenceServer = ConfluenceServerSetup.setupContainer();
 
     @Parameters(name = "{0}")
     public static Object[] parameters() {
@@ -194,7 +191,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() throws Exception {
         // arrange
-        withReverseProxyEnabled("localhost", 8443, "host.testcontainers.internal", 8090, (proxyPort) -> {
+        withReverseProxyEnabled("localhost", 8443, "host.testcontainers.internal", confluenceServer.port, (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
             properties.put("rootConfluenceUrl", "https://localhost:" + proxyPort);
             properties.put("skipSslVerification", "true");
@@ -229,7 +226,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:8090");
+            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:" + confluenceServer.port);
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -250,7 +247,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, "proxy-user", "proxy-password", (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:8090");
+            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:" + confluenceServer.port);
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -476,11 +473,11 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     private static String page(String pageId) {
-        return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
+        return "http://localhost:" + confluenceServer.port + "/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
     }
 
     private static String childPages() {
-        return "http://localhost:8090/rest/api/content/327706/child/page";
+        return "http://localhost:" + confluenceServer.port + "/rest/api/content/327706/child/page";
     }
 
     private static String pageIdBy(String title) {
@@ -491,7 +488,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
     private static Map<String, String> mandatoryProperties() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("rootConfluenceUrl", "http://localhost:8090");
+        properties.put("rootConfluenceUrl", "http://localhost:" + confluenceServer.port);
         properties.put("spaceKey", "CPI");
         properties.put("ancestorId", "327706");
         properties.put("username", "confluence-publisher-it");

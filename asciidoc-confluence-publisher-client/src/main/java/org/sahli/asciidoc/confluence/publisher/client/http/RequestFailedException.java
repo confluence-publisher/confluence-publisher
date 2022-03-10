@@ -16,6 +16,9 @@
 
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
@@ -36,29 +39,44 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 public class RequestFailedException extends RuntimeException {
 
     RequestFailedException(HttpRequest request, HttpResponse response, Exception reason) {
-        super("request failed (" +
-                "request: " + requestLog(request) + ", " +
-                "response: " + responseLog(response) +
-                (reason != null ? ", reason: '" + reason.getMessage() + "'" : "") +
-                ")", reason);
+        super(buildMessage(request, response, reason), reason);
     }
 
-    private static String requestLog(HttpRequest request) {
-        String requestLine = request.getRequestLine().getMethod() + " " + request.getRequestLine().getUri();
+    private static String buildMessage(HttpRequest request, HttpResponse response, Exception reason) {
         String requestBody = requestBody(request);
+        String responseBody = response != null ? responseBody(response) : "<none>";
 
-        return requestLine + " " + requestBody;
+        String requestLog = statusLine(request) + " " + requestBody;
+        String responseLog = response != null ? statusLine(response) + " " + responseBody : responseBody;
+        String reasonLog = reason != null ? reason.getMessage() : "<none>";
+
+        return reasonFromResponseOrDefault(responseBody, "request failed") + " (" +
+                "request: " + requestLog + ", " +
+                "response: " + responseLog + ", " +
+                "reason: " + reasonLog +
+                ")";
     }
 
-    private static String responseLog(HttpResponse response) {
-        if (response == null) {
-            return "<none>";
+    private static String reasonFromResponseOrDefault(String responseBody, String defaultReason) {
+        try {
+            JsonNode responseNode = new ObjectMapper().readTree(responseBody);
+            JsonNode messageNode = responseNode.get("message");
+
+            if (messageNode != null && messageNode.asText() != null) {
+                return messageNode.asText();
+            }
+        } catch (JsonProcessingException ignored) {
         }
 
-        String statusLine = response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase();
-        String responseBody = responseBody(response);
+        return defaultReason;
+    }
 
-        return statusLine + " " + responseBody;
+    private static String statusLine(HttpRequest request) {
+        return request.getRequestLine().getMethod() + " " + request.getRequestLine().getUri();
+    }
+
+    private static String statusLine(HttpResponse response) {
+        return response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase();
     }
 
     private static String requestBody(HttpRequest request) {

@@ -168,7 +168,7 @@ public class ConfluencePublisher {
         String contentId;
 
         try {
-            contentId = this.confluenceClient.getPageByTitle(spaceKey, page.getTitle());
+            contentId = this.confluenceClient.getPageByTitle(spaceKey, ancestorId, page.getTitle());
             updatePage(contentId, ancestorId, page);
         } catch (NotFoundException e) {
             String content = fileContent(page.getContentFilePath(), UTF_8);

@@ -152,11 +152,12 @@ class HttpRequestFactory {
         return new HttpDelete(this.confluenceRestApiEndpoint + "/content/" + attachmentId);
     }
 
-    HttpGet getPageByTitleRequest(String spaceKey, String title) {
+    HttpGet getPageByTitleRequest(String spaceKey, String ancestorId, String title) {
         assertMandatoryParameter(isNotBlank(spaceKey), "spaceKey");
+        assertMandatoryParameter(isNotBlank(ancestorId), "ancestorId");
         assertMandatoryParameter(isNotBlank(title), "title");
 
-        String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + urlEncode(title);
+        String searchQuery = this.confluenceRestApiEndpoint + "/content?spaceKey=" + spaceKey + "&title=" + urlEncode(title) + "&expand=ancestors";
 
         return new HttpGet(searchQuery);
     }

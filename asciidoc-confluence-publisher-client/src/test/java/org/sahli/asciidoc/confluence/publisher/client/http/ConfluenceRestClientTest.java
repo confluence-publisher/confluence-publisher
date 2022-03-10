@@ -130,37 +130,70 @@ public class ConfluenceRestClientTest {
     }
 
     @Test
-    public void getPageByTitle_withValidParameters_sendsGetRequestAndReturnsFirstResultId() throws Exception {
+    public void getPageByTitle_withValidParameters_sendsGetRequestAndReturnsSingleMatchingContentIdBelowAncestorId() throws Exception {
         // arrange
-        String expectedContentId = "1234";
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [{\"id\":\"" + expectedContentId + "\"}], \"size\": 1}", 200);
+        String expectedContentId = "2345";
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [{\"id\":\"" + expectedContentId + "\", \"ancestors\":[{\"id\":\"1234\"}]}], \"size\": 1}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        String contentId = confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
+        String contentId = confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
+
+        // assert
+        assertThat(contentId, is(expectedContentId));
+    }
+
+    @Test
+    public void getPageByTitle_multipleResultsButOnlyOneBelowProvidedAncestorId_returnsContentIdOfPageBelowProvidedAncestorId() throws Exception {
+        // arrange
+        String expectedContentId = "2345";
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [" +
+                "{\"id\":\"" + expectedContentId + "\", \"ancestors\":[{\"id\":\"root\"},{\"id\":\"1234\"}]}, " +
+                "{\"id\":\"9876\", \"ancestors\": [{\"id\":\"root\"},{\"id\":\"8765\"}]}" +
+                "]}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
+
+        // act
+        String contentId = confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
 
         // assert
         assertThat(contentId, is(expectedContentId));
     }
 
     @Test(expected = NotFoundException.class)
-    public void getPageByTitle_withEmptyResult_throwsPageNotFoundException() throws Exception {
+    public void getPageByTitle_multipleResultsButNoneBelowProvidedAncestorId_throwsPageNotFoundException() throws Exception {
         // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 0}", 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [" +
+                "{\"id\":\"2345\", \"ancestors\":[{\"id\":\"root\"},{\"id\":\"8765\"}]}," +
+                "{\"id\":\"9876\", \"ancestors\":[{\"id\":\"root\"},{\"id\":\"8765\"}]}" +
+                "]}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act + assert
-        confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
+        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void getPageByTitle_withEmptyResult_throwsPageNotFoundException() throws Exception {
+        // arrange
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{}", 200);
+        ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
+
+        // act + assert
+        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
     }
 
     @Test(expected = MultipleResultsException.class)
-    public void getPageByTitle_withMultipleResults_throwsMultipleResultsException() throws Exception {
+    public void getPageByTitle_withMultipleResultsUnderProvidedAncestorId_throwsMultipleResultsException() throws Exception {
         // arrange
-        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 2}", 200);
+        CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [" +
+                "{\"id\":\"2345\", \"ancestors\":[{\"id\":\"root\"},{\"id\":\"1234\"}]}," +
+                "{\"id\":\"9876\", \"ancestors\":[{\"id\":\"root\"},{\"id\":\"1234\"}]}" +
+                "]}", 200);
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act + assert
-        confluenceRestClient.getPageByTitle("~personalSpace", "Some title");
+        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
     }
 
     @Test
@@ -514,17 +547,7 @@ public class ConfluenceRestClientTest {
         // assert
         this.expectedException.expect(RequestFailedException.class);
         this.expectedException.expectCause(is(equalTo(exception)));
-        this.expectedException.expectMessage("request failed (" +
-                "request: POST http://confluence.com/rest/api/content " +
-                "{\"title\":\"Hello\"," +
-                "\"space\":{\"key\":\"~personalSpace\"}," +
-                "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
-                "\"ancestors\":[{\"id\":\"123\"}]," +
-                "\"version\":{\"number\":1,\"message\":\"Version Message\"}," +
-                "\"type\":\"page\"}, " +
-                "response: <none>, " +
-                "reason: 'expected'" +
-                ")");
+        this.expectedException.expectMessage(containsString("expected"));
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
@@ -538,17 +561,7 @@ public class ConfluenceRestClientTest {
 
         // assert
         this.expectedException.expect(RequestFailedException.class);
-        this.expectedException.expectMessage("request failed (" +
-                "request: POST http://confluence.com/rest/api/content " +
-                "{\"title\":\"Hello\"," +
-                "\"space\":{\"key\":\"~personalSpace\"}," +
-                "\"body\":{\"storage\":{\"value\":\"Content\",\"representation\":\"storage\"}}," +
-                "\"ancestors\":[{\"id\":\"123\"}]," +
-                "\"version\":{\"number\":1,\"message\":\"Version Message\"}," +
-                "\"type\":\"page\"}, " +
-                "response: 404 reason " +
-                "{\"some\": \"json\"}" +
-                ")");
+        this.expectedException.expectMessage(containsString("{\"some\": \"json\"}"));
 
         // act
         confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");

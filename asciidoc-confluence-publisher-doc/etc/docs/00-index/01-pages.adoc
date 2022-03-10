@@ -8,9 +8,14 @@ must contain a top-level document title which will be used as the Confluence pag
 = Document Title
 ....
 
-According to the restrictions of Confluence, document titles must be unique within the Confluence space the
+[NOTE]
+====
+According to the restrictions of Confluence, document titles must be unique within the entire Confluence space the
 documentation is published to. The AsciiDoc file name itself is not reflected in Confluence.
 
+Use the support for prefixes and suffixes to ensure uniqueness when publishing to the same Confluence space from
+multiple sources, or when publishing to a Confluence space that already contains manually maintained pages.
+====
 
 == Keywords / Labels
 

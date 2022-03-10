@@ -59,6 +59,16 @@ file path resolution.
 
 [NOTE]
 ====
+While the Confluence Publisher does not modify or delete pages outside the page tree structure defined by the ancestor
+id, it is recommended to use a separate Confluence space for published documentation and avoid manually adding or
+editing additional pages in that Confluence space.
+
+In case multiple sources publish to the same Confluence space, ensure that each source uses its own ancestor id and that
+these ancestor ids are not in any parent-child relation.
+====
+
+[NOTE]
+====
 Currently, the ordering of child pages cannot be influenced due to missing support in the Confluence REST API (see
 https://jira.atlassian.com/browse/CRA-1276 for information and voting)
 ====

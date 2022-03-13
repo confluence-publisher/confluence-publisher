@@ -22,7 +22,7 @@ macro found in Confluence.
 
 == Documentation
 
-The documentation of the current release version is published to https://confluence-publisher.atlassian.net/[].
+The documentation of the current release version is published to https://confluence-publisher.atlassian.net/wiki/spaces/CPD/overview[https://confluence-publisher.atlassian.net].
 
 == Contributing
 

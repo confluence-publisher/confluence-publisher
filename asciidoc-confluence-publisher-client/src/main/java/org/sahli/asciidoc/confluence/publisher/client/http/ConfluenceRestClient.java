@@ -19,6 +19,7 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.RateLimiter;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -46,12 +47,12 @@ import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.StreamSupport.stream;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
-
-import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * @author Alain Sahli
@@ -72,7 +73,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties), maxRequestsPerSecond, username,
-            passwordOrPersonalAccessToken);
+                passwordOrPersonalAccessToken);
     }
 
     public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
@@ -115,25 +116,40 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
-    public String getPageByTitle(String spaceKey, String title) throws NotFoundException, MultipleResultsException {
-        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
+    public String getPageByTitle(String spaceKey, String ancestorId, String title) throws NotFoundException, MultipleResultsException {
+        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, ancestorId, title);
 
         return sendRequestAndFailIfNot20x(pageByTitleRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
+            JsonNode responseNode = parseJsonResponse(response);
+            List<JsonNode> pageNodes = findPagesUnderAncestor(responseNode, ancestorId);
 
-            int numberOfResults = jsonNode.get("size").asInt();
-            if (numberOfResults == 0) {
+            if (pageNodes.size() == 0) {
                 throw new NotFoundException();
             }
 
-            if (numberOfResults > 1) {
+            if (pageNodes.size() > 1) {
                 throw new MultipleResultsException();
             }
 
-            String contentId = extractIdFromJsonNode(jsonNode.withArray("results").elements().next());
+            String contentId = extractIdFromJsonNode(pageNodes.get(0));
 
             return contentId;
         });
+    }
+
+    private List<JsonNode> findPagesUnderAncestor(JsonNode jsonNode, String ancestorId) {
+        return stream(jsonNode.withArray("results").spliterator(), false)
+                .filter(resultNode -> hasAncestor(resultNode, ancestorId))
+                .collect(toList());
+    }
+
+    private boolean hasAncestor(JsonNode resultNode, String ancestorId) {
+        if (resultNode.has("ancestors")) {
+            return stream(resultNode.withArray("ancestors").spliterator(), false)
+                    .anyMatch(ancestorNode -> ancestorNode.get("id").asText().equals(ancestorId));
+        }
+
+        return false;
     }
 
     @Override
@@ -243,7 +259,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
             List<ConfluencePage> nextChildPages = getNextChildPages(contentId, limit, start);
             childPages.addAll(nextChildPages);
 
-            start+=limit;
+            start += limit;
             fetchMore = nextChildPages.size() == limit;
         }
 
@@ -261,7 +277,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
             List<ConfluenceAttachment> nextAttachments = getNextAttachments(contentId, limit, start);
             attachments.addAll(nextAttachments);
 
-            start+=limit;
+            start += limit;
             fetchMore = nextAttachments.size() == limit;
         }
 

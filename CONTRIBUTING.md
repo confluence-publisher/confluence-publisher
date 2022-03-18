@@ -39,7 +39,7 @@ Please see the following (incomplete) list of guidelines applied to the code bas
 
 The following tools need to be installed for building the Confluence Publisher:
 
-- JDK 8 
+- JDK 11 
 - Graphviz
 
 

@@ -2,8 +2,7 @@ version: 2
 jobs:
   build:
     machine:
-      java:
-        version: openjdk8
+      image: ubuntu-2004:202111-02
 
     steps:
       - checkout
@@ -12,12 +11,16 @@ jobs:
           key: confluence-publisher-{{ checksum "pom.xml" }}
 
       - run:
+          name: Log Java version
+          command: java -version
+
+      - run:
           name: Set version (tag build only)
           command: if [ -n "$CIRCLE_TAG" ]; then ./mvnw versions:set -DnewVersion=$CIRCLE_TAG -nsu; fi
 
       - run:
           name: Install prerequisites
-          command: sudo apt-get install graphviz
+          command: sudo apt-get update -y && sudo apt-get install graphviz
 
       - run:
           name: Execute build and unit tests

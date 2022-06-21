@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim-bullseye
+FROM openjdk:11.0.11-jre-slim-buster
 
 RUN apt-get update && \
   apt-get install -y graphviz fonts-dejavu && \

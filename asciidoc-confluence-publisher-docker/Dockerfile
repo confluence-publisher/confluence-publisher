@@ -1,4 +1,4 @@
-FROM openjdk:openjdk:11.0.15-jre
+FROM openjdk:11.0.15-jre
 
 RUN apk add --update graphviz ttf-dejavu
 

@@ -1,6 +1,8 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:11.0.15-jre-slim-bullseye
 
-RUN apk add --update graphviz ttf-dejavu
+RUN apt-get update && \
+  apt-get install -y graphviz fonts-dejavu && \
+  apt-get clean
 
 ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
 ADD ./publish.sh /usr/local/bin

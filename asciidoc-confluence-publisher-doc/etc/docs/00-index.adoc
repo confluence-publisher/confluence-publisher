@@ -70,7 +70,7 @@ these ancestor ids are not in any parent-child relation.
 [NOTE]
 ====
 Currently, the ordering of child pages cannot be influenced due to missing support in the Confluence REST API (see
-https://jira.atlassian.com/browse/CRA-1276 for information and voting)
+https://jira.atlassian.com/browse/CONFCLOUD-40101 and https://jira.atlassian.com/browse/CONFSERVER-40101 for information and voting)
 ====
 
 

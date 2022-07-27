@@ -185,17 +185,18 @@ When relying on Maven support for encrypted credentials using the `serverId` con
   +
   +
   _Note:_ Overrules username defined by serverId, when set in conjunction with serverId
-| mandatory, if serverId is not specified
+| optional (unspecified behaves like an empty string, see password)
 
 | password
-| The password of the user to use for publishing.
+| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
   +
   +
   _Note:_ when publishing to Confluence Cloud, an API token generated via the corresponding Atlassian account has to
   be used as password.
   +
   +
-  _Note:_ when publishing to on-premise Confluence with an API token, leave the username empty ("").
+  _Note:_ when publishing to on-premise Confluence with an API token, leave the username empty ("") or unspecified
+  (for Maven plugin)
   +
   +
   _Note:_ Overrules password defined by serverId, when set in conjunction with serverId

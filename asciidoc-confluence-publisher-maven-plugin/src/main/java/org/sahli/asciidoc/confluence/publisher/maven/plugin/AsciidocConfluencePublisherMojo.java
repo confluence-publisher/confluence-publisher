@@ -156,7 +156,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 
-            if ((this.username == null) || (this.password == null)) {
+            if ((this.password == null)) {
                 applyUsernameAndPasswordFromSettings();
             }
 

@@ -9,10 +9,11 @@
     ac:link ac:anchor=(anchor_name target || id)
       ac:plain-text-link-body
         <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
-- when :ref
+- when :ref, :bibref
   ac:structured-macro ac:name="anchor"
     ac:parameter ac:name=""
-     =(anchor_name target || id)
+      =(anchor_name target || id)
+  ="[#{anchor_name target || id}]" if type == :bibref
 - when :link
   - if uriish? target
     a href=target

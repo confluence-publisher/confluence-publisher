@@ -1535,6 +1535,29 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInternalCrossReferenceToBibliographyAnchor_returnsConfluencePageContentWithInternalCrossReferenceToBibliographyAnchor() {
+        // arrange
+        String adocContent = "" +
+                "[bibliography]\n" +
+                "== References\n\n" +
+                "* [[[pp]]] Entry1\n\n" +
+                "* [[[gof,gang]]] Entry2\n\n" +
+                "Cross reference to <<pp>> and <<gof>>";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "" +
+                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_references</ac:parameter></ac:structured-macro>References</h1><ul>" +
+                "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">pp</ac:parameter></ac:structured-macro>[pp] Entry1</li>" +
+                "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">gof</ac:parameter></ac:structured-macro>[gof] Entry2</li></ul>\n" +
+                "<p>Cross reference to <ac:link ac:anchor=\"pp\"><ac:plain-text-link-body><![CDATA[[pp]]]></ac:plain-text-link-body></ac:link>" +
+                " and <ac:link ac:anchor=\"gof\"><ac:plain-text-link-body><![CDATA[[gang]]]></ac:plain-text-link-body></ac:link></p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsAttribute_returnsConfluencePageContentWithTableOfContentsMacro() {
         // arrange
         String adocContent = "" +

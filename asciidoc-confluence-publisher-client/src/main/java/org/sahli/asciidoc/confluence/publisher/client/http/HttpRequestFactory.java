@@ -58,6 +58,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
 
 /**
  * @author Alain Sahli
+ * @author Michael Wirth
  */
 class HttpRequestFactory {
 
@@ -337,7 +338,6 @@ class HttpRequestFactory {
     private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        multipartEntityBuilder.setCharset(UTF_8);
 
         InputStreamBody inputStreamBody;
         if (isNotBlank(attachmentFileName)) {

@@ -29,7 +29,7 @@
     <description>A set of libraries and plugins that allows the publication of asciidoc documentation to atlassian
         confluence
     </description>
-    <url>https://github.com/alainsahli/confluence-publisher</url>
+    <url>https://github.com/confluence-publisher/confluence-publisher</url>
 
     <licenses>
         <license>
@@ -58,9 +58,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/alainsahli/confluence-publisher.git</connection>
-        <developerConnection>scm:git:ssh://github.com:alainsahli/confluence-publisher.git</developerConnection>
-        <url>https://github.com/alainsahli/confluence-publisher.git</url>
+        <connection>scm:git:git://github.com/confluence-publisher/confluence-publisher.git</connection>
+        <developerConnection>scm:git:ssh://github.com:confluence-publisher/confluence-publisher.git</developerConnection>
+        <url>https://github.com/confluence-publisher/confluence-publisher.git</url>
     </scm>
 
     <properties>

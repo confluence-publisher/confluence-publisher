@@ -353,7 +353,7 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <configuration>
-                    <repoToken>dubhyzNPv8kQb8DQrTM5Iiv7Mgyq4azFX</repoToken>
+                    <repoToken>${env.COVERALLS_TOKEN}</repoToken>
                 </configuration>
             </plugin>
             <plugin>

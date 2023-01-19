@@ -23,8 +23,14 @@ jobs:
           command: sudo apt-get update -y && sudo apt-get install graphviz
 
       - run:
-          name: Execute build and unit tests
-          command: ./mvnw clean install jacoco:report coveralls:report -nsu
+          name: Execute build and unit tests (feature branch or pull requests only)
+          command: |
+            if [ "$CIRCLE_BRANCH" != "master" ] && [ -z "$CIRCLE_TAG" ]; then ./mvnw clean install -nsu; fi
+
+      - run:
+          name: Execute build and unit tests (master or tag builds only)
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw clean install jacoco:report coveralls:report -nsu; fi
 
       - run:
           name: Execute integration tests

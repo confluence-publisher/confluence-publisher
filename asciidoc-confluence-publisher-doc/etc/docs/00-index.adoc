@@ -89,7 +89,7 @@ The Confluence Publisher is configured with the help of a Maven plugin. A typica
       <version><!-- insert version here --></version>
       <configuration>
         <asciidocRootFolder>etc/docs</asciidocRootFolder>
-        <sourceEncoding>UTF-8<sourceEncoding> <!-- default -->
+        <sourceEncoding>UTF-8</sourceEncoding> <!-- default -->
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>
         <skipSslVerification>false</skipSslVerification>
         <maxRequestsPerSecond>10</maxRequestsPerSecond>

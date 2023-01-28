@@ -33,6 +33,7 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
 
     private static final String ADOC_FILE_EXTENSION = ".adoc";
     private static final String INCLUDE_FILE_PREFIX = "_";
+    private static final String IGNORE_DOT_FILE_SUFFIX = ".";
 
     private final AsciidocPagesStructure structure;
     private final Charset sourceEncoding;
@@ -93,8 +94,14 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
         return Paths.get(path.toString().substring(0, path.toString().lastIndexOf('.')));
     }
 
+    /**
+     * Ensure the file ends with the '.adoc' suffix and does not start with a hidden dot '.' prefix.
+     * @param file
+     * @return
+     */
     private static boolean isAdocFile(Path file) {
-        return file.toString().endsWith(ADOC_FILE_EXTENSION);
+        return file.toString().endsWith(ADOC_FILE_EXTENSION)
+                && !file.getFileName().toString().startsWith(IGNORE_DOT_FILE_SUFFIX);
     }
 
     private static boolean isIncludeFile(Path file) {

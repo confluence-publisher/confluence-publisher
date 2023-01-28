@@ -52,6 +52,11 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
         assertThat(indexPage, is(not(nullValue())));
         assertThat(indexPage.children().size(), is(2));
 
+        // .asciidoctorconfig
+        AsciidocPage asciiDoctorConfig = asciidocPageByPath(structure.pages(), documentationRootFolder.resolve(".asciidoctorconfig"));
+        assertThat(asciiDoctorConfig, is(not(nullValue())));
+        assertThat(asciiDoctorConfig.children().size(), is(0));
+
         AsciidocPage subPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one.adoc"));
         assertThat(subPageOne, is(not(nullValue())));
         assertThat(subPageOne.children().size(), is(1));
@@ -59,6 +64,11 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
         AsciidocPage subPageTwo = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-two.adoc"));
         assertThat(subPageTwo, is(not(nullValue())));
         assertThat(subPageTwo.children().size(), is(0));
+
+        // index .asciidoctorconfig.adoc
+        AsciidocPage asciiDoctorConfigAdoc = asciidocPageByPath(structure.pages(), documentationRootFolder.resolve("index/.asciidoctorconfig.adoc"));
+        assertThat(asciiDoctorConfigAdoc, is(not(nullValue())));
+        assertThat(asciiDoctorConfigAdoc.children().size(), is(0));
 
         AsciidocPage subSubPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one/sub-sub-page-one.adoc"));
         assertThat(subSubPageOne, is(not(nullValue())));

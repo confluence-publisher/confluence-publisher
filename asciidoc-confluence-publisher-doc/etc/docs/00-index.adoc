@@ -57,6 +57,8 @@ to the location of the referencing AsciiDoc file. See <<00-index/02-includes.ado
 <<00-index/06-images.adoc#, Images>> and <<00-index/10-plantuml.adoc#, PlantUML>> for more information about resource
 file path resolution.
 
+The publisher will ignore any '.adoc' files which start with a '.' prefix. This is intended to ensure '.asciidoctorconfig.adoc' files will not be included in the files published to confluence.
+
 [NOTE]
 ====
 While the Confluence Publisher does not modify or delete pages outside the page tree structure defined by the ancestor

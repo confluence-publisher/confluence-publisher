@@ -17,6 +17,9 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.log.LogHandler;
+import org.asciidoctor.log.LogRecord;
+import org.asciidoctor.log.Severity;
 import org.asciidoctor.Attributes;
 import org.asciidoctor.Options;
 import org.asciidoctor.ast.Document;
@@ -76,6 +79,14 @@ public class AsciidocConfluencePage {
 
     static {
         ASCIIDOCTOR.requireLibrary("asciidoctor-diagram");
+        ASCIIDOCTOR.registerLogHandler(new LogHandler() {
+            @Override
+            public void log(LogRecord logRecord) {
+                if (logRecord.getSeverity().compareTo(Severity.WARN) >= 0) {
+                    throw new RuntimeException(logRecord.getMessage());
+                }
+            }
+        });
     }
 
     private final String pageTitle;

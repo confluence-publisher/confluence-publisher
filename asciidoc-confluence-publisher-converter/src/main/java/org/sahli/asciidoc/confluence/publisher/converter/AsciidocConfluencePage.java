@@ -82,7 +82,7 @@ public class AsciidocConfluencePage {
         ASCIIDOCTOR.registerLogHandler(new LogHandler() {
             @Override
             public void log(LogRecord logRecord) {
-                if (logRecord.getSeverity().compareTo(Severity.WARN) >= 0) {
+                if (logRecord.getSeverity().compareTo(Severity.ERROR) >= 0) {
                     throw new RuntimeException(logRecord.getMessage());
                 }
             }

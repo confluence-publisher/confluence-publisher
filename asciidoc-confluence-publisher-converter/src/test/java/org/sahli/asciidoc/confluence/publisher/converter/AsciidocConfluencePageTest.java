@@ -1790,19 +1790,23 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void unterminated_literalBlock_throwsRuntimeException() {
+    public void renderConfluencePage_asciiDocErrorLogWhileRendering_throwsRuntimeException() {
         // arrange
-        String adoc = "= Page Title\n\n"
-                + "....\n"
-                + "foo\n";
-        AsciidocPage asciidocPage = asciidocPage(adoc);
+        String adocRelyingOnMissingSequenceDiagramBinary = "" +
+                "[seqdiag#ex-seq-diag,ex-seq-diag,svg]\n" +
+                "....\n" +
+                "seqdiag {\n" +
+                "  webserver -> processor;\n" +
+                "}\n" +
+                "....\n";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocRelyingOnMissingSequenceDiagramBinary));
 
         // assert
         this.expectedException.expect(RuntimeException.class);
         this.expectedException.expectMessage("failed to create confluence page for asciidoc content in");
 
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
     }
 
     private static String prependTitle(String content) {

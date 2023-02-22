@@ -1789,6 +1789,26 @@ public class AsciidocConfluencePageTest {
         assertThat(asciidocConfluencePage.keywords(), hasItem("bar"));
     }
 
+    @Test
+    public void renderConfluencePage_asciiDocErrorLogWhileRendering_throwsRuntimeException() {
+        // arrange
+        String adocRelyingOnMissingSequenceDiagramBinary = "" +
+                "[seqdiag#ex-seq-diag,ex-seq-diag,svg]\n" +
+                "....\n" +
+                "seqdiag {\n" +
+                "  webserver -> processor;\n" +
+                "}\n" +
+                "....\n";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocRelyingOnMissingSequenceDiagramBinary));
+
+        // assert
+        this.expectedException.expect(RuntimeException.class);
+        this.expectedException.expectMessage("failed to create confluence page for asciidoc content in");
+
+        // act
+        newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+    }
+
     private static String prependTitle(String content) {
         if (!content.startsWith("= ")) {
             content = "= Default Page Title\n\n" + content;

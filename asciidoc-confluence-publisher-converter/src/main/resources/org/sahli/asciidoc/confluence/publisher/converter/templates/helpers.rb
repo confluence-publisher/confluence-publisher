@@ -193,13 +193,18 @@ module Slim::Helpers
 
   # checks if xref is referring to adoc (internal cross references not yet supported)
   def cross_page_xref? str
-    str.end_with? ".html"
+    str.include? ".html"
+  end
+
+  # checks if xref is referring to an anchor on another adoc
+  def cross_page_anchor_xref? str
+    (str.include? ".html") && (str.include? "#")
   end
 
   # removes leading hash from anchor targets
   def anchor_name str
-    if str.start_with? "#"
-      str[1..str.length]
+    if str.include? "#"
+      str[(str.index('#')+1)..str.length]
     else
       str
     end

@@ -1,6 +1,11 @@
 - case type
 - when :xref
-  - if cross_page_xref? target
+  - if cross_page_anchor_xref? target
+    ac:link ac:anchor=(anchor_name target || id)
+      ri:page ri:content-title=target
+      ac:plain-text-link-body
+        <![CDATA[#{(xref_text || %([#{attr :refid}]))}]]>
+  - elsif cross_page_xref? target
     ac:link
       ri:page ri:content-title=target
       ac:plain-text-link-body

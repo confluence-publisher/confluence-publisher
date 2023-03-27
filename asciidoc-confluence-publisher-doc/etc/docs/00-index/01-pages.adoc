@@ -43,6 +43,17 @@ referencing AsciiDoc file. All referenced AsciiDoc files must be placed below th
 <<01-pages.adoc#, Link to Pages>>
 <<../00-index/06-images.adoc#, Link to Images>>
 
+Links to other pages may also point to anchors within those pages. Either defined inline anchors or implicit anchor generated from headlines.
+
+[listing]
+....
+<<01-pages.adoc#paragraph-a], Link to Pages with inline anchor>>
+<<../00-index/06-images.adoc#_inline_images, Link to Images with headline anchor>>
+....
+
+<<01-pages.adoc#paragraph-a, Link to Pages with inline anchor>>
+<<../00-index/06-images.adoc#_inline_images, Link to Images with headline anchor>>
+
 
 == Links within Pages
 
@@ -86,9 +97,3 @@ Paragraph with internal cross-reference to <<section-b>>
 === Section with Custom Id
 
 Paragraph with internal cross-reference to <<section-b>>
-
-
-[WARNING]
-====
-Links from one page to an inline anchor within another page are currently not supported.
-====

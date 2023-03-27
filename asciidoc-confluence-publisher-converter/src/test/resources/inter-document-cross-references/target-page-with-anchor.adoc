@@ -1,0 +1,6 @@
+= Target Page
+
+This is the target page with an:
+
+[[_anchor]]
+Anchor

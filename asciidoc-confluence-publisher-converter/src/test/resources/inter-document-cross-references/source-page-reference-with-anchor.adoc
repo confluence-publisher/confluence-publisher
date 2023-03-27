@@ -1,0 +1,3 @@
+= Source Page
+
+This is a <<target-page.adoc#_anchor,reference with anchor>> to the target page.

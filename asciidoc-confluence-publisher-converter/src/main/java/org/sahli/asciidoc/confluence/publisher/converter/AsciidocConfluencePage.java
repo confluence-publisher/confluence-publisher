@@ -17,21 +17,18 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.jruby.AsciidoctorJRuby;
+import org.asciidoctor.jruby.internal.JRubyRuntimeContext;
 import org.asciidoctor.log.LogHandler;
 import org.asciidoctor.log.LogRecord;
 import org.asciidoctor.log.Severity;
 import org.asciidoctor.Attributes;
 import org.asciidoctor.Options;
 import org.asciidoctor.ast.Document;
+import org.jruby.Ruby;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -75,10 +72,56 @@ public class AsciidocConfluencePage {
     private static final Pattern ATTACHMENT_PATH_PATTERN = compile("<ri:attachment ri:filename=\"(.*?)\"");
     private static final Pattern PAGE_TITLE_PATTERN = compile("<ri:page ri:content-title=\"(.*?)\"");
 
-    private static final Asciidoctor ASCIIDOCTOR = create();
+    private static final Asciidoctor ASCIIDOCTOR = getAsciidoctorJRuby();
+
+    private static Asciidoctor getAsciidoctorJRuby() {
+        Asciidoctor asciidoctor = null;
+        //TODO: gemPath configurable 
+        String gemPath = null;
+        if (gemPath == null) {
+            asciidoctor = AsciidoctorJRuby.Factory.create();
+        } else {
+            // Replace Windows path separator to avoid paths with mixed \ and /.
+            // This happens for instance when setting: <gemPath>${project.build.directory}/gems-provided</gemPath>
+            // because the project's path is converted to string.
+            String normalizedGemPath = (File.separatorChar == '\\') ? gemPath.replaceAll("\\\\", "/") : gemPath;
+            asciidoctor = AsciidoctorJRuby.Factory.create(normalizedGemPath);
+        }
+
+        Ruby rubyInstance = null;
+        try {
+            rubyInstance = (Ruby) JRubyRuntimeContext.class.getMethod("get")
+                    .invoke(null);
+        } catch (NoSuchMethodException e) {
+            if (rubyInstance == null) {
+                try {
+                    rubyInstance = (Ruby) JRubyRuntimeContext.class.getMethod(
+                            "get", Asciidoctor.class).invoke(null, asciidoctor);
+                } catch (Exception e1) {
+                    throw new RuntimeException(
+                            "Failed to invoke get(AsciiDoctor) for JRubyRuntimeContext",
+                            e1);
+                }
+
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to invoke get for JRubyRuntimeContext", e);
+        }
+
+        String gemHome = rubyInstance.evalScriptlet("ENV['GEM_HOME']").toString();
+        String gemHomeExpected = (gemPath == null || "".equals(gemPath)) ? "" : gemPath.split(java.io.File.pathSeparator)[0];
+
+        if (!"".equals(gemHome) && !gemHomeExpected.equals(gemHome)) {
+           // getLog().warn("Using inherited external environment to resolve gems (" + gemHome + "), i.e. build is platform dependent!");
+        }
+
+        return asciidoctor;
+    }
 
     static {
-        ASCIIDOCTOR.requireLibrary("asciidoctor-diagram");
+        //default lib
+        ASCIIDOCTOR.requireLibrary("asciidoctor-kroki");
         ASCIIDOCTOR.registerLogHandler(new LogHandler() {
             @Override
             public void log(LogRecord logRecord) {
@@ -228,7 +271,9 @@ public class AsciidocConfluencePage {
         Attributes attributes = Attributes.builder()
                 .attributes(userAttributes)
                 .attribute("imagesoutdir", generatedAssetsTargetFolder.toString())
+                .attribute("kroki-fetch-diagram", true)
                 .attribute("outdir", generatedAssetsTargetFolder.toString())
+                .attribute("imagesdir", generatedAssetsTargetFolder.toString())
                 .attribute("source-highlighter", "none")
                 .build();
 

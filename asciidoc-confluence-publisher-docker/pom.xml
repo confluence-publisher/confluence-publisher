@@ -36,7 +36,6 @@
             <artifactId>asciidoc-confluence-publisher-cli</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
@@ -49,7 +48,7 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -69,6 +68,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -83,14 +83,16 @@
                             <mainClass>org.sahli.asciidoc.confluence.publisher.cli.AsciidocConfluencePublisherCommandLineClient</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <!-- jar-with-dependencies, but don´t unpack gems -->
+                        <descriptor>src/main/assembly/fat-jar.xml</descriptor>
+                    </descriptors>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.13</version>
                 <executions>
                     <execution>
                         <id>default</id>

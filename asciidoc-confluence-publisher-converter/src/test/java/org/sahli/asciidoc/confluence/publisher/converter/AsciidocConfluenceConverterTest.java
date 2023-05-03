@@ -16,6 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import org.apache.commons.lang.StringUtils;
+import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,8 +35,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
+import static org.mockito.Matchers.matches;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
@@ -96,7 +100,7 @@ public class AsciidocConfluenceConverterTest {
         assertContentFilePath(subSubPageMetadata, targetFilePath(buildFolder, documentationRootFolder, "index/sub-page/sub-sub-page.adoc", "sub-sub-page.html"));
 
         assertAttachmentFilePath(subPageMetadata, "attachmentOne.txt", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "attachmentOne.txt"));
-        assertAttachmentFilePath(subPageMetadata, "embedded-diagram.png", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram.png"));
+        assertAttachmentFilePath(subPageMetadata, "embedded-diagram-81308b56222a1c99b23089a07c6877098f29e351358f3488ed66e44d6771bdea.png", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram-81308b56222a1c99b23089a07c6877098f29e351358f3488ed66e44d6771bdea.png"));
     }
 
     @Test
@@ -170,5 +174,6 @@ public class AsciidocConfluenceConverterTest {
         assertThat(confluencePageMetadata.getAttachments().get(attachmentFileName), is(targetFilePath));
         assertThat(exists(Paths.get(confluencePageMetadata.getAttachments().get(attachmentFileName))), is(true));
     }
+
 
 }

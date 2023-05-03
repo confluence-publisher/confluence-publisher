@@ -16,14 +16,5 @@
             <unpack>true</unpack>
             <scope>runtime</scope>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>/</outputDirectory>
-            <unpack>false</unpack>
-            <scope>runtime</scope>
-            <useProjectArtifact>true</useProjectArtifact>
-            <includes>
-                <include>rubygems:*</include>
-            </includes>
-        </dependencySet>
     </dependencySets>
 </assembly>

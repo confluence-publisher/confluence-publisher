@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.client.http;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -33,8 +34,11 @@ public interface ConfluenceClient {
     String getPageByTitle(String spaceKey, String ancestorId, String title) throws NotFoundException, MultipleResultsException;
 
     void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent);
+    void addAttachment(String contentId, String attachmentFileName, Path attachmentContent);
 
     void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers);
+
+    void updateAttachmentContent(String contentId, String attachmentId, Path attachmentContent, boolean notifyWatchers);
 
     void deleteAttachment(String attachmentId);
 

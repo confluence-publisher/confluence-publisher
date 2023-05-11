@@ -277,7 +277,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentContent");
 
         // arrange + act
-        this.httpRequestFactory.addAttachmentRequest("1234", "file.txt", null);
+        this.httpRequestFactory.addAttachmentRequest("1234", "file.txt", (InputStream) null);
     }
 
     @Test
@@ -353,7 +353,7 @@ public class HttpRequestFactoryTest {
         this.expectedException.expectMessage("attachmentContent");
 
         // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, true);
+        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", (InputStream) null, true);
     }
 
     @Test

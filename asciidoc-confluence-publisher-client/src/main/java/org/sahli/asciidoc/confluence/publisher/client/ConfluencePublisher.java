@@ -212,14 +212,14 @@ public class ConfluencePublisher {
                 if (existingAttachmentHash != null) {
                     this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
                 }
-                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
+                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, absoluteAttachmentPath, this.notifyWatchers);
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
                 this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
             }
 
         } catch (NotFoundException e) {
             this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
-            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
+            this.confluenceClient.addAttachment(contentId, attachmentFileName, absoluteAttachmentPath);
             this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
             this.confluencePublisherListener.attachmentAdded(attachmentFileName, contentId);
         }

@@ -30,6 +30,7 @@ import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicHeader;
@@ -47,6 +48,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.file.Path;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -132,8 +134,35 @@ class HttpRequestFactory {
 
         return attachmentPostRequest;
     }
+    HttpPost addAttachmentRequest(String contentId, String attachmentFileName, Path attachmentContent) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(attachmentFileName), "attachmentFileName");
+        assertMandatoryParameter(attachmentContent != null, "attachmentContent");
+
+        HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment");
+        attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
+
+        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, false);
+        attachmentPostRequest.setEntity(multipartEntity);
+
+        return attachmentPostRequest;
+    }
 
     HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
+        assertMandatoryParameter(isNotBlank(contentId), "contentId");
+        assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
+        assertMandatoryParameter(attachmentContent != null, "attachmentContent");
+
+        HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
+        attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
+
+        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, notifyWatchers);
+        attachmentPostRequest.setEntity(multipartEntity);
+
+        return attachmentPostRequest;
+    }
+
+    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, Path attachmentContent, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
         assertMandatoryParameter(attachmentContent != null, "attachmentContent");
@@ -335,15 +364,56 @@ class HttpRequestFactory {
         }
     }
 
-    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
+
+    private static HttpEntity multipartEntity2(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-        multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
 
         InputStreamBody inputStreamBody;
         if (isNotBlank(attachmentFileName)) {
             inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM, attachmentFileName);
         } else {
             inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM);
+        }
+
+        multipartEntityBuilder.addPart("file", inputStreamBody);
+
+        if (!notifyWatchers) {
+            multipartEntityBuilder.addPart("minorEdit", new StringBody("true", ContentType.DEFAULT_TEXT));
+        }
+
+        return multipartEntityBuilder.build();
+    }
+
+    private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
+
+        InputStreamBody inputStreamBody;
+        if (isNotBlank(attachmentFileName)) {
+            inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM, attachmentFileName);
+        } else {
+            inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM);
+        }
+
+        multipartEntityBuilder.addPart("file", inputStreamBody);
+
+        if (!notifyWatchers) {
+            multipartEntityBuilder.addPart("minorEdit", new StringBody("true", ContentType.DEFAULT_TEXT));
+        }
+
+        return multipartEntityBuilder.build();
+    }
+
+    private static HttpEntity multipartEntity(String attachmentFileName, Path attachmentContent, boolean notifyWatchers) {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        multipartEntityBuilder.setMode(HttpMultipartMode.STRICT);
+
+        FileBody inputStreamBody;
+        if (isNotBlank(attachmentFileName)) {
+            inputStreamBody = new FileBody(attachmentContent.toFile(), APPLICATION_OCTET_STREAM, attachmentFileName);
+        } else {
+            inputStreamBody = new FileBody(attachmentContent.toFile(), APPLICATION_OCTET_STREAM);
         }
 
         multipartEntityBuilder.addPart("file", inputStreamBody);

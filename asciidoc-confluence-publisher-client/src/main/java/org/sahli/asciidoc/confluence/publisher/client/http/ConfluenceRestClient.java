@@ -40,6 +40,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -163,11 +164,29 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     @Override
+    public void addAttachment(String contentId, String attachmentFileName, Path attachmentContent) {
+        HttpPost addAttachmentRequest = this.httpRequestFactory.addAttachmentRequest(contentId, attachmentFileName, attachmentContent);
+        sendRequestAndFailIfNot20x(addAttachmentRequest, (response) -> {
+            //closeInputStream(attachmentContent);
+            System.out.println("failed");
+            return null;
+        });
+    }
+
+    @Override
     public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
         HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
         sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
             closeInputStream(attachmentContent);
 
+            return null;
+        });
+    }
+    @Override
+    public void updateAttachmentContent(String contentId, String attachmentId, Path attachmentContent, boolean notifyWatchers) {
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
+        sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
+            //closeInputStream(attachmentContent);
             return null;
         });
     }

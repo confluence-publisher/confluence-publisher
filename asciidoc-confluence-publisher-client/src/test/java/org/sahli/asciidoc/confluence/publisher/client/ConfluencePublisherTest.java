@@ -351,8 +351,8 @@ public class ConfluencePublisherTest {
         confluencePublisher.publish();
 
         // assert
-        verify(confluenceRestClientMock, never()).addAttachment(any(), any(), any());
-        verify(confluenceRestClientMock, never()).updateAttachmentContent(any(), any(), any(), anyBoolean());
+        verify(confluenceRestClientMock, never()).addAttachment(any(), any(), any(InputStream.class));
+        verify(confluenceRestClientMock, never()).updateAttachmentContent(any(), any(), any(InputStream.class), anyBoolean());
     }
 
     @Test

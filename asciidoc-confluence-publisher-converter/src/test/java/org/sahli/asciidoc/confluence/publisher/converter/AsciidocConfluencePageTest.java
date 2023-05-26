@@ -1825,6 +1825,27 @@ public class AsciidocConfluencePageTest {
         newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
     }
 
+    @Test
+    public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_using_C4_macros_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() {
+        // arrange
+        String adocContent = "[plantuml, embedded-c4-diagram, png]\n" +
+                "....\n" +
+                "!include <C4/C4_Container>\n" +
+                "Container(containerAlias, \"Label\", \"Technology\", \"Optional Description\")\n" +
+                "....";
+
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+        // assert
+        String expectedContent = "<ac:image ac:height=\"120\" ac:width=\"181\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+        assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")), is(true));
+    }
+
+
     private static String prependTitle(String content) {
         if (!content.startsWith("= ")) {
             content = "= Default Page Title\n\n" + content;

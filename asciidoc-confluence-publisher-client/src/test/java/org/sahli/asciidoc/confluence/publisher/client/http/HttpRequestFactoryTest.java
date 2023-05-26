@@ -21,9 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,11 +31,11 @@ import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.junit.Assert.assertThrows;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.fileContent;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUtils.inputStreamAsString;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMatcher.isSameJsonAs;
@@ -53,9 +51,6 @@ public class HttpRequestFactoryTest {
     private static final String ROOT_CONFLUENCE_URL = "http://confluence.com";
     private static final String CONFLUENCE_REST_API_ENDPOINT = ROOT_CONFLUENCE_URL + "/rest/api";
 
-    @Rule
-    public final ExpectedException expectedException = none();
-
     private HttpRequestFactory httpRequestFactory;
 
     @Before
@@ -66,11 +61,10 @@ public class HttpRequestFactoryTest {
     @Test
     public void instantiation_withEmptyConfluenceRestApiEndpoint_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("rootConfluenceUrl must be set");
-
-        // arrange + act
-        new HttpRequestFactory("");
+        assertThrows("rootConfluenceUrl must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            new HttpRequestFactory("");
+        });
     }
 
     @Test
@@ -120,21 +114,19 @@ public class HttpRequestFactoryTest {
     @Test
     public void addPageUnderAncestorRequest_withBlankTitle_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("title must be set");
-
-        // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content", "version message");
+        assertThrows("title must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content", "version message");
+        });
     }
 
     @Test
     public void addPageUnderAncestorRequest_withoutAncestorId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("ancestorId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "", "title", "content", "version message");
+        assertThrows("ancestorId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "", "title", "content", "version message");
+        });
     }
 
     @Test
@@ -144,7 +136,7 @@ public class HttpRequestFactoryTest {
         String ancestorId = "1";
         String title = "title";
         String content = "content";
-        Integer version = 2;
+        int version = 2;
         String versionMessage = "version message";
         boolean notifyWatchers = false;
 
@@ -168,7 +160,7 @@ public class HttpRequestFactoryTest {
         String ancestorId = null;
         String title = "title";
         String content = "content";
-        Integer version = 2;
+        int version = 2;
         String versionMessage = null;
         boolean notifyWatchers = true;
 
@@ -188,21 +180,19 @@ public class HttpRequestFactoryTest {
     @Test
     public void updatePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("contentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message", true);
+        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "test message", true);
+        });
     }
 
     @Test
     public void updatePageRequest_withEmptyTitle_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("title must be set");
-
-        // arrange + act
-        this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message", true);
+        assertThrows("title must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.updatePageRequest("1234", "1", "", "content", 2, "test message", true);
+        });
     }
 
     @Test
@@ -221,11 +211,10 @@ public class HttpRequestFactoryTest {
     @Test
     public void deletePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("contentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.deletePageRequest("");
+        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.deletePageRequest("");
+        });
     }
 
     @Test
@@ -245,7 +234,7 @@ public class HttpRequestFactoryTest {
 
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         addAttachmentRequest.getEntity().writeTo(entityContent);
-        String multiPartPayload = entityContent.toString("UTF-8");
+        String multiPartPayload = entityContent.toString(UTF_8);
         assertThat(multiPartPayload, containsString("attachment.txt"));
         assertThat(multiPartPayload, containsString("Some text"));
     }
@@ -253,31 +242,28 @@ public class HttpRequestFactoryTest {
     @Test
     public void addAttachmentRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("contentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.addAttachmentRequest("", "file.txt", new ByteArrayInputStream("hello".getBytes()));
+        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.addAttachmentRequest("", "file.txt", new ByteArrayInputStream("hello".getBytes()));
+        });
     }
 
     @Test
     public void addAttachmentRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentFileName");
-
-        // arrange + act
-        this.httpRequestFactory.addAttachmentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()));
+        assertThrows("attachmentFileName", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.addAttachmentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()));
+        });
     }
 
     @Test
     public void addAttachmentRequest_withNullAttachmentContent_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentContent");
-
-        // arrange + act
-        this.httpRequestFactory.addAttachmentRequest("1234", "file.txt", null);
+        assertThrows("attachmentContent", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.addAttachmentRequest("1234", "file.txt", null);
+        });
     }
 
     @Test
@@ -298,7 +284,7 @@ public class HttpRequestFactoryTest {
 
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         updateAttachmentContentRequest.getEntity().writeTo(entityContent);
-        String multiPartPayload = entityContent.toString("UTF-8");
+        String multiPartPayload = entityContent.toString(UTF_8);
         assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
         assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"minorEdit\"\r\n\r\ntrue"));
     }
@@ -321,7 +307,7 @@ public class HttpRequestFactoryTest {
 
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         updateAttachmentContentRequest.getEntity().writeTo(entityContent);
-        String multiPartPayload = entityContent.toString("UTF-8");
+        String multiPartPayload = entityContent.toString(UTF_8);
         assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
         assertThat(multiPartPayload, not(containsString("Content-Disposition: form-data; name=\"minorEdit\"")));
     }
@@ -329,31 +315,28 @@ public class HttpRequestFactoryTest {
     @Test
     public void updateAttachmentContentRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("contentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), true);
+        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), true);
+        });
     }
 
     @Test
     public void updateAttachmentContentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), true);
+        assertThrows("attachmentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), true);
+        });
     }
 
     @Test
     public void updateAttachmentContentRequest_withNullAttachmentContent_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentContent");
-
-        // arrange + act
-        this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, true);
+        assertThrows("attachmentContent", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, true);
+        });
     }
 
     @Test
@@ -372,11 +355,10 @@ public class HttpRequestFactoryTest {
     @Test
     public void deleteAttachmentRequest_withEmptyAttachmentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.deleteAttachmentRequest("");
+        assertThrows("attachmentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.deleteAttachmentRequest("");
+        });
     }
 
     @Test
@@ -398,31 +380,28 @@ public class HttpRequestFactoryTest {
     @Test
     public void getPageByTitleRequest_withEmptySpaceKey_throwsIllegalArgumentException() {
         // arrange
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("spaceKey must be set");
-
-        // act
-        this.httpRequestFactory.getPageByTitleRequest("", "1234", "Some page");
+        assertThrows("spaceKey must be set", IllegalArgumentException.class, () -> {
+            // act
+            this.httpRequestFactory.getPageByTitleRequest("", "1234", "Some page");
+        });
     }
 
     @Test
     public void getPageByTitleRequest_withEmptyAncestorId_throwsIllegalArgumentException() {
         // arrange
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("ancestorId must be set");
-
-        // act
-        this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "", "Some page");
+        assertThrows("ancestorId must be set", IllegalArgumentException.class, () -> {
+            // act
+            this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "", "Some page");
+        });
     }
 
     @Test
     public void getPageByTitleRequest_withEmptyTitle_throwsIllegalArgumentException() {
         // arrange
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("title must be set");
-
-        // act
-        this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "1234", "");
+        assertThrows("title must be set", IllegalArgumentException.class, () -> {
+            // act
+            this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "1234", "");
+        });
     }
 
     @Test
@@ -456,21 +435,19 @@ public class HttpRequestFactoryTest {
     @Test
     public void getAttachmentByFileNameRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("contentId must be set");
-
-        // act
-        this.httpRequestFactory.getAttachmentByFileNameRequest("", "file.txt", null);
+        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+            // act
+            this.httpRequestFactory.getAttachmentByFileNameRequest("", "file.txt", null);
+        });
     }
 
     @Test
     public void getAttachmentByFileNameRequest_withEmptyAttachmentFileName_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("attachmentFileName must be set");
-
-        // act
-        this.httpRequestFactory.getAttachmentByFileNameRequest("1234", "", null);
+        assertThrows("attachmentFileName must be set", IllegalArgumentException.class, () -> {
+            // act
+            this.httpRequestFactory.getAttachmentByFileNameRequest("1234", "", null);
+        });
     }
 
     @Test
@@ -500,11 +477,10 @@ public class HttpRequestFactoryTest {
     @Test
     public void getChildPagesByIdRequest_withBlankParentContentId_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("parentContentId must be set");
-
-        // arrange + act
-        this.httpRequestFactory.getChildPagesByIdRequest("", null, null, null);
+        assertThrows("parentContentId must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.getChildPagesByIdRequest("", null, null, null);
+        });
     }
 
     @Test
@@ -631,11 +607,10 @@ public class HttpRequestFactoryTest {
     @Test
     public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("relativeDownloadLink must be set");
-
-        // arrange + act
-        this.httpRequestFactory.getAttachmentContentRequest("");
+        assertThrows("relativeDownloadLink must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            this.httpRequestFactory.getAttachmentContentRequest("");
+        });
     }
 
     @Test

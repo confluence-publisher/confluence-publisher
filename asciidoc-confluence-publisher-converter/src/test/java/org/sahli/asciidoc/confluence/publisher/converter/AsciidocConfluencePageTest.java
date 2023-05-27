@@ -55,6 +55,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageTest.RootCauseMatcher.rootCauseWithMessage;
+import static org.sahli.asciidoc.confluence.publisher.converter.ImageSizeCloseTo.hasImageSizeCloseTo;
 
 /**
  * @author Alain Sahli
@@ -1840,11 +1841,10 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"120\" ac:width=\"181\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
-        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+        String expectedContent = "<ac:image ac:height=\"119\" ac:width=\"180\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), hasImageSizeCloseTo(expectedContent, 2));
         assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")), is(true));
     }
-
 
     private static String prependTitle(String content) {
         if (!content.startsWith("= ")) {

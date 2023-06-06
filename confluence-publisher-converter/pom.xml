@@ -11,4 +11,22 @@
 
     <artifactId>confluence-publisher-converter</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
+            <artifactId>asciidoc-confluence-publisher-client</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
 </project>

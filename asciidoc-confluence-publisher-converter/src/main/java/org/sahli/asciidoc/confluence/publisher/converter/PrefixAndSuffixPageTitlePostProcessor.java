@@ -16,6 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
+
 import java.util.Optional;
 
 /**

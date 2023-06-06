@@ -24,10 +24,11 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
-import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.ConfluenceConverter;
+import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.confluence.publisher.converter.PagesStructureProvider;
 
 import java.io.IOException;
@@ -43,9 +44,7 @@ import java.util.Map;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.Files.createTempDirectory;
-import static java.nio.file.Files.delete;
-import static java.nio.file.Files.walkFileTree;
+import static java.nio.file.Files.*;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 
@@ -85,7 +84,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
             PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
 
-            AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
+            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(spaceKey, ancestorId, new AsciidocConfluencePageProcessor());
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             if (convertOnly) {

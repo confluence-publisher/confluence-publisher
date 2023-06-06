@@ -32,9 +32,10 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
+import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
-import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.ConfluenceConverter;
+import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
 import org.sahli.confluence.publisher.converter.PagesStructureProvider;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
@@ -152,7 +153,7 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
             PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath(), Charset.forName(this.sourceEncoding));
 
-            AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(this.spaceKey, this.ancestorId);
+            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(this.spaceKey, this.ancestorId, new AsciidocConfluencePageProcessor());
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
             ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
 

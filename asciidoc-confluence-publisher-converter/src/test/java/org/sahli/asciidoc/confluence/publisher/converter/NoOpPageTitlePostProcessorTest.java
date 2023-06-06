@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.Test;
+import org.sahli.confluence.publisher.converter.NoOpPageTitlePostProcessor;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

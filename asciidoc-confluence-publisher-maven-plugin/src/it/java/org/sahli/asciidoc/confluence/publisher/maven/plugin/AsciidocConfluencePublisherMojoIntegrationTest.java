@@ -511,7 +511,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 "" +
                 "    <groupId>org.sahli.asciidoc.confluence.publisher.</groupId>" +
                 "    <artifactId>confluence-publisher-it</artifactId>" +
-                "    <version>0.0.0-SNAPSHOT</version>" +
+                "    <version>0.20.0-SNAPSHOT</version>" +
                 "    <packaging>pom</packaging>" +
                 "" +
                 "    <build>" +

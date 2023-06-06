@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.sahli.confluence.publisher.converter.PagesStructureProvider;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,11 +64,11 @@ public class AsciidocConfluenceConverterTest {
         userAttributes.put("name", "Rick and Morty");
         userAttributes.put("genre", "science fiction");
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, userAttributes);
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, buildFolder, userAttributes);
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -105,7 +106,7 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = Paths.get("src/test/resources/non-existing-attachment").toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // assert
         this.expectedException.expect(RuntimeException.class);
@@ -113,7 +114,7 @@ public class AsciidocConfluenceConverterTest {
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
+        asciidocConfluenceConverter.convert(pagesStructureProvider, buildFolder, emptyMap());
     }
 
     @Test
@@ -122,12 +123,12 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("(Doc) ", " (1.0)");
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -144,11 +145,11 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
 
         // act
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
+        asciidocConfluenceConverter.convert(pagesStructureProvider, buildFolder, emptyMap());
 
         // assert
         assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));

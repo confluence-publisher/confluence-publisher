@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
@@ -48,6 +49,8 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
  * @author Christian Stettler
  */
 public class ConfluencePublisher {
+
+    private final static Logger LOGGER = Logger.getLogger(ConfluencePublisher.class.getSimpleName());
 
     static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
     static final int INITIAL_PAGE_VERSION = 1;
@@ -201,28 +204,38 @@ public class ConfluencePublisher {
 
     private void addOrUpdateAttachment(String contentId, String attachmentPath, String attachmentFileName) {
         Path absoluteAttachmentPath = absoluteAttachmentPath(attachmentPath);
-        String newAttachmentHash = hash(fileInputStream(absoluteAttachmentPath));
 
         try {
-            ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
-            String attachmentId = existingAttachment.getId();
-            String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+            String newAttachmentHash = hash(fileInputStream(absoluteAttachmentPath));
 
-            if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
-                if (existingAttachmentHash != null) {
-                    this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+            try {
+                ConfluenceAttachment existingAttachment = this.confluenceClient.getAttachmentByFileName(contentId, attachmentFileName);
+                String attachmentId = existingAttachment.getId();
+                String existingAttachmentHash = this.confluenceClient.getPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+
+                if (notSameHash(existingAttachmentHash, newAttachmentHash)) {
+                    if (existingAttachmentHash != null) {
+                        this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+                    }
+                    this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
+                    this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
+                    this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
                 }
-                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
+
+            } catch (NotFoundException e) {
+                this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
+                this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
-                this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
+                this.confluencePublisherListener.attachmentAdded(attachmentFileName, contentId);
             }
 
-        } catch (NotFoundException e) {
+        } catch (FileNotFoundException e) {
+            LOGGER.info("Catching NotFoundException in addOrUpdateAttachment");
             this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
-            this.confluenceClient.addAttachment(contentId, attachmentFileName, fileInputStream(absoluteAttachmentPath));
-            this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
             this.confluencePublisherListener.attachmentAdded(attachmentFileName, contentId);
         }
+
+
     }
 
     private String getAttachmentHashKey(String attachmentFileName) {
@@ -270,12 +283,9 @@ public class ConfluencePublisher {
         }
     }
 
-    private static FileInputStream fileInputStream(Path filePath) {
-        try {
-            return new FileInputStream(filePath.toFile());
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Could not find attachment ", e);
-        }
+    private static FileInputStream fileInputStream(Path filePath) throws FileNotFoundException {
+        LOGGER.info("Loading file " + filePath);
+        return new FileInputStream(filePath.toFile());
     }
 
 

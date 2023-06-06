@@ -25,10 +25,10 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.PageTitlePostProcessor;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.PagesStructureProvider;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -82,11 +82,11 @@ public class AsciidocConfluencePublisherCommandLineClient {
         boolean notifyWatchers = argumentsParser.optionalBooleanArgument("notifyWatchers", args).orElse(true);
 
         try {
-            AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
+            PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
 
             AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter(spaceKey, ancestorId);
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
 
             if (convertOnly) {
                 System.out.println("Publishing to Confluence skipped ('convert only' is enabled)");

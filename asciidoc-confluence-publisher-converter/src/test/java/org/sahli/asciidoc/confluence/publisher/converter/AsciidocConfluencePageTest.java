@@ -23,7 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.sahli.confluence.publisher.converter.Page;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -806,7 +806,7 @@ public class AsciidocConfluencePageTest {
                 "| 13\n" +
                 "| 14\n" +
                 "|===";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -830,7 +830,7 @@ public class AsciidocConfluencePageTest {
                 "2+| 11 & 12\n" +
                 "\n" +
                 "|===";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -855,7 +855,7 @@ public class AsciidocConfluencePageTest {
                 "* 13 \n" +
                 "\n" +
                 "|===";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1059,7 +1059,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitle() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
-        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page.adoc");
+        Page asciidocPage = asciidocPage(rootFolder, "source-page.adoc");
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
@@ -1075,7 +1075,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceAnchor_returnsConfluencePageWithLinkToReferencedPageByPageTitleWithAnchor() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
-        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page-reference-with-anchor.adoc");
+        Page asciidocPage = asciidocPage(rootFolder, "source-page-reference-with-anchor.adoc");
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
@@ -1091,7 +1091,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceToTargetPageWithHtmlCharacterInTitle_returnsConfluencePageWithLinkToReferencedPageByPageTitle() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
-        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page-with-reference-to-target-page-with-html-character-in-title.adoc");
+        Page asciidocPage = asciidocPage(rootFolder, "source-page-with-reference-to-target-page-with-html-character-in-title.adoc");
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
@@ -1106,8 +1106,8 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithCircularInterDocumentCrossReference_returnsConfluencePagesWithLinkToReferencedPageByPageTitle() {
         // arrange
-        AsciidocPage asciidocPageOne = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-one.adoc"));
-        AsciidocPage asciidocPageTwo = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-two.adoc"));
+        Page asciidocPageOne = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-one.adoc"));
+        Page asciidocPageTwo = asciidocPage(Paths.get("src/test/resources/circular-inter-document-cross-references/page-two.adoc"));
 
         // act
         AsciidocConfluencePage asciidocConfluencePageOne = newAsciidocConfluencePage(asciidocPageOne, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPageOne), "TEST");
@@ -1122,7 +1122,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithLinkToAttachmentWithoutLinkText_returnsConfluencePageWithLinkToAttachmentAndAttachmentNameAsLinkText() {
         // arrange
         String adocContent = "link:foo.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1136,7 +1136,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithLinkToAttachmentWithLinkText_returnsConfluencePageWithLinkToAttachmentAndSpecifiedLinkText() {
         // arrange
         String adocContent = "link:foo.txt[Bar]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1150,7 +1150,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInclude_returnsConfluencePageWithContentFromIncludedPage() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/includes");
-        AsciidocPage asciidocPage = asciidocPage(rootFolder, "page.adoc");
+        Page asciidocPage = asciidocPage(rootFolder, "page.adoc");
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1167,7 +1167,7 @@ public class AsciidocConfluencePageTest {
             setDefaultCharset(ISO_8859_1);
 
             String adocContent = "= Title © !";
-            AsciidocPage asciidocPage = asciidocPage(adocContent);
+            Page asciidocPage = asciidocPage(adocContent);
 
             // act
             AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1186,7 +1186,7 @@ public class AsciidocConfluencePageTest {
             setDefaultCharset(ISO_8859_1);
 
             String adocContent = "Copyrighted content © !";
-            AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+            Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
             // act
             AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1201,7 +1201,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithIsoEncodingAndSpecificSourceEncodingConfigured_returnsConfluencePageWithCorrectlyEncodedContent() {
         // arrange
-        AsciidocPage asciidocPage = asciidocPage(Paths.get("src/test/resources/encoding/iso-encoded-source.adoc"));
+        Page asciidocPage = asciidocPage(Paths.get("src/test/resources/encoding/iso-encoded-source.adoc"));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, ISO_8859_1, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1214,7 +1214,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithLinkToAttachmentInDifferentFolder_returnsConfluencePageWithLinkToAttachmentFileNameOnly() {
         // arrange
         String adocContent = "link:bar/foo.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1228,7 +1228,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithExplicitExternalLinkAndLinkText_returnsConfluencePageWithLinkToExternalPageAndSpecifiedLinkText() {
         // arrange
         String adocContent = "link:http://www.google.com[Google]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1242,7 +1242,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithExternalLinkWithoutLinkText_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() {
         // arrange
         String adocContent = "link:http://www.google.com[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1256,7 +1256,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithImplicitExternalLink_returnsConfluencePageWithLinkToExternalPageAndUrlAsLinkText() {
         // arrange
         String adocContent = "http://www.google.com";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1274,7 +1274,7 @@ public class AsciidocConfluencePageTest {
                 "A <|-- B\n" +
                 "....";
 
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1289,7 +1289,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithIncludedPlantUmlFile_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/plantuml");
-        AsciidocPage asciidocPage = asciidocPage(rootFolder, "page.adoc");
+        Page asciidocPage = asciidocPage(rootFolder, "page.adoc");
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
@@ -1308,7 +1308,7 @@ public class AsciidocConfluencePageTest {
                 "**** L4-1\n" +
                 "***** L5-1\n" +
                 "* L1-2";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1325,7 +1325,7 @@ public class AsciidocConfluencePageTest {
                 "* L1-1\n" +
                 "* L1-2\n";
 
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1344,7 +1344,7 @@ public class AsciidocConfluencePageTest {
                 ".... L4-1\n" +
                 "..... L5-1\n" +
                 ". L1-2";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1360,7 +1360,7 @@ public class AsciidocConfluencePageTest {
         String adocContent = ".An ordered list title\n" +
                 ". L1-1\n" +
                 ". L1-2\n";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1374,7 +1374,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInlineImage_returnsConfluencePageWithInlineImage() {
         // arrange
         String adocContent = "Some text image:sunset.jpg[] with inline image";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1388,7 +1388,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithInlineRemoteImage_returnsConfluencePageWithInlineRemoteImage() {
         // arrange
         String adocContent = "Some text image:https://asciidoctor.org/images/octocat.jpg[GitHub mascot]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1406,7 +1406,7 @@ public class AsciidocConfluencePageTest {
     public void renderConfluencePage_asciiDocWithBlockRemoteImageAndBlockTitle_returnsConfluencePageWithBlockRemoteImageAndImageCaption() {
         String adocContent = ".GitHub mascot\n" +
                 "image::https://asciidoctor.org/images/octocat.jpg[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1658,7 +1658,7 @@ public class AsciidocConfluencePageTest {
         // arrange
         String adocContent = "image::sunset.jpg[]";
 
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1672,7 +1672,7 @@ public class AsciidocConfluencePageTest {
     public void attachments_asciiDocWithImageInDifferentFolder_returnsImageAsAttachmentWithPathAndFileNameOnly() {
         // arrange
         String adocContent = "image::sub-folder/sunset.jpg[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1689,7 +1689,7 @@ public class AsciidocConfluencePageTest {
                 "image::sunset.jpg[]\n" +
                 "== Title 2\n" +
                 "image::sunrise.jpg[]";
-        AsciidocPage asciidocPage = asciidocPage(adocContent);
+        Page asciidocPage = asciidocPage(adocContent);
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1705,7 +1705,7 @@ public class AsciidocConfluencePageTest {
         // arrange
         String adocContent = "image::sunrise.jpg[]\n" +
                 "image::sunrise.jpg[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1719,7 +1719,7 @@ public class AsciidocConfluencePageTest {
     public void attachments_asciiDocWithLinkToAttachment_returnsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "link:foo.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1733,7 +1733,7 @@ public class AsciidocConfluencePageTest {
     public void attachments_asciiDocWithLinkToAttachmentInDifferentFolder_returnsAttachmentWithPathAndFileNameOnly() {
         // arrange
         String adocContent = "link:sub-folder/foo.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1748,7 +1748,7 @@ public class AsciidocConfluencePageTest {
         // arrange
         String adocContent = "image::sunrise.jpg[]\n" +
                 "link:foo.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1762,7 +1762,7 @@ public class AsciidocConfluencePageTest {
     public void attachments_asciiDocWithAttachmentWithSpaceInName_returnsAttachmentWithPathAndName() {
         // arrange
         String adocContent = "link:attachment%20with%20space.txt[]";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+        Page asciidocPage = asciidocPage(prependTitle(adocContent));
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1778,7 +1778,7 @@ public class AsciidocConfluencePageTest {
         String adoc = "= Page Title\n"
                 + ":keywords: foo";
 
-        AsciidocPage asciidocPage = asciidocPage(adoc);
+        Page asciidocPage = asciidocPage(adoc);
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1794,7 +1794,7 @@ public class AsciidocConfluencePageTest {
         String adoc = "= Page Title\n"
                 + ":keywords: foo, bar";
 
-        AsciidocPage asciidocPage = asciidocPage(adoc);
+        Page asciidocPage = asciidocPage(adoc);
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
@@ -1815,7 +1815,7 @@ public class AsciidocConfluencePageTest {
                 "  webserver -> processor;\n" +
                 "}\n" +
                 "....\n";
-        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocRelyingOnMissingSequenceDiagramBinary));
+        Page asciidocPage = asciidocPage(prependTitle(adocRelyingOnMissingSequenceDiagramBinary));
 
         // assert
         this.expectedException.expect(RuntimeException.class);
@@ -1832,7 +1832,7 @@ public class AsciidocConfluencePageTest {
         return content;
     }
 
-    private static Path assetsTargetFolderFor(AsciidocPage asciidocPage) {
+    private static Path assetsTargetFolderFor(Page asciidocPage) {
         return asciidocPage.path().getParent();
     }
 
@@ -1878,20 +1878,20 @@ public class AsciidocConfluencePageTest {
         }
     }
 
-    private AsciidocPage asciidocPage(Path rootFolder, String asciidocFileName) {
+    private Page asciidocPage(Path rootFolder, String asciidocFileName) {
         return asciidocPage(rootFolder.resolve(asciidocFileName));
     }
 
-    private AsciidocPage asciidocPage(Path contentPath) {
+    private Page asciidocPage(Path contentPath) {
         return new TestAsciidocPage(contentPath);
     }
 
-    private AsciidocPage asciidocPage(String content) {
+    private Page asciidocPage(String content) {
         return asciidocPage(temporaryPath(content));
     }
 
 
-    private static class TestAsciidocPage implements AsciidocPage {
+    private static class TestAsciidocPage implements Page {
 
         private final Path path;
 
@@ -1905,7 +1905,7 @@ public class AsciidocConfluencePageTest {
         }
 
         @Override
-        public List<AsciidocPage> children() {
+        public List<Page> children() {
             return emptyList();
         }
 

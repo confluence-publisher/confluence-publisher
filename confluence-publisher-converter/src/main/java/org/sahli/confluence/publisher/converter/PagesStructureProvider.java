@@ -14,32 +14,14 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.converter;
+package org.sahli.confluence.publisher.converter;
 
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.List;
 
-public interface AsciidocPagesStructureProvider {
+public interface PagesStructureProvider {
 
-    AsciidocPagesStructure structure();
+    PagesStructure structure();
 
     Charset sourceEncoding();
-
-
-    interface AsciidocPagesStructure {
-
-        List<AsciidocPage> pages();
-
-    }
-
-
-    interface AsciidocPage {
-
-        Path path();
-
-        List<AsciidocPage> children();
-
-    }
 
 }

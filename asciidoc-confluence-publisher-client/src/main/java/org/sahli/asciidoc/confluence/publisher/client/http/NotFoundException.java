@@ -21,4 +21,10 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
  */
 public class NotFoundException extends RuntimeException {
 
+    public NotFoundException() {
+    }
+
+    public NotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

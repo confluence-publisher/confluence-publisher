@@ -17,10 +17,10 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.junit.Test;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.sahli.confluence.publisher.converter.Page;
+import org.sahli.confluence.publisher.converter.PagesStructure;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 
 public class FolderBasedAsciidocPagesStructureProviderTest {
 
-    private static AsciidocPage NON_EXISTING_ASCIIDOC_PAGE = mock(AsciidocPage.class);
+    private static Page NON_EXISTING_ASCIIDOC_PAGE = mock(Page.class);
 
     @Test
     public void structure_nestedStructure_returnsAsciidocPagesStructureWithAllNonIncludeAdocFiles() {
@@ -43,24 +43,24 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
         FolderBasedAsciidocPagesStructureProvider folderBasedAsciidocSourceStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         // act
-        AsciidocPagesStructureProvider.AsciidocPagesStructure structure = folderBasedAsciidocSourceStructureProvider.structure();
+        PagesStructure structure = folderBasedAsciidocSourceStructureProvider.structure();
 
         // assert
         assertThat(structure.pages().size(), is(1));
 
-        AsciidocPage indexPage = asciidocPageByPath(structure.pages(), documentationRootFolder.resolve("index.adoc"));
+        Page indexPage = asciidocPageByPath(structure.pages(), documentationRootFolder.resolve("index.adoc"));
         assertThat(indexPage, is(not(nullValue())));
         assertThat(indexPage.children().size(), is(2));
 
-        AsciidocPage subPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one.adoc"));
+        Page subPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one.adoc"));
         assertThat(subPageOne, is(not(nullValue())));
         assertThat(subPageOne.children().size(), is(1));
 
-        AsciidocPage subPageTwo = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-two.adoc"));
+        Page subPageTwo = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-two.adoc"));
         assertThat(subPageTwo, is(not(nullValue())));
         assertThat(subPageTwo.children().size(), is(0));
 
-        AsciidocPage subSubPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one/sub-sub-page-one.adoc"));
+        Page subSubPageOne = asciidocPageByPath(indexPage.children(), documentationRootFolder.resolve("index/sub-page-one/sub-sub-page-one.adoc"));
         assertThat(subSubPageOne, is(not(nullValue())));
         assertThat(subSubPageOne.children().size(), is(0));
     }
@@ -78,7 +78,7 @@ public class FolderBasedAsciidocPagesStructureProviderTest {
         assertThat(sourceEncoding, is(UTF_8));
     }
 
-    private AsciidocPage asciidocPageByPath(List<AsciidocPage> asciidocPages, Path asciidocPagePath) {
+    private Page asciidocPageByPath(List<Page> asciidocPages, Path asciidocPagePath) {
         return asciidocPages.stream()
                 .filter((asciidocPage) -> asciidocPage.path().equals(asciidocPagePath))
                 .findFirst()

@@ -18,21 +18,21 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.sahli.confluence.publisher.converter.Page;
+import org.sahli.confluence.publisher.converter.PagesStructure;
+import org.sahli.confluence.publisher.converter.PagesStructureProvider;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileSystems.newFileSystem;
@@ -53,6 +53,8 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
  */
 public final class AsciidocConfluenceConverter {
 
+    private final static Logger LOGGER = Logger.getLogger(AsciidocConfluenceConverter.class.getSimpleName());
+
     private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
 
     private final String spaceKey;
@@ -63,11 +65,11 @@ public final class AsciidocConfluenceConverter {
         this.ancestorId = ancestorId;
     }
 
-    public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, Path buildFolder, Map<String, Object> userAttributes) {
-        return convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, userAttributes);
+    public ConfluencePublisherMetadata convert(PagesStructureProvider pagesStructureProvider, Path buildFolder, Map<String, Object> userAttributes) {
+        return convert(pagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, userAttributes);
     }
 
-    public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, PageTitlePostProcessor pageTitlePostProcessor, Path buildFolder, Map<String, Object> userAttributes) {
+    public ConfluencePublisherMetadata convert(PagesStructureProvider pagesStructureProvider, PageTitlePostProcessor pageTitlePostProcessor, Path buildFolder, Map<String, Object> userAttributes) {
         Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
         createDirectories(templatesRootFolder);
 
@@ -76,9 +78,9 @@ public final class AsciidocConfluenceConverter {
 
         extractTemplatesFromClassPathTo(templatesRootFolder);
 
-        AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
-        List<AsciidocPage> asciidocPages = structure.pages();
-        Charset sourceEncoding = asciidocPagesStructureProvider.sourceEncoding();
+        PagesStructure structure = pagesStructureProvider.structure();
+        List<Page> asciidocPages = structure.pages();
+        Charset sourceEncoding = pagesStructureProvider.sourceEncoding();
         List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, sourceEncoding, pageTitlePostProcessor, userAttributes, this.spaceKey);
 
         ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
@@ -89,7 +91,7 @@ public final class AsciidocConfluenceConverter {
         return confluencePublisherMetadata;
     }
 
-    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey) {
+    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<Page> asciidocPages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey) {
         List<ConfluencePageMetadata> confluencePages = new ArrayList<>();
 
         asciidocPages.forEach((asciidocPage) -> {
@@ -112,9 +114,10 @@ public final class AsciidocConfluenceConverter {
         return confluencePages;
     }
 
-    private static List<AttachmentMetadata> buildAttachments(AsciidocPage asciidocPage, Path pageAssetsFolder, Map<String, String> attachmentsWithRelativePath) {
+    private static List<AttachmentMetadata> buildAttachments(Page asciidocPage, Path pageAssetsFolder, Map<String, String> attachmentsWithRelativePath) {
         return attachmentsWithRelativePath.keySet().stream()
                 .map((attachmentWithRelativePath) -> {
+                    LOGGER.info(" Attachments Relative Path : " + attachmentWithRelativePath);
                     Path relativeAttachmentPath = Paths.get(attachmentWithRelativePath);
                     Path attachmentSourcePath = asciidocPage.path().getParent().resolve(relativeAttachmentPath);
                     Path attachmentTargetPath = pageAssetsFolder.resolve(relativeAttachmentPath.getFileName());
@@ -135,7 +138,7 @@ public final class AsciidocConfluenceConverter {
         return confluencePageMetadata;
     }
 
-    private static Path writeToTargetStructure(AsciidocPage asciidocPage, Path pageAssetsFolder, AsciidocConfluencePage asciidocConfluencePage) {
+    private static Path writeToTargetStructure(Page asciidocPage, Path pageAssetsFolder, AsciidocConfluencePage asciidocConfluencePage) {
         try {
             Path contentFileTargetPath = determineTargetPagePath(asciidocPage, pageAssetsFolder);
             write(contentFileTargetPath, asciidocConfluencePage.content().getBytes(UTF_8));
@@ -149,9 +152,13 @@ public final class AsciidocConfluenceConverter {
     private static void copyAttachmentsAvailableInSourceStructureToTargetStructure(List<AttachmentMetadata> attachments) {
         attachments.forEach((attachment) -> {
             try {
+                LOGGER.info("Trying to copy file from : " + attachment.sourcePath());
+                LOGGER.info("to : " + attachment.targetPath());
                 if (exists(attachment.sourcePath())) {
                     copy(attachment.sourcePath(), attachment.targetPath(), REPLACE_EXISTING);
                 }
+            } catch (DirectoryNotEmptyException e){
+                LOGGER.warning(e.getMessage());
             } catch (IOException e) {
                 throw new RuntimeException("Could not copy attachment to target structure", e);
             }
@@ -165,11 +172,11 @@ public final class AsciidocConfluenceConverter {
         ));
     }
 
-    private static Path determineTargetPagePath(AsciidocPage asciidocPage, Path pageAssetsFolder) {
+    private static Path determineTargetPagePath(Page asciidocPage, Path pageAssetsFolder) {
         return replaceExtension(pageAssetsFolder.resolve(asciidocPage.path().getFileName()), ".adoc", ".html");
     }
 
-    private static Path determinePageAssetsFolder(Path assetsRootFolder, AsciidocPage asciidocPage) {
+    private static Path determinePageAssetsFolder(Path assetsRootFolder, Page asciidocPage) {
         String uniquePageId = uniquePageId(asciidocPage.path());
         Path pageAssetsFolder = assetsRootFolder.resolve(uniquePageId);
 

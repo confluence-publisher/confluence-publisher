@@ -1,9 +1,9 @@
-FROM azul/zulu-openjdk-alpine:11-jre
+FROM openjdk:8-jre-alpine
 
 RUN apk add --update graphviz ttf-dejavu
 
-ADD /maven/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
-ADD /maven/publish.sh /usr/local/bin
+ADD target/asciidoc-confluence-publisher-docker-*-jar-with-dependencies.jar /opt/asciidoc-confluence-publisher-docker.jar
+ADD ./publish.sh /usr/local/bin
 
 VOLUME /var/asciidoc-root-folder
 

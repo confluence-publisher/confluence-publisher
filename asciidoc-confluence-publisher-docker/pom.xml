@@ -89,37 +89,20 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>build-image</id>
+                        <id>default</id>
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <phase>package</phase>
                     </execution>
                 </executions>
                 <configuration>
-                    <imagePullPolicy>Never</imagePullPolicy>
-                    <removeMode>run</removeMode>
-                    <images>
-                        <image>
-                            <alias>confluence-publisher</alias>
-                            <name>confluencepublisher/confluence-publisher:${project.version}</name>
-                            <build>
-                                <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
-                                <imagePullPolicy>Always</imagePullPolicy>
-                                <tags>
-                                    <tag>${project.version}</tag>
-                                    <tag>latest</tag>
-                                </tags>
-                                <assembly>
-                                    <descriptor>assembly.xml</descriptor>
-                                </assembly>
-                            </build>
-                        </image>
-                    </images>
+                    <repository>confluencepublisher/confluence-publisher</repository>
+                    <tag>${project.version}</tag>
+                    <googleContainerRegistryEnabled>false</googleContainerRegistryEnabled>
                 </configuration>
             </plugin>
         </plugins>

@@ -45,16 +45,17 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageTest.RootCauseMatcher.rootCauseWithMessage;
+import static org.sahli.asciidoc.confluence.publisher.converter.ImageSizeCloseTo.hasImageSizeCloseTo;
 
 /**
  * @author Alain Sahli
@@ -1280,7 +1281,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"169\" ac:width=\"55\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
         assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-diagram.png")), is(true));
     }
@@ -1295,7 +1296,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"176\" ac:width=\"60\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:height=\"169\" ac:width=\"55\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
     }
 
@@ -1823,6 +1824,26 @@ public class AsciidocConfluencePageTest {
 
         // act
         newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithEmbeddedPlantUmlDiagram_using_C4_macros_returnsConfluencePageWithLinkToGeneratedPlantUmlImage() {
+        // arrange
+        String adocContent = "[plantuml, embedded-c4-diagram, png]\n" +
+                "....\n" +
+                "!include <C4/C4_Container>\n" +
+                "Container(containerAlias, \"Label\", \"Technology\", \"Optional Description\")\n" +
+                "....";
+
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
+
+        // assert
+        String expectedContent = "<ac:image ac:height=\"119\" ac:width=\"180\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), hasImageSizeCloseTo(expectedContent, 2));
+        assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")), is(true));
     }
 
     private static String prependTitle(String content) {

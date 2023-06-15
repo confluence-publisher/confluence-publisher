@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:2022.07.1
 
     steps:
       - checkout
@@ -25,12 +25,12 @@ jobs:
       - run:
           name: Execute build and unit tests (feature branch or pull requests only)
           command: |
-            if [ "$CIRCLE_BRANCH" != "master" ] && [ -z "$CIRCLE_TAG" ]; then ./mvnw clean install -nsu; fi
+            if [ "$CIRCLE_BRANCH" != "master" ] && [ -z "$CIRCLE_TAG" ]; then ./mvnw clean install -nsu -B; fi
 
       - run:
           name: Execute build and unit tests (master or tag builds only)
           command: |
-            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw clean install jacoco:report coveralls:report -nsu; fi
+            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw clean install jacoco:report coveralls:report -nsu -B; fi
 
       - run:
           name: Execute integration tests

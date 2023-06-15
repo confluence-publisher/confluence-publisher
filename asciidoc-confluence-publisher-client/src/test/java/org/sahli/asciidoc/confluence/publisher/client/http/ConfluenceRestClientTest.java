@@ -26,9 +26,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +39,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -48,10 +47,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
-import static org.junit.rules.ExpectedException.none;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -66,27 +64,22 @@ public class ConfluenceRestClientTest {
 
     private static final String CONFLUENCE_ROOT_URL = "http://confluence.com";
 
-    @Rule
-    public final ExpectedException expectedException = none();
-
     @Test
     public void instantiation_withEmptyRootConfluenceUrl_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("rootConfluenceUrl must be set");
-
-        // arrange + act
-        new ConfluenceRestClient("", anyCloseableHttpClient(), null, null, null);
+        assertThrows("rootConfluenceUrl must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            new ConfluenceRestClient("", anyCloseableHttpClient(), null, null, null);
+        });
     }
 
     @Test
     public void instantiation_withNullHttpClient_throwsIllegalArgumentException() {
         // assert
-        this.expectedException.expect(IllegalArgumentException.class);
-        this.expectedException.expectMessage("httpClient must be set");
-
-        // arrange + act
-        new ConfluenceRestClient(CONFLUENCE_ROOT_URL, null, null, null, null);
+        assertThrows("httpClient must be set", IllegalArgumentException.class, () -> {
+            // arrange + act
+            new ConfluenceRestClient(CONFLUENCE_ROOT_URL, null, null, null, null);
+        });
     }
 
     @Test
@@ -545,12 +538,12 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // assert
-        this.expectedException.expect(RequestFailedException.class);
-        this.expectedException.expectCause(is(equalTo(exception)));
-        this.expectedException.expectMessage(containsString("expected"));
+        Exception expectedException = assertThrows("expected", RequestFailedException.class, () -> {
+            // act
+            confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
+        });
 
-        // act
-        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
+        assertThat(expectedException.getCause(), is(equalTo(exception)));
     }
 
     @Test
@@ -560,11 +553,11 @@ public class ConfluenceRestClientTest {
         ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // assert
-        this.expectedException.expect(RequestFailedException.class);
-        this.expectedException.expectMessage(containsString("{\"some\": \"json\"}"));
+        assertThrows("{\"some\": \"json\"}", RequestFailedException.class, () -> {
+            // act
+            confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
+        });
 
-        // act
-        confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
     }
 
     @Test

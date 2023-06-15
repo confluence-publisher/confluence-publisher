@@ -16,8 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import net.sourceforge.plantuml.cucadiagram.dot.Graphviz;
-import net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils;
+import net.sourceforge.plantuml.dot.Graphviz;
+import net.sourceforge.plantuml.dot.GraphvizUtils;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

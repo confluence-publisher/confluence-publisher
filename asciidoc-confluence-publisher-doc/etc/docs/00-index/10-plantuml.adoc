@@ -72,3 +72,31 @@ System(systemAlias, "Label", "Optional Description")
 
 Rel(personAlias, containerAlias, "Label", "Optional Technology")
 ....
+
+== C4-PlantUML using stdlib (no internet connection required)
+
+https://github.com/plantuml-stdlib/C4-PlantUML[C4-PlantUML] diagrams are supported as well.
+
+----
+[plantuml, c4-stdlib-diagram, png]
+....
+!include <C4/C4_Container>
+
+Person(personAlias, "Label", "Optional Description")
+Container(containerAlias, "Label", "Technology", "Optional Description")
+
+Rel(personAlias, containerAlias, "Label", "Optional Technology")
+....
+----
+
+
+[plantuml, c4-stdlib-diagram, png]
+....
+!include <C4/C4_Container>
+
+Person(personAlias, "Label", "Optional Description")
+Container(containerAlias, "Label", "Technology", "Optional Description")
+
+Rel(personAlias, containerAlias, "Label", "Optional Technology")
+....
+

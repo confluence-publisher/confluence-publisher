@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM azul/zulu-openjdk-alpine:11-jre
 
 RUN apk add --update graphviz ttf-dejavu
 

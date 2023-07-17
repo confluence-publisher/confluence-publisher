@@ -1,4 +1,4 @@
-package org.sahli.confluence.publisher.converter;
+package org.sahli.confluence.publisher.converter.model;
 
 import java.util.List;
 

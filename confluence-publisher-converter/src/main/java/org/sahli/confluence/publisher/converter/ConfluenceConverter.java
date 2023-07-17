@@ -18,27 +18,10 @@ package org.sahli.confluence.publisher.converter;
 
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.FileSystems.newFileSystem;
-import static java.nio.file.Files.*;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
 /**
  * @author Alain Sahli
@@ -46,38 +29,20 @@ import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
  */
 public final class ConfluenceConverter {
 
-    private final static Logger LOGGER = Logger.getLogger(ConfluenceConverter.class.getSimpleName());
-
-    private static final String TEMPLATE_ROOT_CLASS_PATH_LOCATION = "org/sahli/asciidoc/confluence/publisher/converter/templates";
+    private final static Logger LOGGER = LoggerFactory.getLogger(ConfluenceConverter.class);
 
     private final String spaceKey;
     private final String ancestorId;
 
-    private final ConfluencePageProcessor pageProcessor;
 
-    public ConfluenceConverter(String spaceKey, String ancestorId, ConfluencePageProcessor pageProcessor) {
+    public ConfluenceConverter(String spaceKey, String ancestorId) {
         this.spaceKey = spaceKey;
         this.ancestorId = ancestorId;
-        this.pageProcessor = pageProcessor;
     }
 
-    public ConfluencePublisherMetadata convert(PagesStructureProvider pagesStructureProvider, Path buildFolder, Map<String, Object> userAttributes) {
-        return convert(pagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, userAttributes);
-    }
+    public ConfluencePublisherMetadata convert(PagesStructureProvider pagesStructureProvider) {
 
-    public ConfluencePublisherMetadata convert(PagesStructureProvider pagesStructureProvider, PageTitlePostProcessor pageTitlePostProcessor, Path buildFolder, Map<String, Object> userAttributes) {
-        Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
-        createDirectories(templatesRootFolder);
-
-        Path assetsRootFolder = buildFolder.resolve("assets").toAbsolutePath();
-        createDirectories(assetsRootFolder);
-
-        extractTemplatesFromClassPathTo(templatesRootFolder);
-
-        PagesStructure structure = pagesStructureProvider.structure();
-        List<Page> asciidocPages = structure.pages();
-        Charset sourceEncoding = pagesStructureProvider.sourceEncoding();
-        List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, sourceEncoding, pageTitlePostProcessor, userAttributes, this.spaceKey);
+        List<ConfluencePageMetadata> confluencePages = pagesStructureProvider.buildPageTree();
 
         ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
         confluencePublisherMetadata.setSpaceKey(this.spaceKey);
@@ -87,195 +52,10 @@ public final class ConfluenceConverter {
         return confluencePublisherMetadata;
     }
 
-    private List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<Page> pages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey) {
-        List<ConfluencePageMetadata> confluencePages = new ArrayList<>();
-
-        pages.forEach((page) -> {
-            Path pageAssetsFolder = determinePageAssetsFolder(assetsRootFolder, page);
-            createDirectories(pageAssetsFolder);
-
-            ConfluencePage confluencePage = pageProcessor.newConfluencePage(page, sourceEncoding, templatesRootFolder, pageAssetsFolder, pageTitlePostProcessor, userAttributes, spaceKey);
-            Path contentFileTargetPath = writeToTargetStructure(page, pageAssetsFolder, confluencePage);
-
-            List<AttachmentMetadata> attachments = buildAttachments(page, pageAssetsFolder, confluencePage.attachments());
-            copyAttachmentsAvailableInSourceStructureToTargetStructure(attachments);
-            ensureAttachmentsExist(attachments);
-
-            List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, page.children(), sourceEncoding, pageTitlePostProcessor, userAttributes, spaceKey);
-            ConfluencePageMetadata confluencePageMetadata = buildConfluencePageMetadata(confluencePage, contentFileTargetPath, childConfluencePages, attachments);
-
-            confluencePages.add(confluencePageMetadata);
-        });
-
-        return confluencePages;
-    }
-
-    private static List<AttachmentMetadata> buildAttachments(Page asciidocPage, Path pageAssetsFolder, Map<String, String> attachmentsWithRelativePath) {
-        return attachmentsWithRelativePath.keySet().stream()
-                .map((attachmentWithRelativePath) -> {
-                    LOGGER.info(" Attachments Relative Path : " + attachmentWithRelativePath);
-                    Path relativeAttachmentPath = Paths.get(attachmentWithRelativePath);
-                    Path attachmentSourcePath = asciidocPage.path().getParent().resolve(relativeAttachmentPath);
-                    Path attachmentTargetPath = pageAssetsFolder.resolve(relativeAttachmentPath.getFileName());
-
-                    return new AttachmentMetadata(attachmentSourcePath, attachmentTargetPath);
-                })
-                .collect(toList());
-    }
-
-    private static ConfluencePageMetadata buildConfluencePageMetadata(ConfluencePage asciidocConfluencePage, Path contentFileTargetPath, List<ConfluencePageMetadata> childConfluencePages, List<AttachmentMetadata> attachments) {
-        ConfluencePageMetadata confluencePageMetadata = new ConfluencePageMetadata();
-        confluencePageMetadata.setTitle(asciidocConfluencePage.pageTitle());
-        confluencePageMetadata.setContentFilePath(contentFileTargetPath.toAbsolutePath().toString());
-        confluencePageMetadata.setChildren(childConfluencePages);
-        confluencePageMetadata.getAttachments().putAll(toTargetAttachmentFileNameAndAttachmentPath(attachments));
-        confluencePageMetadata.getLabels().addAll(asciidocConfluencePage.keywords());
-
-        return confluencePageMetadata;
-    }
-
-    private static Path writeToTargetStructure(Page asciidocPage, Path pageAssetsFolder, ConfluencePage asciidocConfluencePage) {
-        try {
-            Path contentFileTargetPath = determineTargetPagePath(asciidocPage, pageAssetsFolder);
-            write(contentFileTargetPath, asciidocConfluencePage.content().getBytes(UTF_8));
-
-            return contentFileTargetPath;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not write content of page '" + asciidocPage.path().toAbsolutePath().toString() + "' to target folder", e);
-        }
-    }
-
-    private static void copyAttachmentsAvailableInSourceStructureToTargetStructure(List<AttachmentMetadata> attachments) {
-        attachments.forEach((attachment) -> {
-            try {
-                LOGGER.info("Trying to copy file from : " + attachment.sourcePath());
-                LOGGER.info("to : " + attachment.targetPath());
-                if (exists(attachment.sourcePath())) {
-                    copy(attachment.sourcePath(), attachment.targetPath(), REPLACE_EXISTING);
-                }
-            } catch (DirectoryNotEmptyException e){
-                LOGGER.warning(e.getMessage());
-            } catch (IOException e) {
-                throw new RuntimeException("Could not copy attachment to target structure", e);
-            }
-        });
-    }
-
-    private static Map<String, String> toTargetAttachmentFileNameAndAttachmentPath(List<AttachmentMetadata> attachments) {
-        return attachments.stream().collect(toMap(
-                (attachment) -> attachment.targetPath().getFileName().toString(),
-                (attachment) -> attachment.targetPath().toString()
-        ));
-    }
-
-    private static Path determineTargetPagePath(Page asciidocPage, Path pageAssetsFolder) {
-        return replaceExtension(pageAssetsFolder.resolve(asciidocPage.path().getFileName()), ".adoc", ".html");
-    }
-
-    private static Path determinePageAssetsFolder(Path assetsRootFolder, Page asciidocPage) {
-        String uniquePageId = uniquePageId(asciidocPage.path());
-        Path pageAssetsFolder = assetsRootFolder.resolve(uniquePageId);
-
-        return pageAssetsFolder;
-    }
-
-    public static String uniquePageId(Path asciidocPagePath) {
-        return sha256Hex(asciidocPagePath.toAbsolutePath().toString());
-    }
-
-    private static Path replaceExtension(Path path, String existingExtension, String newExtension) {
-        return Paths.get(path.toString().replace(existingExtension, newExtension));
-    }
-
-    private static void extractTemplatesFromClassPathTo(Path targetFolder) {
-        createDirectories(targetFolder);
-        withTemplates((template) -> copyTemplateTo(targetFolder, template));
-    }
-
-    private static void withTemplates(Consumer<Path> templateConsumer) {
-        try {
-            URI templatePathUri = resolveTemplateRootUri();
-
-            if (templatePathUri.getScheme().startsWith("jar")) {
-                withTemplatesFromJar(templatePathUri, templateConsumer);
-            } else {
-                withTemplatesFromFileSystem(templatePathUri, templateConsumer);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not resolve template root folder", e);
-        }
-    }
-
-    private static URI resolveTemplateRootUri() throws URISyntaxException {
-        URL templateRootUrl = ConfluencePage.class.getClassLoader().getResource(TEMPLATE_ROOT_CLASS_PATH_LOCATION);
-
-        if (templateRootUrl == null) {
-            throw new RuntimeException("Could not load templates from class path '" + TEMPLATE_ROOT_CLASS_PATH_LOCATION + "'");
-        }
-
-        return templateRootUrl.toURI();
-    }
-
-    private static void withTemplatesFromFileSystem(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
-        list(Paths.get(templatePathUri)).forEach(templateConsumer);
-    }
-
-    private static void withTemplatesFromJar(URI templatePathUri, Consumer<Path> templateConsumer) throws IOException {
-        URI jarFileUri = URI.create(templatePathUri.toString().substring(0, templatePathUri.toString().indexOf('!')));
-
-        try (FileSystem jarFileSystem = newFileSystem(jarFileUri, emptyMap())) {
-            Path templateRootFolder = jarFileSystem.getPath("/" + TEMPLATE_ROOT_CLASS_PATH_LOCATION);
-            list(templateRootFolder).forEach(templateConsumer);
-        }
-    }
-
-    private static void ensureAttachmentsExist(List<AttachmentMetadata> attachments) {
-        attachments.forEach((attachment) -> ensureAttachmentExists(attachment));
-    }
-
-    private static void ensureAttachmentExists(AttachmentMetadata attachment) {
-        boolean attachmentExists = exists(attachment.targetPath());
-
-        if (!(attachmentExists)) {
-            throw new RuntimeException("Attachment '" + attachment.sourcePath().getFileName() + "' does not exist");
-        }
-    }
-
-    private static void createDirectories(Path directoryPath) {
-        try {
-            Files.createDirectories(directoryPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create directory '" + directoryPath.toAbsolutePath().toString() + "'", e);
-        }
-    }
-
-    private static void copyTemplateTo(Path targetFolder, Path template) {
-        try {
-            copy(template, targetFolder.resolve(template.getFileName().toString()), REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not write template to target file", e);
-        }
-    }
 
 
-    private static class AttachmentMetadata {
 
-        private final Path sourcePath;
-        private final Path targetPath;
 
-        AttachmentMetadata(Path sourcePath, Path targetPath) {
-            this.sourcePath = sourcePath;
-            this.targetPath = targetPath;
-        }
 
-        Path sourcePath() {
-            return this.sourcePath;
-        }
-
-        Path targetPath() {
-            return this.targetPath;
-        }
-
-    }
 
 }

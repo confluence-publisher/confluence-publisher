@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -33,20 +34,26 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor;
-import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
-import org.sahli.confluence.publisher.converter.ConfluenceConverter;
-import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.*;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
-import org.sahli.confluence.publisher.converter.PagesStructureProvider;
+import org.sahli.confluence.publisher.converter.processor.ConfluencePageProcessor;
+import org.sahli.confluence.publisher.converter.processor.PageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.processor.PreProcessor;
+import org.sahli.confluence.publisher.converter.provider.FolderBasedPagesStructureProvider;
+import org.sahli.markdown.processor.ToAsciiDocPreProcessor;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor.ADOC_FILE_EXTENSION;
+import static org.sahli.markdown.processor.FlexmarkProcessor.MD_FILE_EXTENSION;
 
 /**
  * @author Alain Sahli
@@ -149,13 +156,18 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
         }
 
         try {
+            Charset charset = Charset.forName(this.sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(this.pageTitlePrefix, this.pageTitleSuffix);
 
-            PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(this.asciidocRootFolder.toPath(), Charset.forName(this.sourceEncoding));
-
-            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(this.spaceKey, this.ancestorId, new AsciidocConfluencePageProcessor());
             Map<String, Object> attributes = this.attributes != null ? this.attributes : emptyMap();
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, this.confluencePublisherBuildFolder.toPath(), attributes);
+
+            ConfluencePageProcessor pageProcessor = new AsciidocConfluencePageProcessor(this.confluencePublisherBuildFolder.toPath(), spaceKey, charset, pageTitlePostProcessor, attributes);
+            Map<String, ConfluencePageProcessor> pageProcessors = ImmutableMap.of(ADOC_FILE_EXTENSION, pageProcessor);
+
+            PagesStructureProvider provider = new FolderBasedPagesStructureProvider(this.asciidocRootFolder.toPath(), pageProcessors, new HashMap<>());
+
+            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(this.spaceKey, this.ancestorId);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(provider);
 
             if ((this.password == null)) {
                 applyUsernameAndPasswordFromSettings();

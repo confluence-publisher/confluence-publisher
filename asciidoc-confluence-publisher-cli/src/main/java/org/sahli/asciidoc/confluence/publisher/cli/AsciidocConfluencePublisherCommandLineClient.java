@@ -16,6 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.cli;
 
+import com.google.common.collect.ImmutableMap;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
@@ -25,11 +26,11 @@ import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor;
-import org.sahli.asciidoc.confluence.publisher.converter.FolderBasedAsciidocPagesStructureProvider;
 import org.sahli.asciidoc.confluence.publisher.converter.PrefixAndSuffixPageTitlePostProcessor;
-import org.sahli.confluence.publisher.converter.ConfluenceConverter;
-import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
-import org.sahli.confluence.publisher.converter.PagesStructureProvider;
+import org.sahli.confluence.publisher.converter.*;
+import org.sahli.confluence.publisher.converter.processor.ConfluencePageProcessor;
+import org.sahli.confluence.publisher.converter.processor.PageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.provider.FolderBasedPagesStructureProvider;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -47,6 +48,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.*;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor.ADOC_FILE_EXTENSION;
 
 public class AsciidocConfluencePublisherCommandLineClient {
 
@@ -81,11 +83,14 @@ public class AsciidocConfluencePublisherCommandLineClient {
         boolean notifyWatchers = argumentsParser.optionalBooleanArgument("notifyWatchers", args).orElse(true);
 
         try {
-            PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
             PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor(prefix, suffix);
+            ConfluencePageProcessor pageProcessor = new AsciidocConfluencePageProcessor(buildFolder, spaceKey, sourceEncoding, pageTitlePostProcessor, attributes);
+            Map<String, ConfluencePageProcessor> pageProcessorMap = ImmutableMap.of(ADOC_FILE_EXTENSION, pageProcessor);
+            PagesStructureProvider pagesStructureProvider = new FolderBasedPagesStructureProvider(documentationRootFolder, pageProcessorMap);
 
-            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(spaceKey, ancestorId, new AsciidocConfluencePageProcessor());
-            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, buildFolder, attributes);
+
+            ConfluenceConverter asciidocConfluenceConverter = new ConfluenceConverter(spaceKey, ancestorId);
+            ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(pagesStructureProvider);
 
             if (convertOnly) {
                 System.out.println("Publishing to Confluence skipped ('convert only' is enabled)");

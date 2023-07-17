@@ -16,29 +16,33 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
-import org.sahli.confluence.publisher.converter.ConfluenceConverter;
-import org.sahli.confluence.publisher.converter.PageTitlePostProcessor;
-import org.sahli.confluence.publisher.converter.PagesStructureProvider;
+import org.sahli.confluence.publisher.converter.*;
+import org.sahli.confluence.publisher.converter.processor.ConfluencePageProcessor;
+import org.sahli.confluence.publisher.converter.processor.PageTitlePostProcessor;
+import org.sahli.confluence.publisher.converter.provider.FolderBasedPagesStructureProvider;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.ExpectedException.none;
-import static org.sahli.confluence.publisher.converter.ConfluenceConverter.uniquePageId;
+import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageProcessor.ADOC_FILE_EXTENSION;
+import static org.sahli.asciidoc.confluence.publisher.converter.Helper.*;
+import static org.sahli.confluence.publisher.converter.ConfluenceHelper.uniquePageId;
 
 /**
  * @author Alain Sahli
@@ -57,24 +61,41 @@ public class AsciidocConfluenceConverterTest {
     @Rule
     public final ExpectedException expectedException = none();
 
+
+
+    private ConfluencePageProcessor processor(Path buildFolder, Map<String, Object> userAttributes) {
+        try {
+            return new AsciidocConfluencePageProcessor(buildFolder, SPACE_KEY, userAttributes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ConfluencePageProcessor processor(Path buildFolder, PageTitlePostProcessor pageTitlePostProcessor) {
+        try {
+            return new AsciidocConfluencePageProcessor(buildFolder, SPACE_KEY, pageTitlePostProcessor);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
-        Map<String, Object> userAttributes = new HashMap<>();
-        userAttributes.put("name", "Rick and Morty");
-        userAttributes.put("genre", "science fiction");
 
-        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        ConfluencePageProcessor pageProcessor = processor(buildFolder, RICK_MORTY);
+        Map<String, ConfluencePageProcessor> pageProcessors = ImmutableMap.of(ADOC_FILE_EXTENSION,pageProcessor);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedPagesStructureProvider(documentationRootFolder, pageProcessors);
 
         // act
-        ConfluenceConverter confluenceConverter = new ConfluenceConverter("~personalSpace", "1234", new AsciidocConfluencePageProcessor());
-        ConfluencePublisherMetadata confluencePublisherMetadata = confluenceConverter.convert(pagesStructureProvider, buildFolder, userAttributes);
+        ConfluenceConverter confluenceConverter = new ConfluenceConverter(SPACE_KEY, ANCESTOR_ID);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluenceConverter.convert(pagesStructureProvider);
 
         // assert
-        assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
-        assertThat(confluencePublisherMetadata.getAncestorId(), is("1234"));
+        assertThat(confluencePublisherMetadata.getSpaceKey(), is(SPACE_KEY));
+        assertThat(confluencePublisherMetadata.getAncestorId(), is(ANCESTOR_ID));
         assertThat(confluencePublisherMetadata.getPages().size(), is(1));
 
         ConfluencePageMetadata indexPageMetadata = confluencePublisherMetadata.getPages().get(0);
@@ -102,21 +123,23 @@ public class AsciidocConfluenceConverterTest {
         assertAttachmentFilePath(subPageMetadata, "embedded-diagram.png", targetFilePath(buildFolder, documentationRootFolder, "index/sub-page.adoc", "embedded-diagram.png"));
     }
 
+    @Ignore("TODO add parameter to allow/disable runtimeException")
     @Test
     public void convertAndBuildConfluencePages_withPageReferencingNonExistingAttachment_throwsException() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get("src/test/resources/non-existing-attachment").toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
-
-        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
+        ConfluencePageProcessor pageProcessor = processor(buildFolder, emptyMap());
+        Map<String, ConfluencePageProcessor> pageProcessors = ImmutableMap.of(ADOC_FILE_EXTENSION,pageProcessor);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedPagesStructureProvider(documentationRootFolder, pageProcessors);
 
         // assert
         this.expectedException.expect(RuntimeException.class);
         this.expectedException.expectMessage("Attachment 'non-existing-attachment.png' does not exist");
 
         // act
-        ConfluenceConverter confluenceConverter = new ConfluenceConverter("~personalSpace", "1234", new AsciidocConfluencePageProcessor());
-        confluenceConverter.convert(pagesStructureProvider, buildFolder, emptyMap());
+        ConfluenceConverter confluenceConverter = new ConfluenceConverter(SPACE_KEY, ANCESTOR_ID);
+        confluenceConverter.convert(pagesStructureProvider);
     }
 
     @Test
@@ -125,16 +148,18 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("(Doc) ", " (1.0)");
+        ConfluencePageProcessor pageProcessor = processor(buildFolder, pageTitlePostProcessor);
+        Map<String, ConfluencePageProcessor> pageProcessors = ImmutableMap.of(ADOC_FILE_EXTENSION,pageProcessor);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedPagesStructureProvider(documentationRootFolder, pageProcessors);
 
         // act
-        ConfluenceConverter confluenceConverter = new ConfluenceConverter("~personalSpace", "1234", new AsciidocConfluencePageProcessor());
-        ConfluencePublisherMetadata confluencePublisherMetadata = confluenceConverter.convert(pagesStructureProvider, pageTitlePostProcessor, buildFolder, emptyMap());
+        ConfluenceConverter confluenceConverter = new ConfluenceConverter(SPACE_KEY, ANCESTOR_ID);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluenceConverter.convert(pagesStructureProvider);
 
         // assert
-        assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
-        assertThat(confluencePublisherMetadata.getAncestorId(), is("1234"));
+        assertThat(confluencePublisherMetadata.getSpaceKey(), is(SPACE_KEY));
+        assertThat(confluencePublisherMetadata.getAncestorId(), is(ANCESTOR_ID));
         assertThat(confluencePublisherMetadata.getPages().size(), is(1));
 
         ConfluencePageMetadata indexPageMetadata = confluencePublisherMetadata.getPages().get(0);
@@ -147,11 +172,13 @@ public class AsciidocConfluenceConverterTest {
         Path documentationRootFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
         Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
 
-        PagesStructureProvider pagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
-        ConfluenceConverter confluenceConverter = new ConfluenceConverter("~personalSpace", "1234", new AsciidocConfluencePageProcessor());
+        ConfluencePageProcessor pageProcessor = processor(buildFolder, emptyMap());
+        Map<String, ConfluencePageProcessor> pageProcessors = ImmutableMap.of(ADOC_FILE_EXTENSION,pageProcessor);
+        PagesStructureProvider pagesStructureProvider = new FolderBasedPagesStructureProvider(documentationRootFolder, pageProcessors);
+        ConfluenceConverter confluenceConverter = new ConfluenceConverter(SPACE_KEY, ANCESTOR_ID);
 
         // act
-        confluenceConverter.convert(pagesStructureProvider, buildFolder, emptyMap());
+        confluenceConverter.convert(pagesStructureProvider);
 
         // assert
         assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));

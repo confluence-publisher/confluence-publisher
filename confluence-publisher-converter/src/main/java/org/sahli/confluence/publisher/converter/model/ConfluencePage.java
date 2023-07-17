@@ -14,30 +14,19 @@
  * limitations under the License.
  */
 
-package org.sahli.confluence.publisher.converter;
+package org.sahli.confluence.publisher.converter.model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 
-import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Alain Sahli
  * @author Christian Stettler
  */
 public class ConfluencePage {
-
 
     private final String pageTitle;
     private final String htmlContent;
@@ -66,6 +55,7 @@ public class ConfluencePage {
     public List<String> keywords() {
         return unmodifiableList(this.keywords);
     }
+
 
 
 }

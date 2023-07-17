@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package org.sahli.confluence.publisher.converter;
+package org.sahli.confluence.publisher.converter.processor;
 
 /**
  * @author Christian Stettler
  */
-public class NoOpPageTitlePostProcessor implements PageTitlePostProcessor {
+public interface PageTitlePostProcessor {
 
-    @Override
-    public String process(String pageTitle) {
-        return pageTitle;
-    }
+    String process(String pageTitle);
 
 }

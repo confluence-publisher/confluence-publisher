@@ -420,7 +420,7 @@ public class ConfluenceRestClientTest {
         ArgumentCaptor<HttpRequestBase> httpRequestArgumentCaptor = ArgumentCaptor.forClass(HttpRequestBase.class);
 
         // act
-        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+        confluenceRestClient.sendRequest(httpRequest,0 , (response) -> null);
 
         // assert
         verify(closeableHttpClient, times(1)).execute(httpRequestArgumentCaptor.capture());
@@ -440,7 +440,7 @@ public class ConfluenceRestClientTest {
         ArgumentCaptor<HttpRequestBase> httpRequestArgumentCaptor = ArgumentCaptor.forClass(HttpRequestBase.class);
 
         // act
-        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+        confluenceRestClient.sendRequest(httpRequest, 0, (response) -> null);
 
         // assert
         verify(closeableHttpClient, times(1)).execute(httpRequestArgumentCaptor.capture());
@@ -460,8 +460,8 @@ public class ConfluenceRestClientTest {
 
         // act
         long startTime = currentTimeMillis();
-        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
-        confluenceRestClient.sendRequest(httpRequest, (response) -> null);
+        confluenceRestClient.sendRequest(httpRequest, 0, (response) -> null);
+        confluenceRestClient.sendRequest(httpRequest, 0, (response) -> null);
         long endTime = currentTimeMillis();
 
         // assert

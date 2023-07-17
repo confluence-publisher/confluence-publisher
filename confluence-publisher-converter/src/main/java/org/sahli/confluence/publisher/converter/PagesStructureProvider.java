@@ -16,12 +16,15 @@
 
 package org.sahli.confluence.publisher.converter;
 
-import java.nio.charset.Charset;
+import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
+import org.sahli.confluence.publisher.converter.model.PagesStructure;
+
+import java.util.List;
 
 public interface PagesStructureProvider {
 
     PagesStructure structure();
 
-    Charset sourceEncoding();
+    List<ConfluencePageMetadata> buildPageTree();
 
 }

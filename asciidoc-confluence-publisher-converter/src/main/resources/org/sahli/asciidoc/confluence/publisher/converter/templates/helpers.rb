@@ -15,12 +15,12 @@ end
 module Slim::Helpers
 
   # Defaults
-  DEFAULT_SECTNUMLEVELS = 3
+  DEFAULT_SECTNUMLEVELS = 3 unless const_defined?(:DEFAULT_SECTNUMLEVELS)
 
-  VOID_ELEMENTS = %w(area base br col command embed hr img input keygen link meta param source track wbr)
+  VOID_ELEMENTS = %w(area base br col command embed hr img input keygen link meta param source track wbr) unless const_defined?(:VOID_ELEMENTS)
 
-  CG_ALPHA = '[a-zA-Z]'
-  CC_ALNUM = 'a-zA-Z0-9'
+  CG_ALPHA = '[a-zA-Z]' unless const_defined?(:CG_ALPHA)
+  CC_ALNUM = 'a-zA-Z0-9' unless const_defined?(:CC_ALNUM)
 
   # Detects strings that resemble URIs.
   #
@@ -32,7 +32,7 @@ module Slim::Helpers
   #
   #   not c:/sample.adoc or c:\sample.adoc
   #
-  UriSniffRx = %r{^#{CG_ALPHA}[#{CC_ALNUM}.+-]+:/{0,2}}
+  UriSniffRx = %r{^#{CG_ALPHA}[#{CC_ALNUM}.+-]+:/{0,2}} unless const_defined?(:UriSniffRx)
 
   ##
   # Creates an HTML tag with the given name and optionally attributes. Can take

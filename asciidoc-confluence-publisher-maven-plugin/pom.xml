@@ -38,13 +38,7 @@
         </dependency>
         <dependency>
             <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
-            <artifactId>asciidoc-confluence-publisher-converter</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <artifactId>markdown-confluence-publisher-converter</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>

@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package org.sahli.asciidoc.confluence.publisher.converter;
+package org.sahli.confluence.publisher.converter.processor;
 
-import org.sahli.confluence.publisher.converter.FolderBasedPagesStructureProvider;
-
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
-public class FolderBasedAsciidocPagesStructureProvider extends FolderBasedPagesStructureProvider {
-
-    private static final String ADOC_FILE_EXTENSION = ".adoc";
-
-    public FolderBasedAsciidocPagesStructureProvider(Path documentationRootFolder, Charset sourceEncoding) {
-        super(documentationRootFolder, sourceEncoding);
-    }
+/**
+ * @author Christian Stettler
+ */
+public class NoOpPageTitlePostProcessor implements PageTitlePostProcessor {
 
     @Override
-    protected String getExtension() {
-        return ADOC_FILE_EXTENSION;
+    public String process(String pageTitle) {
+        return pageTitle;
     }
+
 }

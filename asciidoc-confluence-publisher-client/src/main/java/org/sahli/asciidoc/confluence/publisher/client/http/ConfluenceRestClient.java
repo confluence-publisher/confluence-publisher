@@ -24,22 +24,20 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -59,6 +57,8 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
  * @author Christian Stettler
  */
 public class ConfluenceRestClient implements ConfluenceClient {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(ConfluenceRestClient.class);
 
     private final CloseableHttpClient httpClient;
     private final String username;
@@ -224,17 +224,28 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     private <T> T sendRequestAndFailIfNot20x(HttpRequestBase request, Function<HttpResponse, T> responseHandler) {
-        return sendRequest(request, (response) -> {
+        return sendRequestAndFailIfNot20x(request, 0, responseHandler);
+    }
+
+    private <T> T sendRequestAndFailIfNot20x(HttpRequestBase request,final int retryCount, Function<HttpResponse, T> responseHandler) {
+        return sendRequest(request,retryCount, (response) -> {
             StatusLine statusLine = response.getStatusLine();
             if (statusLine.getStatusCode() < 200 || statusLine.getStatusCode() > 206) {
-                throw new RequestFailedException(request, response, null);
+                if (retryCount > 5){
+                    throw new RequestFailedException(request, response, null);
+                } else {
+                    int newRetryCount = retryCount+1;
+                    LOGGER.warn("Retrying : " + newRetryCount + " Request " + request.getURI());
+                    return sendRequestAndFailIfNot20x(request,newRetryCount, responseHandler);
+                }
+
             }
 
             return responseHandler.apply(response);
         });
     }
 
-    <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
+    <T> T sendRequest(HttpRequestBase httpRequest,int retryCount, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
 
         if (this.rateLimiter != null) {
@@ -243,7 +254,17 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
             return responseHandler.apply(response);
+        } catch (SocketTimeoutException e){
+            if (retryCount < 5){
+                LOGGER.warn("TimeOut Exception, "+retryCount+" retry/ies");
+                retryCount++;
+                return sendRequest(httpRequest, retryCount, responseHandler);
+            } else {
+                throw new RequestFailedException(httpRequest, null, e);
+            }
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+
             throw new RequestFailedException(httpRequest, null, e);
         }
     }
@@ -318,7 +339,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
     public String getPropertyByKey(String contentId, String key) {
         HttpGet propertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
 
-        return sendRequest(propertyByKeyRequest, (response) -> {
+        return sendRequest(propertyByKeyRequest, 0, (response) -> {
             if (response.getStatusLine().getStatusCode() == 200) {
                 return extractPropertyValueFromJsonNode(parseJsonResponse(response));
             } else {
@@ -330,13 +351,13 @@ public class ConfluenceRestClient implements ConfluenceClient {
     @Override
     public void deletePropertyByKey(String contentId, String key) {
         HttpDelete deletePropertyByKeyRequest = this.httpRequestFactory.deletePropertyByKeyRequest(contentId, key);
-        sendRequest(deletePropertyByKeyRequest, (ignored) -> null);
+        sendRequest(deletePropertyByKeyRequest, 0, (ignored) -> null);
     }
 
     @Override
     public List<String> getLabels(String contentId) {
         HttpGet getLabelsRequest = this.httpRequestFactory.getLabelsRequest(contentId);
-        return sendRequest(getLabelsRequest, response -> {
+        return sendRequest(getLabelsRequest, 0, response -> {
             List<String> labels = new ArrayList<>();
 
             JsonNode jsonNode = parseJsonResponse(response);

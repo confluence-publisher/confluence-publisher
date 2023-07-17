@@ -16,12 +16,11 @@
 
 package org.sahli.asciidoc.confluence.publisher.client;
 
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
-import org.sahli.asciidoc.confluence.publisher.client.http.NotFoundException;
+import org.sahli.asciidoc.confluence.publisher.client.http.*;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
@@ -50,7 +48,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
  */
 public class ConfluencePublisher {
 
-    private final static Logger LOGGER = Logger.getLogger(ConfluencePublisher.class.getSimpleName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(ConfluencePublisher.class);
 
     static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
     static final int INITIAL_PAGE_VERSION = 1;
@@ -131,12 +129,14 @@ public class ConfluencePublisher {
         pages.forEach(page -> {
             String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 
-            addOrUpdateLabels(contentId, page.getLabels());
+            if (contentId != null) {
+                addOrUpdateLabels(contentId, page.getLabels());
 
-            deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
-            addAttachments(contentId, page.getAttachments());
+                deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
+                addAttachments(contentId, page.getAttachments());
 
-            startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
+                startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
+            }
         });
     }
 
@@ -168,22 +168,28 @@ public class ConfluencePublisher {
     }
 
     private String addOrUpdatePageUnderAncestor(String spaceKey, String ancestorId, ConfluencePageMetadata page) {
-        String contentId;
-
+        String contentId = null;
         try {
-            contentId = this.confluenceClient.getPageByTitle(spaceKey, ancestorId, page.getTitle());
-            updatePage(contentId, ancestorId, page);
-        } catch (NotFoundException e) {
-            String content = fileContent(page.getContentFilePath(), UTF_8);
-            contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
-            this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, hash(content));
-            this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
+            try {
+                contentId = this.confluenceClient.getPageByTitle(spaceKey, ancestorId, page.getTitle());
+                updatePage(contentId, ancestorId, page);
+            } catch (NotFoundException e) {
+                String content = fileContent(page.getContentFilePath(), UTF_8);
+                contentId = this.confluenceClient.addPageUnderAncestor(spaceKey, ancestorId, page.getTitle(), content, this.versionMessage);
+                this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, hash(content));
+                this.confluencePublisherListener.pageAdded(new ConfluencePage(contentId, page.getTitle(), content, INITIAL_PAGE_VERSION));
+            }
+        } catch (RequestFailedException rfe) {
+            LOGGER.error("For file : " + page.getContentFilePath());
+            LOGGER.error(rfe.getMessage());
         }
 
         return contentId;
+
     }
 
     private void updatePage(String contentId, String ancestorId, ConfluencePageMetadata page) {
+
         String content = fileContent(page.getContentFilePath(), UTF_8);
         ConfluencePage existingPage = this.confluenceClient.getPageWithContentAndVersionById(contentId);
         String existingContentHash = this.confluenceClient.getPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY);
@@ -196,6 +202,7 @@ public class ConfluencePublisher {
             this.confluenceClient.setPropertyByKey(contentId, CONTENT_HASH_PROPERTY_KEY, newContentHash);
             this.confluencePublisherListener.pageUpdated(existingPage, new ConfluencePage(contentId, page.getTitle(), content, newPageVersion));
         }
+
     }
 
     private void addAttachments(String contentId, Map<String, String> attachments) {

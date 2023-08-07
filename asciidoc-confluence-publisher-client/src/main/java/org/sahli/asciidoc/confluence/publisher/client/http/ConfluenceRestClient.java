@@ -30,15 +30,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.ssl.SSLContextBuilder;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -53,6 +50,7 @@ import static java.util.stream.StreamSupport.stream;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
+import static org.sahli.asciidoc.confluence.publisher.client.http.HttpClientConnectionManagerFactory.getHttpClientConnectionManager;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
@@ -68,7 +66,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond,
+            String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, username, passwordOrPersonalAccessToken);
     }
 
@@ -139,15 +138,17 @@ public class ConfluenceRestClient implements ConfluenceClient {
     }
 
     private List<JsonNode> findPagesUnderAncestor(JsonNode jsonNode, String ancestorId) {
-        return stream(jsonNode.withArray("results").spliterator(), false)
-                .filter(resultNode -> hasAncestor(resultNode, ancestorId))
+        return stream(jsonNode.withArray("results")
+                .spliterator(), false).filter(resultNode -> hasAncestor(resultNode, ancestorId))
                 .collect(toList());
     }
 
     private boolean hasAncestor(JsonNode resultNode, String ancestorId) {
         if (resultNode.has("ancestors")) {
-            return stream(resultNode.withArray("ancestors").spliterator(), false)
-                    .anyMatch(ancestorNode -> ancestorNode.get("id").asText().equals(ancestorId));
+            return stream(resultNode.withArray("ancestors")
+                    .spliterator(), false).anyMatch(ancestorNode -> ancestorNode.get("id")
+                    .asText()
+                    .equals(ancestorId));
         }
 
         return false;
@@ -165,7 +166,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     @Override
     public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent,
+                notifyWatchers);
         sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
             closeInputStream(attachmentContent);
 
@@ -186,7 +188,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
         return sendRequestAndFailIfNot20x(attachmentByFileNameRequest, (response) -> {
             JsonNode jsonNode = parseJsonResponse(response);
 
-            int numberOfResults = jsonNode.get("size").asInt();
+            int numberOfResults = jsonNode.get("size")
+                    .asInt();
             if (numberOfResults == 0) {
                 throw new NotFoundException();
             }
@@ -195,7 +198,9 @@ public class ConfluenceRestClient implements ConfluenceClient {
                 throw new MultipleResultsException();
             }
 
-            ConfluenceAttachment attachmentId = extractConfluenceAttachment(jsonNode.withArray("results").elements().next());
+            ConfluenceAttachment attachmentId = extractConfluenceAttachment(jsonNode.withArray("results")
+                    .elements()
+                    .next());
 
             return attachmentId;
         });
@@ -214,7 +219,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     private JsonNode parseJsonResponse(HttpResponse response) {
         try {
-            return this.objectMapper.readTree(response.getEntity().getContent());
+            return this.objectMapper.readTree(response.getEntity()
+                    .getContent());
         } catch (IOException e) {
             throw new RuntimeException("Could not read JSON response", e);
         }
@@ -291,7 +297,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         return sendRequestAndFailIfNot20x(getChildPagesByIdRequest, (response) -> {
             JsonNode jsonNode = parseJsonResponse(response);
-            jsonNode.withArray("results").forEach((page) -> pages.add(extractConfluencePageWithoutContent(page)));
+            jsonNode.withArray("results")
+                    .forEach((page) -> pages.add(extractConfluencePageWithoutContent(page)));
 
             return pages;
         });
@@ -303,7 +310,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         return sendRequestAndFailIfNot20x(getAttachmentsRequest, (response) -> {
             JsonNode jsonNode = parseJsonResponse(response);
-            jsonNode.withArray("results").forEach(attachment -> attachments.add(extractConfluenceAttachment(attachment)));
+            jsonNode.withArray("results")
+                    .forEach(attachment -> attachments.add(extractConfluenceAttachment(attachment)));
 
             return attachments;
         });
@@ -320,7 +328,8 @@ public class ConfluenceRestClient implements ConfluenceClient {
         HttpGet propertyByKeyRequest = this.httpRequestFactory.getPropertyByKeyRequest(contentId, key);
 
         return sendRequest(propertyByKeyRequest, (response) -> {
-            if (response.getStatusLine().getStatusCode() == 200) {
+            if (response.getStatusLine()
+                    .getStatusCode() == 200) {
                 return extractPropertyValueFromJsonNode(parseJsonResponse(response));
             } else {
                 return null;
@@ -341,7 +350,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
             List<String> labels = new ArrayList<>();
 
             JsonNode jsonNode = parseJsonResponse(response);
-            jsonNode.withArray("results").elements().forEachRemaining(n -> labels.add(n.get("name").asText()));
+            jsonNode.withArray("results")
+                    .elements()
+                    .forEachRemaining(n -> labels.add(n.get("name")
+                            .asText()));
 
             return labels;
         });
@@ -362,7 +374,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private static ConfluencePage extractConfluencePageWithContent(JsonNode jsonNode) {
         String id = extractIdFromJsonNode(jsonNode);
         String title = extractTitleFromJsonNode(jsonNode);
-        String content = jsonNode.path("body").path("storage").get("value").asText();
+        String content = jsonNode.path("body")
+                .path("storage")
+                .get("value")
+                .asText();
         int version = extractVersionFromJsonNode(jsonNode);
 
         return new ConfluencePage(id, title, content, version);
@@ -380,25 +395,32 @@ public class ConfluenceRestClient implements ConfluenceClient {
         String id = extractIdFromJsonNode(jsonNode);
         String title = extractTitleFromJsonNode(jsonNode);
         int version = extractVersionFromJsonNode(jsonNode);
-        String relativeDownloadLink = jsonNode.path("_links").get("download").asText();
+        String relativeDownloadLink = jsonNode.path("_links")
+                .get("download")
+                .asText();
 
         return new ConfluenceAttachment(id, title, relativeDownloadLink, version);
     }
 
     private static String extractIdFromJsonNode(JsonNode jsonNode) {
-        return jsonNode.get("id").asText();
+        return jsonNode.get("id")
+                .asText();
     }
 
     private static String extractTitleFromJsonNode(JsonNode jsonNode) {
-        return jsonNode.get("title").asText();
+        return jsonNode.get("title")
+                .asText();
     }
 
     private static int extractVersionFromJsonNode(JsonNode jsonNode) {
-        return jsonNode.path("version").get("number").asInt();
+        return jsonNode.path("version")
+                .get("number")
+                .asInt();
     }
 
     private static String extractPropertyValueFromJsonNode(JsonNode jsonNode) {
-        return jsonNode.path("value").asText();
+        return jsonNode.path("value")
+                .asText();
     }
 
     private static void closeInputStream(InputStream inputStream) {
@@ -417,11 +439,6 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
-
-        // Allow pooled HTTP connections but always validate them to avoid errors due to stale connections (i.e. closed on server side)
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setValidateAfterInactivity(0);
-        builder.setConnectionManager(connectionManager);
 
         if (enableHttpClientSystemProperties) {
             builder.useSystemProperties();
@@ -444,32 +461,20 @@ public class ConfluenceRestClient implements ConfluenceClient {
             }
         }
 
-        if (disableSslVerification) {
-            builder.setSSLContext(trustAllSslContext());
-            builder.setSSLHostnameVerifier(new NoopHostnameVerifier());
-        }
+        HttpClientConnectionManager connectionManager = getHttpClientConnectionManager(disableSslVerification, enableHttpClientSystemProperties);
+        builder.setConnectionManager(connectionManager);
 
         return builder.build();
-    }
-
-    private static SSLContext trustAllSslContext() {
-        try {
-            return new SSLContextBuilder()
-                    .loadTrustMaterial((chain, authType) -> true)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Could not create trust-all SSL context", e);
-        }
     }
 
     private static String authorizationHeaderValue(String username, String password) {
         if (username == null || username.isEmpty()) {
             return "Bearer " + password;
         } else {
-            return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
+            return "Basic " + Base64.getEncoder()
+                    .encodeToString((username + ":" + password).getBytes(UTF_8));
         }
     }
-
 
     public static class ProxyConfiguration {
 
@@ -508,5 +513,4 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
 
     }
-
 }

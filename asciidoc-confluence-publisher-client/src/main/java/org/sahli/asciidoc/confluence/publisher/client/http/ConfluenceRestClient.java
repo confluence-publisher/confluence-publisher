@@ -34,6 +34,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 
@@ -416,6 +417,11 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
         HttpClientBuilder builder = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig);
+
+        // Allow pooled HTTP connections but always validate them to avoid errors due to stale connections (i.e. closed on server side)
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setValidateAfterInactivity(0);
+        builder.setConnectionManager(connectionManager);
 
         if (enableHttpClientSystemProperties) {
             builder.useSystemProperties();

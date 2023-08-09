@@ -47,6 +47,7 @@ import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -67,12 +68,12 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
-        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, username, passwordOrPersonalAccessToken);
+    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken );
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
-        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties), maxRequestsPerSecond, username,
+    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties, connectionTTL), maxRequestsPerSecond, username,
                 passwordOrPersonalAccessToken);
     }
 
@@ -407,7 +408,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         }
     }
 
-    private static CloseableHttpClient defaultHttpClient(ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties) {
+    private static CloseableHttpClient defaultHttpClient(ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Integer connectionTTL) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(20 * 1000)
                 .setConnectTimeout(20 * 1000)
@@ -436,6 +437,10 @@ public class ConfluenceRestClient implements ConfluenceClient {
                     builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, authorizationHeaderValue(proxyUsername, proxyPassword))));
                 }
             }
+        }
+
+        if (connectionTTL != null) {
+            builder.setConnectionTimeToLive(connectionTTL, MILLISECONDS);
         }
 
         if (disableSslVerification) {

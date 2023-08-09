@@ -20,47 +20,32 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.StreamSupport.stream;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class AsciidocConfluencePublisherCommandLineClientTest {
 
     @Test
     public void main_mandatoryArgumentMissing_throwsException() {
-        mandatoryArgumentNames().forEach((mandatoryArgumentName) -> {
-            try {
-                // arrange
-                String[] args = buildArgumentsWithout(mandatoryArgumentName);
-
-                // act
-                AsciidocConfluencePublisherCommandLineClient.main(args);
-                fail("expected exception for mandatory argument name '" + mandatoryArgumentName + "' not thrown");
-            } catch (Exception e) {
-                // assert
-                assertThat(e, is(instanceOf(IllegalArgumentException.class)));
-                assertThat(e.getMessage(), is("mandatory argument '" + mandatoryArgumentName + "' is missing"));
-            }
-        });
+        for (String mandatoryArgumentName : mandatoryArgumentNames()) {
+            String[] args = buildArgumentsWithout(mandatoryArgumentName);
+            var exception = assertThrows(IllegalArgumentException.class, () ->
+                    AsciidocConfluencePublisherCommandLineClient.main(args)
+            );
+            assertThat(exception.getMessage(), is("mandatory argument '" + mandatoryArgumentName + "' is missing"));
+        }
     }
 
     @Test
     public void main_mandatoryArgumentEmpty_throwsException() {
-        mandatoryArgumentNames().forEach((mandatoryArgumentName) -> {
-            try {
-                // arrange
-                String[] args = buildArgumentsWith(mandatoryArgumentName, "");
-
-                // act
-                AsciidocConfluencePublisherCommandLineClient.main(args);
-                fail("expected exception for mandatory argument name '" + mandatoryArgumentName + "' not thrown");
-            } catch (Exception e) {
-                // assert
-                assertThat(e, is(instanceOf(IllegalArgumentException.class)));
-                assertThat(e.getMessage(), is("mandatory argument '" + mandatoryArgumentName + "' is missing"));
-            }
-        });
+        for (String mandatoryArgumentName : mandatoryArgumentNames()) {
+            String[] args = buildArgumentsWithEmptyInput(mandatoryArgumentName);
+            var exception = assertThrows(IllegalArgumentException.class, () ->
+                    AsciidocConfluencePublisherCommandLineClient.main(args)
+            );
+            assertThat(exception.getMessage(), is("mandatory argument '" + mandatoryArgumentName + "' is missing"));
+        }
     }
 
     private static Iterable<String> mandatoryArgumentNames() {
@@ -77,13 +62,13 @@ public class AsciidocConfluencePublisherCommandLineClientTest {
         return stream(mandatoryArgumentNames().spliterator(), false)
                 .filter((mandatoryArgumentName) -> !mandatoryArgumentName.equals(argumentName))
                 .map((mandatoryArgumentName) -> mandatoryArgumentName + "=" + mandatoryArgumentName)
-                .toArray((size) -> new String[size]);
+                .toArray(String[]::new);
     }
 
-    private static String[] buildArgumentsWith(String argumentName, String argumentValue) {
+    private static String[] buildArgumentsWithEmptyInput(String argumentName) {
         return stream(mandatoryArgumentNames().spliterator(), false)
-                .map((mandatoryArgumentName) -> mandatoryArgumentName + "=" + (mandatoryArgumentName.equals(argumentName) ? argumentValue : mandatoryArgumentName))
-                .toArray((size) -> new String[size]);
+                .map((mandatoryArgumentName) -> mandatoryArgumentName + "=" + (mandatoryArgumentName.equals(argumentName) ? "" : mandatoryArgumentName))
+                .toArray(String[]::new);
     }
 
 }

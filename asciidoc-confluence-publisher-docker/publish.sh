@@ -5,6 +5,7 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     rootConfluenceUrl="$ROOT_CONFLUENCE_URL" \
     skipSslVerification="$SKIP_SSL_VERIFICATION" \
     maxRequestsPerSecond="$MAX_REQUESTS_PER_SECOND" \
+    connectionTimeToLive="$CONNECTION_TIME_TO_LIVE" \
     spaceKey="$SPACE_KEY" \
     ancestorId="$ANCESTOR_ID" \
     username="$USERNAME" \

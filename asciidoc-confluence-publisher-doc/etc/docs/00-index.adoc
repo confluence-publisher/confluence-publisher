@@ -169,6 +169,10 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 | Defines the number (positive integer or double) of REST API calls to execute within a second.
 | optional (defaults to no rate limit)
 
+| connectionTimeToLive
+| Defines the time to live (TTL) for HTTP connections. Can be used to resolve problems with stale HTTP connections if the server uses a low TTL (<2000ms).
+| optional (defaults to infinite)
+
 | spaceKey
 | The key of the Confluence space to publish to.
 | mandatory
@@ -386,6 +390,7 @@ The following command shows an example for publishing AsciiDoc sources via the C
 docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e SKIP_SSL_VERIFICATION=false \
    -e MAX_REQUESTS_PER_SECOND=10 \
+   -e CONNECTION_TIME_TO_LIVE=500 \
    -e USERNAME=username \
    -e PASSWORD=1234 \
    -e SPACE_KEY=XYZ \

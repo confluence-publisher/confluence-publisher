@@ -19,7 +19,9 @@ package org.sahli.asciidoc.confluence.publisher.cli;
 import io.restassured.specification.RequestSpecification;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
+import static org.junit.Assert.assertTrue;
 
 public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
 
@@ -226,6 +229,30 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(childPagesFor("327706"))
                 .then().body("results", hasSize(0));
+    }
+
+    @Rule
+    public TemporaryFolder buildDirectory = new TemporaryFolder();
+
+    @Test
+    public void publish_withConvertOnlyAndBuildDirectory_doesNotDeleteTheBuildDirectory() throws Exception {
+        // arrange
+        String[] args = {
+                "rootConfluenceUrl=http://localhost:8090",
+                "username=confluence-publisher-it",
+                "password=1234",
+                "spaceKey=CPI",
+                "ancestorId=327706",
+                "asciidocRootFolder=src/it/resources/default",
+                "convertOnly=true",
+                "asciidocBuildFolder="+buildDirectory.getRoot().getAbsolutePath()
+        };
+
+        // act
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+
+        // assert
+        assertTrue("Build directory was deleted", buildDirectory.getRoot().exists());
     }
 
     private static String pageIdBy(String title) {

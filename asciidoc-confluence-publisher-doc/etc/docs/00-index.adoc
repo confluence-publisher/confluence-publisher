@@ -375,6 +375,10 @@ have to be mounted to the `/var/asciidoc-root-folder` volume.
 In case your documentation sources are already available under a different path in your Docker container, you can
 specify the path to the documentation sources via the environment variable `ASCIIDOC_ROOT_FOLDER`.
 
+The generated Confluence XHTML will be stored in a temporary directory inside the container, and will be deleted after command exits.
+To keep the generated pages, for inspection, set `ASCIIDOC_BUILD_FOLDER` to a path that is mounted into
+the container. This path will _not_ be deleted after the command exits.
+
 All other mandatory and optional configuration properties from the Maven plugin have to be / can be specified as
 environment variable in all-uppercase writing, e.g. `ROOT_CONFLUENCE_URL` for `rootConfluenceUrl`.
 
@@ -424,7 +428,11 @@ publish-docs:
   variables:
     ASCIIDOC_ROOT_FOLDER: ./docs/
     ROOT_CONFLUENCE_URL: http://confluence-host
+    ASCIIDOC_BUILD_FOLDER: $CI_PROJECT_DIR/build/docs
     ...
   script:
     - publish.sh
+  archive:
+    paths:
+    - $CI_PROJECT_DIR/build/docs
 ----

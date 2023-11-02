@@ -725,6 +725,19 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithImage_returnsConfluencePageContentWithImageAndBorder() {
+        // arrange
+        String adocContent = "image::sunset.jpg[border=true]";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:image ac:border=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithImageInDifferentFolder_returnsConfluencePageContentWithImageAttachmentFileNameOnly() {
         // arrange
         String adocContent = "image::sub-folder/sunset.jpg[]";
@@ -1382,6 +1395,20 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithInlineImage_returnsConfluencePageWithInlineImageAndBorder() {
+        // arrange
+        String adocContent = "Some text image:sunset.jpg[border=true] with inline image";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\" ac:border=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

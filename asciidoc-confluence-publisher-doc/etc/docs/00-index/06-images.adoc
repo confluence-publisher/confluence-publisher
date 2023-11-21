@@ -79,3 +79,23 @@ This image has a link image:../images/frisbee.png[width=16, height=16, link=http
 ....
 
 This image has a link image:../images/frisbee.png[width=16, height=16, link=https://en.wikipedia.org/wiki/Frisbee].
+
+== Borders
+
+Block images can have a border added.
+
+[listing]
+....
+image::../images/frisbee.png[border]
+....
+
+image::../images/frisbee.png[border]
+
+So can inline images:
+
+[listing]
+....
+This line has an inline image image:../images/frisbee.png[width=16, height=16, border].
+....
+
+This line has an inline image image:../images/frisbee.png[width=16, height=16, border] within a text block.

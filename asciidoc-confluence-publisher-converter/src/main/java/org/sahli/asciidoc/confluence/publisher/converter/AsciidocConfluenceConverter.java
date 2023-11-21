@@ -63,10 +63,6 @@ public final class AsciidocConfluenceConverter {
         this.ancestorId = ancestorId;
     }
 
-    public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, Path buildFolder, Map<String, Object> userAttributes) {
-        return convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, userAttributes);
-    }
-
     public ConfluencePublisherMetadata convert(AsciidocPagesStructureProvider asciidocPagesStructureProvider, PageTitlePostProcessor pageTitlePostProcessor, Path buildFolder, Map<String, Object> userAttributes) {
         Path templatesRootFolder = buildFolder.resolve("templates").toAbsolutePath();
         createDirectories(templatesRootFolder);

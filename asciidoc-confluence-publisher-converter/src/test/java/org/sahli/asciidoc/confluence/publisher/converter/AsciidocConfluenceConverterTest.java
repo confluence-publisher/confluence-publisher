@@ -19,7 +19,6 @@ package org.sahli.asciidoc.confluence.publisher.converter;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
@@ -33,8 +32,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThrows;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
@@ -51,9 +51,6 @@ public class AsciidocConfluenceConverterTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @Rule
-    public final ExpectedException expectedException = none();
-
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
@@ -67,7 +64,7 @@ public class AsciidocConfluenceConverterTest {
 
         // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, userAttributes);
+        ConfluencePublisherMetadata confluencePublisherMetadata = asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, userAttributes);
 
         // assert
         assertThat(confluencePublisherMetadata.getSpaceKey(), is("~personalSpace"));
@@ -107,13 +104,11 @@ public class AsciidocConfluenceConverterTest {
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
-        // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("Attachment 'non-existing-attachment.png' does not exist");
-
-        // act
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
+        RuntimeException exeption = assertThrows(RuntimeException.class, () ->
+            asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, emptyMap())
+        );
+        assertThat(exeption.getMessage(), equalTo("Attachment 'non-existing-attachment.png' does not exist"));
     }
 
     @Test
@@ -148,7 +143,7 @@ public class AsciidocConfluenceConverterTest {
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
 
         // act
-        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, buildFolder, emptyMap());
+        asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, emptyMap());
 
         // assert
         assertThat(exists(buildFolder.resolve("templates").resolve("helpers.rb")), is(true));

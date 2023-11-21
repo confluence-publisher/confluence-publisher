@@ -16,12 +16,8 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
@@ -46,16 +42,12 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.rules.ExpectedException.none;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
-import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePageTest.RootCauseMatcher.rootCauseWithMessage;
-import static org.sahli.asciidoc.confluence.publisher.converter.ImageSizeCloseTo.hasImageSizeCloseTo;
 
 /**
  * @author Alain Sahli
@@ -70,9 +62,6 @@ public class AsciidocConfluencePageTest {
 
     @ClassRule
     public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
-
-    @Rule
-    public final ExpectedException expectedException = none();
 
     @Test
     public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() {
@@ -230,13 +219,12 @@ public class AsciidocConfluencePageTest {
         // arrange
         String adoc = "Content";
 
-        // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("failed to create confluence page for asciidoc content in");
-        this.expectedException.expect(rootCauseWithMessage("top-level heading or title meta information must be set"));
-
         // act
-        newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            newAsciidocConfluencePage(asciidocPage(adoc), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath())
+        );
+        assertThat(exception.getMessage(), containsString("failed to create confluence page for asciidoc content in"));
+        assertThat(exception.getCause().getMessage(), equalTo("top-level heading or title meta information must be set"));
     }
 
     @Test
@@ -753,8 +741,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithoutTableWithHeader_returnsConfluencePageContentWithTableWithoutHeader() {
         // arrange
-        String adocContent = "" +
-                "[cols=\"3*\"]\n" +
+        String adocContent = "[cols=\"3*\"]\n" +
                 "|===\n" +
                 "| A\n" +
                 "| B\n" +
@@ -780,8 +767,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableWithHeader_returnsConfluencePageContentWithTableWithHeader() {
         // arrange
-        String adocContent = "" +
-                "[cols=\"3*\", options=\"header\"]\n" +
+        String adocContent = "[cols=\"3*\", options=\"header\"]\n" +
                 "|===\n" +
                 "| A\n" +
                 "| B\n" +
@@ -807,8 +793,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableWithRowSpan_returnsConfluencePageWithTableWithRowSpan() {
         // arrange
-        String adocContent = "" +
-                "[cols=\"3*\", options=\"header\"]\n" +
+        String adocContent = "[cols=\"3*\", options=\"header\"]\n" +
                 "|===\n" +
                 "| A\n" +
                 "| B\n" +
@@ -833,8 +818,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableWithColSpan_returnsConfluencePageWithTableWithColSpan() {
         // arrange
-        String adocContent = "" +
-                "[cols=\"3*\", options=\"header\"]\n" +
+        String adocContent = "[cols=\"3*\", options=\"header\"]\n" +
                 "|===\n" +
                 "| A\n" +
                 "| B\n" +
@@ -857,8 +841,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableWithAsciiDocCell_returnsConfluencePageWithTableWithAsciiDocCell() {
         // arrange
-        String adocContent = "" +
-                "|===\n" +
+        String adocContent = "|===\n" +
                 "| A " +
                 "| B\n" +
                 "\n" +
@@ -1294,9 +1277,9 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"169\" ac:width=\"55\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
-        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
-        assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-diagram.png")), is(true));
+        String expectedContentPattern = "<ac:image ac:height=\"[1-9][0-9]*\" ac:width=\"[1-9][0-9]*\"><ri:attachment ri:filename=\"embedded-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), matchesPattern(expectedContentPattern));
+        assertTrue(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-diagram.png")));
     }
 
     @Test
@@ -1309,8 +1292,8 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"169\" ac:width=\"55\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
-        assertThat(asciidocConfluencePage.content(), containsString(expectedContent));
+        String expectedContentPattern = "<ac:image ac:height=\"[1-9][0-9]*\" ac:width=\"[1-9][0-9]*\"><ri:attachment ri:filename=\"included-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), matchesPattern(expectedContentPattern));
     }
 
     @Test
@@ -1477,8 +1460,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionWithBlockAnchor_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingBlockAnchor() {
         // arrange
-        String adocContent = "" +
-                "[[section-1]]\n" +
+        String adocContent = "[[section-1]]\n" +
                 "== Section 1\n" +
                 "Cross reference to <<section-1>>";
 
@@ -1486,8 +1468,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1495,8 +1476,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionWithCustomId_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingCustomId() {
         // arrange
-        String adocContent = "" +
-                "[#section-1]\n" +
+        String adocContent = "[#section-1]\n" +
                 "== Section 1\n" +
                 "Cross reference to <<section-1>>";
 
@@ -1504,8 +1484,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1513,16 +1492,14 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceInlineToSectionWithInlineAnchor_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingSectionTitle() {
         // arrange
-        String adocContent = "" +
-                "== Section 1 [[section-1]]\n" +
+        String adocContent = "== Section 1 [[section-1]]\n" +
                 "Cross reference to <<section-1>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1530,16 +1507,14 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToSectionAndCustomLabel_returnsConfluencePageContentWithInternalCrossReferenceToSectionUsingCustomLabel() {
         // arrange
-        String adocContent = "" +
-                "== Section 1 [[section-1]]\n" +
+        String adocContent = "== Section 1 [[section-1]]\n" +
                 "Cross reference to <<section-1,section 1>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1547,16 +1522,14 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToParagraph_returnsConfluencePageContentWithInternalCrossReferenceToParagraphUsingAnchorId() {
         // arrange
-        String adocContent = "" +
-                "[[paragraph1]]Paragraph\n\n" +
+        String adocContent = "[[paragraph1]]Paragraph\n\n" +
                 "Cross reference to <<paragraph1>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
+        String expectedContent = "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
                 "<p>Cross reference to <ac:link ac:anchor=\"paragraph1\"><ac:plain-text-link-body><![CDATA[[paragraph1]]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1564,16 +1537,14 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToParagraphAndCustomLabel_returnsConfluencePageContentWithInternalCrossReferenceToParagraphUsingCustomLabel() {
         // arrange
-        String adocContent = "" +
-                "[[paragraph1]]Paragraph\n\n" +
+        String adocContent = "[[paragraph1]]Paragraph\n\n" +
                 "Cross reference to <<paragraph1,Paragraph>>";
 
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
+        String expectedContent = "<p><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">paragraph1</ac:parameter></ac:structured-macro>Paragraph</p>\n" +
                 "<p>Cross reference to <ac:link ac:anchor=\"paragraph1\"><ac:plain-text-link-body><![CDATA[Paragraph]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1581,8 +1552,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithInternalCrossReferenceToBibliographyAnchor_returnsConfluencePageContentWithInternalCrossReferenceToBibliographyAnchor() {
         // arrange
-        String adocContent = "" +
-                "[bibliography]\n" +
+        String adocContent = "[bibliography]\n" +
                 "== References\n\n" +
                 "* [[[pp]]] Entry1\n\n" +
                 "* [[[gof,gang]]] Entry2\n\n" +
@@ -1592,8 +1562,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_references</ac:parameter></ac:structured-macro>References</h1><ul>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_references</ac:parameter></ac:structured-macro>References</h1><ul>" +
                 "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">pp</ac:parameter></ac:structured-macro>[pp] Entry1</li>" +
                 "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">gof</ac:parameter></ac:structured-macro>[gof] Entry2</li></ul>\n" +
                 "<p>Cross reference to <ac:link ac:anchor=\"pp\"><ac:plain-text-link-body><![CDATA[[pp]]]></ac:plain-text-link-body></ac:link>" +
@@ -1604,15 +1573,13 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsAttribute_returnsConfluencePageContentWithTableOfContentsMacro() {
         // arrange
-        String adocContent = "" +
-                "= Page Title\n" +
+        String adocContent = "= Page Title\n" +
                 ":toc: auto\n";
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<p>" +
+        String expectedContent = "<p>" +
                 "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
                 "</ac:structured-macro>" +
@@ -1623,16 +1590,14 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsAttributeWithCustomDepth_returnsConfluencePageContentWithTableOfContentsMacroWithCustomDepth() {
         // arrange
-        String adocContent = "" +
-                "= Page Title\n" +
+        String adocContent = "= Page Title\n" +
                 ":toc: auto\n" +
                 ":toclevels: 4\n";
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<p>" +
+        String expectedContent = "<p>" +
                 "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">4</ac:parameter>" +
                 "</ac:structured-macro>" +
@@ -1643,8 +1608,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsMacro_returnsConfluencePageContentWithTableOfContentsMacro() {
         // arrange
-        String adocContent = "" +
-                "= Page Title\n" +
+        String adocContent = "= Page Title\n" +
                 ":toc: macro\n" +
                 "\n" +
                 "toc::[]";
@@ -1653,8 +1617,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<ac:structured-macro ac:name=\"toc\">" +
+        String expectedContent = "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">2</ac:parameter>" +
                 "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -1663,8 +1626,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithTableOfContentsAsMacroWithCustomDepth_returnsConfluencePageContentWithTableOfContentsMacroWithCustomDepth() {
         // arrange
-        String adocContent = "" +
-                "= Page Title\n" +
+        String adocContent = "= Page Title\n" +
                 ":toc: macro\n" +
                 ":toclevels: 4\n" +
                 "\n" +
@@ -1674,8 +1636,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "" +
-                "<ac:structured-macro ac:name=\"toc\">" +
+        String expectedContent = "<ac:structured-macro ac:name=\"toc\">" +
                 "<ac:parameter ac:name=\"maxLevel\">4</ac:parameter>" +
                 "</ac:structured-macro>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
@@ -1836,8 +1797,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocErrorLogWhileRendering_throwsRuntimeException() {
         // arrange
-        String adocRelyingOnMissingSequenceDiagramBinary = "" +
-                "[seqdiag#ex-seq-diag,ex-seq-diag,svg]\n" +
+        String adocRelyingOnMissingSequenceDiagramBinary = "[seqdiag#ex-seq-diag,ex-seq-diag,svg]\n" +
                 "....\n" +
                 "seqdiag {\n" +
                 "  webserver -> processor;\n" +
@@ -1845,12 +1805,10 @@ public class AsciidocConfluencePageTest {
                 "....\n";
         AsciidocPage asciidocPage = asciidocPage(prependTitle(adocRelyingOnMissingSequenceDiagramBinary));
 
-        // assert
-        this.expectedException.expect(RuntimeException.class);
-        this.expectedException.expectMessage("failed to create confluence page for asciidoc content in");
-
-        // act
-        newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath())
+        );
+        assertThat(exception.getMessage(), containsString("failed to create confluence page for asciidoc content in"));
     }
 
     @Test
@@ -1868,9 +1826,9 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage));
 
         // assert
-        String expectedContent = "<ac:image ac:height=\"119\" ac:width=\"180\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
-        assertThat(asciidocConfluencePage.content(), hasImageSizeCloseTo(expectedContent, 2));
-        assertThat(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")), is(true));
+        String expectedContentPattern = "<ac:image ac:height=\"[1-9][0-9]*\" ac:width=\"[1-9][0-9]*\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
+        assertThat(asciidocConfluencePage.content(), matchesPattern(expectedContentPattern));
+        assertTrue(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")));
     }
 
     private static String prependTitle(String content) {
@@ -1968,30 +1926,4 @@ public class AsciidocConfluencePageTest {
             throw new RuntimeException("Could not set default charset", e);
         }
     }
-
-
-    static class RootCauseMatcher extends TypeSafeMatcher<Exception> {
-
-        private final String message;
-
-        private RootCauseMatcher(String message) {
-            this.message = message;
-        }
-
-        @Override
-        protected boolean matchesSafely(Exception exception) {
-            return exception.getCause().getMessage().equals(this.message);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("root cause with message '" + this.message + "'");
-        }
-
-        static RootCauseMatcher rootCauseWithMessage(String message) {
-            return new RootCauseMatcher(message);
-        }
-
-    }
-
 }

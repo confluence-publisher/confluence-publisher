@@ -39,6 +39,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -66,7 +67,16 @@ public class AsciidocConfluencePublisherCommandLineClient {
         OrphanRemovalStrategy orphanRemovalStrategy = OrphanRemovalStrategy.valueOf(argumentsParser.optionalArgument("orphanRemovalStrategy", args).orElse(REMOVE_ORPHANS.name()));
 
         Path documentationRootFolder = Paths.get(argumentsParser.mandatoryArgument("asciidocRootFolder", args));
-        Path buildFolder = createTempDirectory("confluence-publisher");
+
+        boolean cleanupBuildFolder = false;
+        Path buildFolder = argumentsParser.optionalArgument("asciidocBuildFolder", args)
+                .map(Paths::get)
+                .orElse(null);
+
+        if (buildFolder == null) {
+            buildFolder = createTempDirectory("confluence-publisher");
+            cleanupBuildFolder = true;
+        }
 
         Charset sourceEncoding = Charset.forName(argumentsParser.optionalArgument("sourceEncoding", args).orElse("UTF-8"));
         String prefix = argumentsParser.optionalArgument("pageTitlePrefix", args).orElse(null);
@@ -99,7 +109,9 @@ public class AsciidocConfluencePublisherCommandLineClient {
                 confluencePublisher.publish();
             }
         } finally {
-            deleteDirectory(buildFolder);
+            if (cleanupBuildFolder) {
+                deleteDirectory(buildFolder);
+            }
         }
     }
 

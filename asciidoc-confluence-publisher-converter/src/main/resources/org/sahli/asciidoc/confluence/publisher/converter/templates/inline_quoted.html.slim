@@ -1,0 +1,27 @@
+- if role == "strike-through"
+  s
+    = text
+- elsif role == "underline"
+  u
+    = text
+- elsif type == :strong
+  strong
+    = text
+- elsif type == :emphasis
+  em
+    = text
+- elsif type == :monospace
+  code
+    = text
+- elsif type == :mark
+  mark
+    = text
+- elsif type == :superscript
+  sup
+    = text
+- elsif type == :subscript
+  sub
+    = text
+- else
+  span class=(role)
+    = text

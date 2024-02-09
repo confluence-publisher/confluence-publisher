@@ -13,7 +13,7 @@ end
 # templates. Within the template you can invoke them as top-level functions
 # just like in Haml.
 module Slim::Helpers
-
+  QUOTE_TAGS = Asciidoctor::Converter::Html5Converter::QUOTE_TAGS
   # Defaults
   DEFAULT_SECTNUMLEVELS = 3
 
@@ -209,5 +209,31 @@ module Slim::Helpers
       str
     end
   end
+
+  def confluence_inline_quoted node
+      open, close, tag = QUOTE_TAGS[node.type]
+      if node.id
+        class_attr = node.role ? %( class="#{node.role}") : ''
+        if tag
+          %(#{open.chop} id="#{node.id}"#{class_attr}>#{node.text}#{close})
+        else
+          %(<span id="#{node.id}"#{class_attr}>#{open}#{node.text}#{close}</span>)
+        end
+      elsif node.role
+        if tag
+          %(#{open.chop} class="#{node.role}">#{node.text}#{close})
+        elsif node.role == 'strike-through'
+          %(<s>#{node.text}</s>)
+        elsif node.role == 'line-through'
+          %(<del>#{node.text}</del>)
+        elsif node.role == 'underline'
+          %(<u>#{node.text}</u>)
+        else
+          %(<span class="#{node.role}">#{open}#{node.text}#{close}</span>)
+        end
+      else
+        %(#{open}#{node.text}#{close})
+      end
+    end
 
 end

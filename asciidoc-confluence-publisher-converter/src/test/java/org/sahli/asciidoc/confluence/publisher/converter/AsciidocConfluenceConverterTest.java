@@ -105,10 +105,10 @@ public class AsciidocConfluenceConverterTest {
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");
-        RuntimeException exeption = assertThrows(RuntimeException.class, () ->
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
             asciidocConfluenceConverter.convert(asciidocPagesStructureProvider, new NoOpPageTitlePostProcessor(), buildFolder, emptyMap())
         );
-        assertThat(exeption.getMessage(), equalTo("Attachment 'non-existing-attachment.png' does not exist"));
+        assertThat(exception.getMessage(), equalTo("Attachment 'non-existing-attachment.png' does not exist"));
     }
 
     @Test

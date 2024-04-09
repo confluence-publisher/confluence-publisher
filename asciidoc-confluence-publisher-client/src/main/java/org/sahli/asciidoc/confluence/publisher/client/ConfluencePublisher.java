@@ -126,14 +126,18 @@ public class ConfluencePublisher {
             deleteConfluencePagesNotPresentUnderAncestor(pages, ancestorId);
         }
         pages.forEach(page -> {
-            String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
+            try {
+                String contentId = addOrUpdatePageUnderAncestor(spaceKey, ancestorId, page);
 
-            addOrUpdateLabels(contentId, page.getLabels());
+                addOrUpdateLabels(contentId, page.getLabels());
 
-            deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
-            addAttachments(contentId, page.getAttachments());
+                deleteConfluenceAttachmentsNotPresentUnderPage(contentId, page.getAttachments());
+                addAttachments(contentId, page.getAttachments());
 
-            startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
+                startPublishingUnderAncestorId(page.getChildren(), spaceKey, contentId);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not publish page '" + page.getTitle() + "'", e);
+            }
         });
     }
 

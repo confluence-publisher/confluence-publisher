@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newInputStream;
@@ -142,20 +141,44 @@ public class ConfluencePublisherTest {
     }
 
     @Test
+    public void publish_exceptionWhenPublishingPage_throwsExceptionWithPageTitle() {
+        // arrange
+        ConfluenceRestClient confluenceRestClientMock = mock(ConfluenceRestClient.class);
+        when(confluenceRestClientMock.getPageByTitle(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("expected"));
+        when(confluenceRestClientMock.addPageUnderAncestor(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("2345", "3456");
+
+        ConfluencePublisherListener confluencePublisherListenerMock = mock(ConfluencePublisherListener.class);
+
+        ConfluencePublisher confluencePublisher = confluencePublisher("one-page-ancestor-id", confluenceRestClientMock, confluencePublisherListenerMock, "version message");
+
+        // act + assert
+        Exception exception = assertThrows(RuntimeException.class, () -> confluencePublisher.publish());
+        assertThat(exception.getMessage(), is("Could not publish page 'Some Confluence Content'"));
+        assertThat(exception.getCause().getMessage(), is("expected"));
+    }
+
+    @Test
     public void publish_multipleRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
-        assertThrows("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page", IllegalArgumentException.class, () -> {
+        // act
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             ConfluencePublisher confluencePublisher = confluencePublisher("multiple-page-ancestor-id", REPLACE_ANCESTOR, "version message");
             confluencePublisher.publish();
         });
 
+        // assert
+        assertThat(exception.getMessage(), is("Multiple root pages found ('Some Confluence Content', 'Some Other Confluence Content'), but 'REPLACE_ANCESTOR' publishing strategy only supports one single root page"));
     }
 
     @Test
     public void publish_noRootPageAndReplaceAncestorPublishingStrategy_throwsException() {
-        assertThrows("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page", IllegalArgumentException.class, () -> {
+        // act
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             ConfluencePublisher confluencePublisher = confluencePublisher("zero-page", REPLACE_ANCESTOR, "version message");
             confluencePublisher.publish();
         });
+
+        // assert
+        assertThat(exception.getMessage(), is("No root page found, but 'REPLACE_ANCESTOR' publishing strategy requires one single root page"));
     }
 
     @Test

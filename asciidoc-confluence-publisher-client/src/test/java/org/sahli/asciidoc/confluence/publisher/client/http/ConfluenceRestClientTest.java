@@ -66,20 +66,24 @@ public class ConfluenceRestClientTest {
 
     @Test
     public void instantiation_withEmptyRootConfluenceUrl_throwsIllegalArgumentException() {
-        // assert
-        assertThrows("rootConfluenceUrl must be set", IllegalArgumentException.class, () -> {
-            // arrange + act
+        // arrange + act
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new ConfluenceRestClient("", anyCloseableHttpClient(), null, null, null);
         });
+
+        // assert
+        assertThat(exception.getMessage(), is("rootConfluenceUrl must be set"));
     }
 
     @Test
     public void instantiation_withNullHttpClient_throwsIllegalArgumentException() {
-        // assert
-        assertThrows("httpClient must be set", IllegalArgumentException.class, () -> {
-            // arrange + act
+        // arrange + act
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new ConfluenceRestClient(CONFLUENCE_ROOT_URL, null, null, null, null);
         });
+
+        // assert
+        assertThat(exception.getMessage(), is("httpClient must be set"));
     }
 
     @Test

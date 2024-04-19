@@ -23,4 +23,4 @@ exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
     proxyUsername="$PROXY_USERNAME" \
     proxyPassword="$PROXY_PASSWORD" \
     convertOnly="$CONVERT_ONLY" \
-    asciidocBuildFolder="$ASCIIDOC_ROOT_FOLDER"
+    asciidocBuildFolder="$ASCIIDOC_BUILD_FOLDER"

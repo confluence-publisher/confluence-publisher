@@ -1074,6 +1074,22 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitleAcknowledgingIncludes() {
+        // arrange
+        Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
+        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page-with-title-in-include.adoc");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
+
+        // assert
+        String expectedContent = "<p>This is a <ac:link><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"></ri:page>" +
+                "<ac:plain-text-link-body><![CDATA[reference]]></ac:plain-text-link-body>" +
+                "</ac:link> to the target page.</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceAnchor_returnsConfluencePageWithLinkToReferencedPageByPageTitleWithAnchor() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");

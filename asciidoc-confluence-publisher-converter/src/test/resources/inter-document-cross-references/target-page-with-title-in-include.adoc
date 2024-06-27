@@ -1,0 +1,2 @@
+:title-key: Target Page
+include::include-page-with-title-in-include.adoc[]

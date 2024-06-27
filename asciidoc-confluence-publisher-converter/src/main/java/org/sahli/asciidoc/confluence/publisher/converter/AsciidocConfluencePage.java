@@ -150,7 +150,7 @@ public class AsciidocConfluencePage {
             Document document = ASCIIDOCTOR.load(asciidocContent, options);
 
             String pageTitle = unescapeHtml(pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor));
-            String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey);
+            String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey, options);
 
             List<String> keywords = keywords(document);
 
@@ -164,10 +164,10 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(Document document, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey) {
+    private static String convertedContent(Document document, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Options options) {
         String content = document.convert();
         String postProcessedContent = postProcessContent(content,
-                replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey),
+                replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey, options),
                 collectAndReplaceAttachmentFileNames(attachmentCollector, sourceEncoding),
                 unescapeCdataHtmlContent()
         );
@@ -242,14 +242,15 @@ public class AsciidocConfluencePage {
                 .build();
     }
 
-    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey) {
+    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Options options) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
+                options.setBaseDir(referencedPagePath.getParent().toString());
                 String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()), sourceEncoding);
-                Document referencedDocument = ASCIIDOCTOR.load(referencedPageContent, Options.builder().parseHeaderOnly(true).build());
+                Document referencedDocument = ASCIIDOCTOR.load(referencedPageContent, options);
                 String referencedPageTitle = pageTitle(referencedDocument, userAttributes, pageTitlePostProcessor);
 
                 /*

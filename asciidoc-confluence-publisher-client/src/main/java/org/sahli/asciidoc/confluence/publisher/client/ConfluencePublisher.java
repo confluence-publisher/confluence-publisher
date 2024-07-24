@@ -230,7 +230,7 @@ public class ConfluencePublisher {
         }
     }
 
-    protected static String getAttachmentHashKey(String attachmentFileName) {
+    private static String getAttachmentHashKey(String attachmentFileName) {
         return hash(attachmentFileName) + ATTACHMENT_HASH_SUFFIX;
     }
 

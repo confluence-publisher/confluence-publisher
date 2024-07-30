@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -338,6 +339,7 @@ class HttpRequestFactory {
     private static HttpEntity multipartEntity(String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        multipartEntityBuilder.setCharset(UTF_8);
 
         InputStreamBody inputStreamBody;
         if (isNotBlank(attachmentFileName)) {

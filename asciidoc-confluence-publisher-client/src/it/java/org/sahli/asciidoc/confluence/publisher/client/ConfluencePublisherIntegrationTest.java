@@ -112,7 +112,7 @@ public class ConfluencePublisherIntegrationTest {
         String title = uniqueTitle("Single Page");
         Map<String, String> attachments = new HashMap<>();
         attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
-        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+        attachments.put("это 太陽 მზე!", absolutePathTo("attachments/это 太陽 მზე!.txt"));
 
         ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
         ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
@@ -127,7 +127,29 @@ public class ConfluencePublisherIntegrationTest {
                 .when().get(rootPageAttachments())
                 .then()
                 .body("results", hasSize(2))
-                .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
+                .body("results.title", hasItems("attachmentOne.txt", "это 太陽 მზე!"));
+    }
+
+    @Test
+    public void publish_attachmentWithNonAsciiCharactersInTitle_uploadsAttachmentWithCorrectName() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("это 太陽 მზე!", absolutePathTo("attachments/это 太陽 მზე!.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(1))
+                .body("results.title", hasItems("это 太陽 მზე!"));
     }
 
     @Test

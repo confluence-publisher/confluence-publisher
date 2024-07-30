@@ -50,6 +50,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.InputStreamUt
 public class ConfluencePublisher {
 
     static final String CONTENT_HASH_PROPERTY_KEY = "content-hash";
+    static final String ATTACHMENT_HASH_SUFFIX = "-attachment-hash";
     static final int INITIAL_PAGE_VERSION = 1;
 
     private final ConfluencePublisherMetadata metadata;
@@ -229,8 +230,8 @@ public class ConfluencePublisher {
         }
     }
 
-    private String getAttachmentHashKey(String attachmentFileName) {
-        return attachmentFileName + "-hash";
+    private static String getAttachmentHashKey(String attachmentFileName) {
+        return hash(attachmentFileName) + ATTACHMENT_HASH_SUFFIX;
     }
 
     private Path absoluteAttachmentPath(String attachmentPath) {

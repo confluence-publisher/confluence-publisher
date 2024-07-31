@@ -1073,7 +1073,6 @@ public class AsciidocConfluencePageTest {
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
-    // This is basically just a check if the base-dir was set correctly in the options instance used to parse the referenced page
     @Test
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReference_returnsConfluencePageWithLinkToReferencedPageByPageTitleAcknowledgingIncludes() {
         // arrange
@@ -1090,6 +1089,7 @@ public class AsciidocConfluencePageTest {
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
+    // This is basically just a check if the base-dir was set correctly in the options instance used to parse the referenced page
     @Test
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceInSubDirectory_returnsConfluencePageWithLinkToReferencedPageByPageTitleAcknowledgingIncludes() {
         // arrange

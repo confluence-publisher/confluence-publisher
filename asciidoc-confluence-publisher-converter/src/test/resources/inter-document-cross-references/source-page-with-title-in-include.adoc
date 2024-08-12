@@ -1,0 +1,3 @@
+= Source Page
+
+This is a xref:target-page-with-title-in-include.adoc[reference] to the target page.

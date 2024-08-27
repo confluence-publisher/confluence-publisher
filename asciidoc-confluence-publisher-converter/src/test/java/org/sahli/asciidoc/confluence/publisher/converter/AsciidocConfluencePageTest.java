@@ -1869,6 +1869,47 @@ public class AsciidocConfluencePageTest {
         assertTrue(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")));
     }
 
+
+    @Test
+    public void attachments_asciiDocWithStrikeThrough() {
+        // arrange
+        String adocContent = "normal1 [.strike-through]#strike trough# normal2";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<p>normal1 <s>strike trough</s> normal2</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void attachments_asciiDocWithUnderline() {
+        // arrange
+        String adocContent = "normal1 [.underline]#underlined# normal2";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<p>normal1 <u>underlined</u> normal2</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void attachments_asciiDocWithUnderline_multiline() {
+        // arrange
+        String adocContent = "normal1 [.underline]#underlined line1\n" +
+            "underlined line2# normal2";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        String expectedContent = "<p>normal1 <u>underlined line1\nunderlined line2</u> normal2</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
     private static String prependTitle(String content) {
         if (!content.startsWith("= ")) {
             content = "= Default Page Title\n\n" + content;

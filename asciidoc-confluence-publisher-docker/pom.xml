@@ -74,7 +74,7 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                        <phase>prepare-package</phase>
+                        <phase>package</phase>
                     </execution>
                 </executions>
                 <configuration>
@@ -91,6 +91,7 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.13</version>
                 <executions>
                     <execution>
                         <id>default</id>

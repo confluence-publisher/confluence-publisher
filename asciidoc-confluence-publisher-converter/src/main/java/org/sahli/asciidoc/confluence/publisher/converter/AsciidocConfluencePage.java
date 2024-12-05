@@ -17,6 +17,7 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.AttributesBuilder;
 import org.asciidoctor.log.LogHandler;
 import org.asciidoctor.log.LogRecord;
 import org.asciidoctor.log.Severity;
@@ -225,8 +226,9 @@ public class AsciidocConfluencePage {
             throw new RuntimeException("templateDir folder is not a folder");
         }
 
-        Attributes attributes = Attributes.builder()
-                .attributes(userAttributes)
+        AttributesBuilder attributesBuilder = Attributes.builder();
+        userAttributes.forEach(attributesBuilder::attribute);
+        Attributes attributes = attributesBuilder
                 .attribute("imagesoutdir", generatedAssetsTargetFolder.toString())
                 .attribute("outdir", generatedAssetsTargetFolder.toString())
                 .attribute("source-highlighter", "none")

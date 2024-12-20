@@ -184,6 +184,55 @@ Collapsed source blocks are currently not supported by AsciiDoc directly, thus t
 supported by the Confluence Publisher.
 ====
 
+== Callouts
+Callout are supported well. Due to code blocks limitation in Confluence it is advised to use guarded callouts, i.e. to place the callout into a comment.
+
+[listing,subs="none"]
+....
+[source,java,linenums]
+----
+public class MyClass { // <1>
+    public static void main(String[] args){
+        System.out.println("Hello world!");// <2>
+    }
+} <3>
+----
+<1> Definition of a Java class
+<2> print "Hello world!" to the standard out
+<3> Non-guarded callout. Code will be invalid if you copy it and paste in IDE
+....
+
+will be rendered as:
+
+[source,java,linenums]
+----
+public class MyClass { // <1>
+    public static void main(String[] args){
+        System.out.println("Hello world!");// <2>
+    }
+} <3>
+----
+<1> Definition of a Java class
+<2> print "Hello world!" to the standard out
+<3> Non-guarded callout. Code will be invalid if you copy it and paste in IDE
+
+
+[listing,subs="none"]
+....
+[source,xml]
+----
+&lt;hello>world&lt;/hello>&lt;!--1-->
+----
+<1> Xml-style callout.
+....
+
+will be rendered as:
+
+[source,xml]
+----
+<hello>world</hello><!--1-->
+----
+<1> Xml-style callout.
 
 == Source Highlighting
 
@@ -194,5 +243,5 @@ Confluence.
 
 [WARNING]
 ====
-Other advanced features like listing file names or callouts are not supported.
+Other advanced features like listing file names are not supported.
 ====

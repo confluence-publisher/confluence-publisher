@@ -322,6 +322,33 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithJavaSourceListingWithCallouts_returnsConfluencePageContentWithMacroWithJavaParameterAndCallouts() {
+        // arrange
+        String adocContent = "[source,java]\n" +
+                "----\n" +
+                "import java.util.List; // <1>\n" +
+                "----\n" +
+                "<1> Test-Callout";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\">" +
+                "<ac:parameter ac:name=\"language\">java</ac:parameter>" +
+                "<ac:plain-text-body><![CDATA[import java.util.List; // (1)]]></ac:plain-text-body>" +
+                "</ac:structured-macro>\n" +
+                "<div class=\"colist arabic\">\n" +
+                "<ol>\n" +
+                "<li>\n" +
+                "<p>Test-Callout</p>\n" +
+                "</li>\n" +
+                "</ol>\n" +
+                "</div>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithSourceListingWithLineNumbers_returnsConfluencePageContentWithMacroWithLineNumbersParameter() {
         // arrange
         String adocContent = "[source%linenums]\n" +
@@ -397,6 +424,30 @@ public class AsciidocConfluencePageTest {
                 "<ac:parameter ac:name=\"linenumbers\">true</ac:parameter>" +
                 "<ac:plain-text-body><![CDATA[import java.util.List;]]></ac:plain-text-body>" +
                 "</ac:structured-macro>";
+        assertThat(asciiDocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithXmlSourceListingWithCallouts_returnsConfluencePageContentWithMacroWithXmlParameterAndCallouts() {
+        // arrange
+        String adocContent = "[source,xml]\n" +
+                "----\n" +
+                "<test>123</test> <!--1-->\n" +
+                "----\n" +
+                "<1> Test-Callout";
+
+        // act
+        AsciidocConfluencePage asciiDocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ac:structured-macro ac:name=\"code\"><ac:parameter ac:name=\"language\">xml</ac:parameter><ac:plain-text-body><![CDATA[<test>123</test> <!--(1)-->]]></ac:plain-text-body></ac:structured-macro>\n" +
+                "<div class=\"colist arabic\">\n" +
+                "<ol>\n" +
+                "<li>\n" +
+                "<p>Test-Callout</p>\n" +
+                "</li>\n" +
+                "</ol>\n" +
+                "</div>";
         assertThat(asciiDocConfluencePage.content(), is(expectedContent));
     }
 

@@ -46,3 +46,18 @@ The title of a paragraph will rendered using a custom CSS class `cp-paragraph-ti
 
 .This the title of a paragraph
 The title of a paragraph will rendered using a custom CSS class `cp-paragraph-title`
+
+
+== Align text in paragraph 
+
+The name of the role follows the pattern text-<alignment>, where <alignment> is one of left, center, right, or justify (e.g., text-center).
+
+.Example Assign text-center to a paragraph
+[listing]
+....
+[.text-center]
+This text is centered, so it must be important.
+....
+
+[.text-center]
+This text is centered, so it must be important.

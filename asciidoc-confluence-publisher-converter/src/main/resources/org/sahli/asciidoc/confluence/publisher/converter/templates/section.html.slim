@@ -8,9 +8,17 @@
 - when 'text-justify'
     - confluence_alignment = 'text-align: justify;'
 
-*{tag: %(h#{section_level}), style: "#{confluence_alignment}" }
-  ac:structured-macro ac:name="anchor"
-    ac:parameter ac:name=""
-     =(anchor_name id)
-  =section_title
-=content
+- if confluence_alignment
+  *{tag: %(h#{section_level}), style: "#{confluence_alignment}" }
+    ac:structured-macro ac:name="anchor"
+      ac:parameter ac:name=""
+       =(anchor_name id)
+    =section_title
+  =content
+- else
+  *{tag: %(h#{section_level})}
+    ac:structured-macro ac:name="anchor"
+      ac:parameter ac:name=""
+       =(anchor_name id)
+    =section_title
+  =content

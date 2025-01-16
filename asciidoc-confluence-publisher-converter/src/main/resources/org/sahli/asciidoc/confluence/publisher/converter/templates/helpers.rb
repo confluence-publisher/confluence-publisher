@@ -209,5 +209,4 @@ module Slim::Helpers
       str
     end
   end
-
 end

@@ -671,11 +671,11 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_1</ac:parameter></ac:structured-macro>Title level 1</h1>" +
-                "<h2 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_2</ac:parameter></ac:structured-macro>Title level 2</h2>" +
-                "<h3 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_3</ac:parameter></ac:structured-macro>Title level 3</h3>" +
-                "<h4 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_4</ac:parameter></ac:structured-macro>Title level 4</h4>" +
-                "<h5 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_5</ac:parameter></ac:structured-macro>Title level 5</h5>";
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_1</ac:parameter></ac:structured-macro>Title level 1</h1>" +
+                "<h2><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_2</ac:parameter></ac:structured-macro>Title level 2</h2>" +
+                "<h3><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_3</ac:parameter></ac:structured-macro>Title level 3</h3>" +
+                "<h4><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_4</ac:parameter></ac:structured-macro>Title level 4</h4>" +
+                "<h5><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_5</ac:parameter></ac:structured-macro>Title level 5</h5>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1557,7 +1557,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1573,7 +1573,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1588,7 +1588,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[Section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1603,7 +1603,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">section-1</ac:parameter></ac:structured-macro>Section 1</h1>" +
                 "<p>Cross reference to <ac:link ac:anchor=\"section-1\"><ac:plain-text-link-body><![CDATA[section 1]]></ac:plain-text-link-body></ac:link></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
@@ -1651,7 +1651,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<h1 style=\"\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_references</ac:parameter></ac:structured-macro>References</h1><ul>" +
+        String expectedContent = "<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_references</ac:parameter></ac:structured-macro>References</h1><ul>" +
                 "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">pp</ac:parameter></ac:structured-macro>[pp] Entry1</li>" +
                 "<li><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">gof</ac:parameter></ac:structured-macro>[gof] Entry2</li></ul>\n" +
                 "<p>Cross reference to <ac:link ac:anchor=\"pp\"><ac:plain-text-link-body><![CDATA[[pp]]]></ac:plain-text-link-body></ac:link>" +
@@ -1918,6 +1918,57 @@ public class AsciidocConfluencePageTest {
         String expectedContentPattern = "<ac:image ac:height=\"[1-9][0-9]*\" ac:width=\"[1-9][0-9]*\"><ri:attachment ri:filename=\"embedded-c4-diagram.png\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), matchesPattern(expectedContentPattern));
         assertTrue(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSectionLevelAndAlign_returnsConfluencePageContentWithSectionAndAlignHavingCorrectMarkup() {
+        // arrange
+        String adocContent = "= Title level 0\n\n" +
+                "[.text-center]\n" +
+                "== Title level 1\n" +
+                "[.text-right]\n" +
+                "== Title level 2\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<h1 style=\"text-align: center;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_1</ac:parameter></ac:structured-macro>Title level 1</h1>\n"+
+            "<h1 style=\"text-align: right;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_2</ac:parameter></ac:structured-macro>Title level 2</h1>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSectionLevelAndParagrafAlign_returnsConfluencePageContentWithSectionAndParagrafAlignHavingCorrectMarkup() {
+        // arrange
+        String adocContent = "= Main Page\n\n" +
+            "This is demo string 0.0\n" +
+            "This is demo string 0.1\n" +
+            "This is demo string 0.2\n" +
+            "This is demo string 0.3\n\n" +
+            "== Demo\n\n" +
+            "This is demo string 1\n" +
+            "[.text-center]\n" +
+            "== Demo Size\n\n" +
+            "[.text-right]\n" +
+            "This is demo string 2\n\n" +
+            "[.text-center]\n" +
+            "This is demo string 3\n\n" +
+            "[.text-left]\n" +
+            "This is demo string 4\n\n" +
+            "[.text-justify]\n" +
+            "This is demo string 5\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\n" + 
+            "This is demo string 0.3</p>\n</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter></ac:structured-macro>Demo</h1>" +
+            "<p>This is demo string 1</p>\n<h1 style=\"text-align: center;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" + 
+            "</ac:structured-macro>Demo Size</h1><p align=\"right\">This is demo string 2</p>\n<p align=\"center\">This is demo string 3</p>\n<p align=\"left\">" + 
+            "This is demo string 4</p>\n<p align=\"justify\">This is demo string 5</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
     private static String prependTitle(String content) {

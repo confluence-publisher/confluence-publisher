@@ -1,4 +1,18 @@
 - if title?
   div class="cp-paragraph-title"
     em =title
-p =content
+
+- case (role)
+- when 'text-left'
+    - confluence_alignment = 'left'
+- when 'text-right'
+    - confluence_alignment = 'right'
+- when 'text-center'
+    - confluence_alignment = 'center'
+- when 'text-justify'
+    - confluence_alignment = 'justify'
+
+- if confluence_alignment
+  *{tag: %(p), align: "#{confluence_alignment}"}  =content
+- else
+  *{tag: %(p)} =content

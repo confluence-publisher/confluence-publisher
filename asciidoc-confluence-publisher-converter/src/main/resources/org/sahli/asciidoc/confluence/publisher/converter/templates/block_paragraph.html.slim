@@ -4,15 +4,15 @@
 
 - case (role)
 - when 'text-left'
-    - confluence_alignment = 'left'
+    - confluence_alignment = 'text-align: left;'
 - when 'text-right'
-    - confluence_alignment = 'right'
+    - confluence_alignment = 'text-align: right;'
 - when 'text-center'
-    - confluence_alignment = 'center'
+    - confluence_alignment = 'text-align: center;'
 - when 'text-justify'
-    - confluence_alignment = 'justify'
+    - confluence_alignment = 'text-align: justify;'
 
 - if confluence_alignment
-  *{tag: %(p), align: "#{confluence_alignment}"}  =content
+  *{tag: %(p), style: "#{confluence_alignment}"}  =content
 - else
   *{tag: %(p)} =content

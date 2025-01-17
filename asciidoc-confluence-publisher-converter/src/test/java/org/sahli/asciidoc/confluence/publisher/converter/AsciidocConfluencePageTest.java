@@ -1963,11 +1963,14 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\n" + 
-            "This is demo string 0.3</p>\n</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter></ac:structured-macro>Demo</h1>" +
-            "<p>This is demo string 1</p>\n<h1 style=\"text-align: center;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" + 
-            "</ac:structured-macro>Demo Size</h1><p align=\"right\">This is demo string 2</p>\n<p align=\"center\">This is demo string 3</p>\n<p align=\"left\">" + 
-            "This is demo string 4</p>\n<p align=\"justify\">This is demo string 5</p>";
+        String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n" +
+            "<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\nThis is demo string 0.3</p>\n" +
+            "</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter>" +
+            "</ac:structured-macro>Demo</h1><p>This is demo string 1</p>\n<h1 style=\"text-align: center;\">" + 
+            "<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" + 
+            "</ac:structured-macro>Demo Size</h1><p style=\"text-align: right;\">This is demo string 2</p>\n" +
+            "<p style=\"text-align: center;\">This is demo string 3</p>\n<p style=\"text-align: left;\">This is demo string 4</p>\n" + 
+            "<p style=\"text-align: justify;\">This is demo string 5</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

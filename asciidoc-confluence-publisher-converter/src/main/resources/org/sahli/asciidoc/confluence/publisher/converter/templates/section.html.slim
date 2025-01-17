@@ -1,6 +1,24 @@
-*{tag: %(h#{section_level})}
-  ac:structured-macro ac:name="anchor"
-    ac:parameter ac:name=""
-     =(anchor_name id)
-  =section_title
-=content
+- case (role)
+- when 'text-left'
+    - confluence_alignment = 'text-align: left;'
+- when 'text-right'
+    - confluence_alignment = 'text-align: right;'
+- when 'text-center'
+    - confluence_alignment = 'text-align: center;'
+- when 'text-justify'
+    - confluence_alignment = 'text-align: justify;'
+
+- if confluence_alignment
+  *{tag: %(h#{section_level}), style: "#{confluence_alignment}" }
+    ac:structured-macro ac:name="anchor"
+      ac:parameter ac:name=""
+       =(anchor_name id)
+    =section_title
+  =content
+- else
+  *{tag: %(h#{section_level})}
+    ac:structured-macro ac:name="anchor"
+      ac:parameter ac:name=""
+       =(anchor_name id)
+    =section_title
+  =content

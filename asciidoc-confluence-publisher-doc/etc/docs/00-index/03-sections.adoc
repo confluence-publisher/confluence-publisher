@@ -40,3 +40,17 @@ AsciiDoc sections are translated to the corresponding Confluence heading:
 ....
 
 ====== Section Level 5
+
+== Align text in section 
+
+The name of the role follows the pattern text-<alignment>, where <alignment> is one of left, center, right, or justify (e.g., text-center). Work in paragraph and section.
+
+.Example Assign text-center to a section
+[listing]
+....
+[.text-center]
+== This text is centered, so it must be important.
+....
+
+[.text-center]
+== This text is centered, so it must be important.

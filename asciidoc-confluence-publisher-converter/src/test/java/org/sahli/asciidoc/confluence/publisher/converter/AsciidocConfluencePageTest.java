@@ -1920,6 +1920,60 @@ public class AsciidocConfluencePageTest {
         assertTrue(exists(assetsTargetFolderFor(asciidocPage).resolve("embedded-c4-diagram.png")));
     }
 
+    @Test
+    public void renderConfluencePage_asciiDocWithSectionLevelAndAlign_returnsConfluencePageContentWithSectionAndAlignHavingCorrectMarkup() {
+        // arrange
+        String adocContent = "= Title level 0\n\n" +
+                "[.text-center]\n" +
+                "== Title level 1\n" +
+                "[.text-right]\n" +
+                "== Title level 2\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<h1 style=\"text-align: center;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_1</ac:parameter></ac:structured-macro>Title level 1</h1>\n"+
+            "<h1 style=\"text-align: right;\"><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_title_level_2</ac:parameter></ac:structured-macro>Title level 2</h1>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSectionLevelAndParagrafAlign_returnsConfluencePageContentWithSectionAndParagrafAlignHavingCorrectMarkup() {
+        // arrange
+        String adocContent = "= Main Page\n\n" +
+            "This is demo string 0.0\n" +
+            "This is demo string 0.1\n" +
+            "This is demo string 0.2\n" +
+            "This is demo string 0.3\n\n" +
+            "== Demo\n\n" +
+            "This is demo string 1\n" +
+            "[.text-center]\n" +
+            "== Demo Size\n\n" +
+            "[.text-right]\n" +
+            "This is demo string 2\n\n" +
+            "[.text-center]\n" +
+            "This is demo string 3\n\n" +
+            "[.text-left]\n" +
+            "This is demo string 4\n\n" +
+            "[.text-justify]\n" +
+            "This is demo string 5\n";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n" +
+            "<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\nThis is demo string 0.3</p>\n" +
+            "</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter>" +
+            "</ac:structured-macro>Demo</h1><p>This is demo string 1</p>\n<h1 style=\"text-align: center;\">" + 
+            "<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" + 
+            "</ac:structured-macro>Demo Size</h1><p style=\"text-align: right;\">This is demo string 2</p>\n" +
+            "<p style=\"text-align: center;\">This is demo string 3</p>\n<p style=\"text-align: left;\">This is demo string 4</p>\n" + 
+            "<p style=\"text-align: justify;\">This is demo string 5</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
     private static String prependTitle(String content) {
         if (!content.startsWith("= ")) {
             content = "= Default Page Title\n\n" + content;

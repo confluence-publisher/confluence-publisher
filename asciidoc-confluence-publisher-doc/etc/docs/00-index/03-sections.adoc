@@ -41,16 +41,42 @@ AsciiDoc sections are translated to the corresponding Confluence heading:
 
 ====== Section Level 5
 
-== Align text in section 
+== Alignment of Sections
 
-The name of the role follows the pattern text-<alignment>, where <alignment> is one of left, center, right, or justify (e.g., text-center). Work in paragraph and section.
+Alignment (right, left, center, or justify) of sections is supported via the `.text-<alignment>` role:
 
-.Example Assign text-center to a section
+[listing]
+....
+[.text-right]
+=== This section is right aligned.
+....
+
+[.text-right]
+=== This section is right aligned.
+
+[listing]
+....
+[.text-left]
+=== This section is left aligned.
+....
+
+[.text-left]
+=== This section is left aligned.
+
 [listing]
 ....
 [.text-center]
-== This text is centered, so it must be important.
+=== This section is center aligned.
 ....
 
 [.text-center]
-== This text is centered, so it must be important.
+=== This section is center aligned.
+
+[listing]
+....
+[.text-justify]
+=== This section with a very, very, very, very, very, very, very, very, very, very, very, very, very, really very long text is justify aligned.
+....
+
+[.text-justify]
+=== This section with a very, very, very, very, very, very, very, very, very, very, very, very, very, really very long text is justify aligned.

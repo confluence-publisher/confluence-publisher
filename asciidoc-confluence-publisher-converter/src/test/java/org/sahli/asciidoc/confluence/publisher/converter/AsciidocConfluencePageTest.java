@@ -1939,7 +1939,7 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithSectionLevelAndParagrafAlign_returnsConfluencePageContentWithSectionAndParagrafAlignHavingCorrectMarkup() {
+    public void renderConfluencePage_asciiDocWithSectionLevelAndParagraphAlign_returnsConfluencePageContentWithSectionAndParagraphAlignHavingCorrectMarkup() {
         // arrange
         String adocContent = "= Main Page\n\n" +
             "This is demo string 0.0\n" +

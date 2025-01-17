@@ -48,7 +48,48 @@ The title of a paragraph will rendered using a custom CSS class `cp-paragraph-ti
 The title of a paragraph will rendered using a custom CSS class `cp-paragraph-title`
 
 
-== Align text in paragraph 
+== Text Alignment
+
+Text alignment (right, left, center, or justify) in paragraphs is supported via the `.text-<alignment>` role:
+
+[listing]
+....
+[.text-right]
+This paragraph is right aligned.
+....
+
+[.text-right]
+This paragraph is right aligned.
+
+[listing]
+....
+[.text-left]
+This paragraph is left aligned.
+....
+
+[.text-left]
+This paragraph is left aligned.
+
+[listing]
+....
+[.text-center]
+This paragraph is center aligned.
+....
+
+[.text-center]
+This paragraph is center aligned.
+
+[listing]
+....
+[.text-justify]
+This paragraph with a very, very, very, very, very, very, very, very, very, very, very, very, very, really very long text is justify aligned.
+....
+
+[.text-justify]
+This paragraph with a very, very, very, very, very, very, very, very, very, very, very, very, very, really very long text is justify aligned.
+
+
+
 
 The name of the role follows the pattern text-<alignment>, where <alignment> is one of left, center, right, or justify (e.g., text-center).
 

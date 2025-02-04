@@ -365,11 +365,10 @@ public class HttpRequestFactoryTest {
     public void getPageByTitleRequest_withValidParameters_returnsValidHttpGet() {
         // arrange
         String spaceKey = "~personalSpace";
-        String ancestorId = "1234";
         String title = "Some page";
 
         // act
-        HttpGet getPageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, ancestorId, title);
+        HttpGet getPageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
 
         // assert
         assertThat(getPageByTitleRequest.getMethod(), is("GET"));
@@ -382,16 +381,7 @@ public class HttpRequestFactoryTest {
         // arrange
         assertThrows("spaceKey must be set", IllegalArgumentException.class, () -> {
             // act
-            this.httpRequestFactory.getPageByTitleRequest("", "1234", "Some page");
-        });
-    }
-
-    @Test
-    public void getPageByTitleRequest_withEmptyAncestorId_throwsIllegalArgumentException() {
-        // arrange
-        assertThrows("ancestorId must be set", IllegalArgumentException.class, () -> {
-            // act
-            this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "", "Some page");
+            this.httpRequestFactory.getPageByTitleRequest("", "Some page");
         });
     }
 
@@ -400,7 +390,7 @@ public class HttpRequestFactoryTest {
         // arrange
         assertThrows("title must be set", IllegalArgumentException.class, () -> {
             // act
-            this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "1234", "");
+            this.httpRequestFactory.getPageByTitleRequest("~personalSpace", "");
         });
     }
 

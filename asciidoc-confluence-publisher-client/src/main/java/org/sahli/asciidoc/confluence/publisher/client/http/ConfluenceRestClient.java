@@ -118,7 +118,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
 
     @Override
     public String getPageByTitle(String spaceKey, String ancestorId, String title) throws NotFoundException, MultipleResultsException {
-        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, ancestorId, title);
+        HttpGet pageByTitleRequest = this.httpRequestFactory.getPageByTitleRequest(spaceKey, title);
 
         return sendRequestAndFailIfNot20x(pageByTitleRequest, (response) -> {
             JsonNode responseNode = parseJsonResponse(response);

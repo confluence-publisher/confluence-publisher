@@ -13,3 +13,5 @@ target/
 .settings
 .classpath
 .factorypath
+/.run/asciidoc-confluence-publisher [clean compile].run.xml
+

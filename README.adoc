@@ -2,7 +2,7 @@ image:https://img.shields.io/maven-central/v/org.sahli.asciidoc.confluence.publi
 image:https://img.shields.io/circleci/project/github/confluence-publisher/confluence-publisher/master.svg["Build Status", link="https://circleci.com/gh/confluence-publisher/confluence-publisher/tree/master"]
 image:https://coveralls.io/repos/github/confluence-publisher/confluence-publisher/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/confluence-publisher/confluence-publisher?branch=master"]
 
-= Confluence Publisher
+== Confluence Publisher
 
 The Confluence Publisher allows documentation written in AsciiDoc and versioned directly with the documented code base
 to be published to a Confluence space. It supports a "docs-as-code" approach.

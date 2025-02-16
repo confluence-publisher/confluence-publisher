@@ -1,3 +1,14 @@
 @startuml
-A <|-- B
+!pragma layout smetana
+!include <tupadr3/common.puml>
+' the mysql icon was moved and renamed between git@github.com:tupadr3/plantuml-icon-font-sprites.git version 2.x and 3.x
+' with  2.x and therefore plantuml 1.2023.5 the following include used to work
+'!include <tupadr3/devicons2/mysql>
+!include <tupadr3/devicons2/mysql_original>
+!include <tupadr3/font-awesome-5/server>
+FA5_SERVER(A,"label")
+DEV2_MYSQL_ORIGINAL(B,"label")
+' with plantuml 1.2023.5 the following include used to work instead
+'DEV2_MYSQL(B,"label")
+A --|> B
 @enduml

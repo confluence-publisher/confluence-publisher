@@ -30,6 +30,7 @@ Currently, the Confluence Publisher supports the following AsciiDoc features:
 * <<00-index/11-attachments.adoc#, Attachments>>
 * <<00-index/12-table-of-contents.adoc#, Table of Contents>>
 * <<00-index/13-additional-features.adoc#, Additional Features>>
+* <<00-index/14-extensions.adoc#, Extensions>>
 
 The Confluence Publisher uses AsciidoctorJ and therefore supports documentation written using the Asciidoctor syntax.
 See link:http://asciidoctor.org/docs/user-manual/[Asciidoctor User Manual] for more information about Asciidoctor.

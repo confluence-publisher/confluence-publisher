@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-exec java -jar /opt/asciidoc-confluence-publisher-docker.jar \
+exec java -cp "/opt/*:/opt/extensions/*" \
+    org.sahli.asciidoc.confluence.publisher.cli.AsciidocConfluencePublisherCommandLineClient \
     asciidocRootFolder="$ASCIIDOC_ROOT_FOLDER" \
     sourceEncoding="$SOURCE_ENCODING" \
     rootConfluenceUrl="$ROOT_CONFLUENCE_URL" \

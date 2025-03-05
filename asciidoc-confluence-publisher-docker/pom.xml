@@ -78,11 +78,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.sahli.asciidoc.confluence.publisher.cli.AsciidocConfluencePublisherCommandLineClient</mainClass>
-                        </manifest>
-                    </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>

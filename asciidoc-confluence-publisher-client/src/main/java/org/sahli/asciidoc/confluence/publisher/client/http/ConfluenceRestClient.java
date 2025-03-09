@@ -85,7 +85,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         this.username = username;
         this.passwordOrPersonalAccessToken = passwordOrPersonalAccessToken;
 
-        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
+        this.httpRequestFactory = new HttpRequestV1Factory(rootConfluenceUrl);
         configureObjectMapper();
     }
 

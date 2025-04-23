@@ -19,7 +19,8 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 import io.restassured.specification.RequestSpecification;
 import org.junit.Test;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
@@ -38,7 +39,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -318,15 +318,15 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static ConfluencePublisher confluencePublisher(ConfluencePublisherMetadata confluencePublisherMetadata, PublishingStrategy publishingStrategy) {
-        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, REMOVE_ORPHANS, confluenceRestClient(), null, null, true);
+        return new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, REMOVE_ORPHANS, confluenceClient(), null, null, true);
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
         return given().auth().preemptive().basic("confluence-publisher-it", "1234");
     }
 
-    private static ConfluenceRestClient confluenceRestClient() {
-        return new ConfluenceRestClient("http://localhost:8090", false, false, null, 500, "confluence-publisher-it", "1234");
+    private static ConfluenceClient confluenceClient() {
+        return new ConfluenceRestV1Client("http://localhost:8090", false, false, null, 500, "confluence-publisher-it", "1234");
     }
 
 }

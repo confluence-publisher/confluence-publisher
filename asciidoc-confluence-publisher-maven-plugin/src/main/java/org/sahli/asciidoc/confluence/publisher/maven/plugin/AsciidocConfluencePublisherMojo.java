@@ -28,9 +28,10 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
@@ -167,10 +168,10 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
                 getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
             } else {
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
+                ConfluenceClient confluenceClient = new ConfluenceRestV1Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
                 ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage, this.notifyWatchers);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceClient, confluencePublisherListener, this.versionMessage, this.notifyWatchers);
                 confluencePublisher.publish();
             }
         } catch (Exception e) {

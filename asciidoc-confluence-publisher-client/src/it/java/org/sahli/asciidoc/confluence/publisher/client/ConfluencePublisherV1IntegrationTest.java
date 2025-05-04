@@ -47,9 +47,13 @@ import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.
  * @author Alain Sahli
  * @author Christian Stettler
  */
-public class ConfluencePublisherIntegrationTest {
+public class ConfluencePublisherV1IntegrationTest {
 
-    private static final String ANCESTOR_ID = "327706";
+    private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
+    private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
+    private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String USERNAME = System.getenv("CPI_USERNAME");
+    private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
     @Test
     public void publish_singlePageAndAppendToAncestorPublishingStrategy_pageIsCreatedAndAttachmentsAddedInConfluence() {
@@ -266,7 +270,7 @@ public class ConfluencePublisherIntegrationTest {
 
     private static ConfluencePublisherMetadata confluencePublisherMetadata(ConfluencePageMetadata... pages) {
         ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
-        confluencePublisherMetadata.setSpaceKey("CPI");
+        confluencePublisherMetadata.setSpaceKey(SPACE_KEY);
         confluencePublisherMetadata.setAncestorId(ANCESTOR_ID);
         confluencePublisherMetadata.setPages(asList(pages));
 
@@ -278,19 +282,19 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static String childPages() {
-        return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID + "/child/page";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
 
     private static String attachmentsOf(String contentId) {
-        return "http://localhost:8090/rest/api/content/" + contentId + "/child/attachment";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + contentId + "/child/attachment";
     }
 
     private static String attachment(String attachmentId) {
-        return "http://localhost:8090/rest/api/content/" + attachmentId;
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + attachmentId;
     }
 
     private static String rootPage() {
-        return "http://localhost:8090/rest/api/content/" + ANCESTOR_ID;
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + ANCESTOR_ID;
     }
 
     private static String rootPageAttachments() {
@@ -298,11 +302,11 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static String pageVersionOf(String contentId) {
-        return "http://localhost:8090/rest/api/content/" + contentId + "?expand=version";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + contentId + "?expand=version";
     }
 
     private static String propertyValueOf(String contentId, String key) {
-        return "http://localhost:8090/rest/api/content/" + contentId + "/property/" + key;
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + contentId + "/property/" + key;
     }
 
     private String firstAttachmentId() {
@@ -322,11 +326,11 @@ public class ConfluencePublisherIntegrationTest {
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
-        return given().auth().preemptive().basic("confluence-publisher-it", "1234");
+        return given().auth().preemptive().basic(USERNAME, PASSWORD);
     }
 
     private static ConfluenceClient confluenceClient() {
-        return new ConfluenceRestV1Client("http://localhost:8090", false, false, null, 500, "confluence-publisher-it", "1234");
+        return new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, false, false, null, 500, USERNAME, PASSWORD);
     }
 
 }

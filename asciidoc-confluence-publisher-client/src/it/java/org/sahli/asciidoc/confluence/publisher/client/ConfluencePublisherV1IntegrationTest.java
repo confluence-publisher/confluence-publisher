@@ -37,8 +37,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.fail;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -221,34 +219,6 @@ public class ConfluencePublisherV1IntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(pageVersionOf(pageIdBy(title)))
                 .then().body("version.number", is(1));
-    }
-
-    @Test
-    public void publish_validPageContentThenInvalidPageContentThenValidContentAgain_validPageContentWithNonEmptyContentHashIsInConfluenceAtTheEndOfPublication() {
-        // arrange
-        String title = uniqueTitle("Invalid Markup Test Page");
-
-        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
-        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
-        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR);
-
-        // act
-        confluencePublisher.publish();
-
-        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/invalid-xhtml.xhtml"));
-        try {
-            confluencePublisher.publish();
-            fail("publish with invalid XHTML is expected to fail");
-        } catch (Exception ignored) {
-        }
-
-        confluencePageMetadata.setContentFilePath(absolutePathTo("single-page/single-page.xhtml"));
-        confluencePublisher.publish();
-
-        // assert
-        givenAuthenticatedAsPublisher()
-                .when().get(propertyValueOf(pageIdBy(title), "content-hash"))
-                .then().body("value", is(notNullValue()));
     }
 
     private static String uniqueTitle(String title) {

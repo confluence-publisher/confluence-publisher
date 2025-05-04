@@ -23,7 +23,7 @@ import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client.ProxyConfiguration;
+import org.sahli.asciidoc.confluence.publisher.client.http.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;

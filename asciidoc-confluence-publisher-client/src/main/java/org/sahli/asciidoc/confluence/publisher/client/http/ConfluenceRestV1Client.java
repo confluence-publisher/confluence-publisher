@@ -468,44 +468,4 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
             return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
         }
     }
-
-
-    public static class ProxyConfiguration {
-
-        private final String proxyScheme;
-        private final String proxyHost;
-        private final Integer proxyPort;
-        private final String proxyUsername;
-        private final String proxyPassword;
-
-        public ProxyConfiguration(String proxyScheme, String proxyHost, Integer proxyPort, String proxyUsername, String proxyPassword) {
-            this.proxyScheme = proxyScheme;
-            this.proxyHost = proxyHost;
-            this.proxyPort = proxyPort;
-            this.proxyUsername = proxyUsername;
-            this.proxyPassword = proxyPassword;
-        }
-
-        public String proxyScheme() {
-            return this.proxyScheme;
-        }
-
-        public String proxyHost() {
-            return this.proxyHost;
-        }
-
-        public Integer proxyPort() {
-            return this.proxyPort;
-        }
-
-        public String proxyUsername() {
-            return this.proxyUsername;
-        }
-
-        public String proxyPassword() {
-            return this.proxyPassword;
-        }
-
-    }
-
 }

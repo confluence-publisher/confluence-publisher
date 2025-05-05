@@ -29,12 +29,17 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
+import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
+import org.sonatype.plexus.components.cipher.PlexusCipherException;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -57,8 +62,15 @@ import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 @RunWith(Parameterized.class)
 public class AsciidocConfluencePublisherMojoIntegrationTest {
 
+    private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
+    private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
+    private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String USERNAME = System.getenv("CPI_USERNAME");
+    private static final String PASSWORD = System.getenv("CPI_PASSWORD");
+
     private static final String POM_PROPERTIES = "pomProperties";
     private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
+    private static final String PLAINTEXT_MAVEN_MASTER_PASSWORD = "test";
 
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
@@ -194,9 +206,9 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() throws Exception {
         // arrange
-        withReverseProxyEnabled("localhost", 8443, "host.testcontainers.internal", 8090, (proxyPort) -> {
+        withReverseProxyEnabled("localhost", 8443, schemeIn(CONFLUENCE_ROOT_URL), hostIn(CONFLUENCE_ROOT_URL), portIn(CONFLUENCE_ROOT_URL), (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "https://localhost:" + proxyPort);
+            properties.put("rootConfluenceUrl", schemeIn(CONFLUENCE_ROOT_URL) + "://localhost:" + proxyPort + pathIn(CONFLUENCE_ROOT_URL));
             properties.put("skipSslVerification", "true");
 
             // act
@@ -229,7 +241,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:8090");
+            properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -250,7 +262,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, "proxy-user", "proxy-password", (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", "http://host.testcontainers.internal:8090");
+            properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -293,8 +305,8 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
         Map<String, String> serverProperties = new HashMap<>();
         serverProperties.put("id", "usernameAndPasswordServer");
-        serverProperties.put("username", "confluence-publisher-it");
-        serverProperties.put("password", "1234");
+        serverProperties.put("username", USERNAME);
+        serverProperties.put("password", PASSWORD);
 
         // act
         publishAndVerify("default", properties, serverProperties, null, () -> {
@@ -315,10 +327,10 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
         Map<String, String> serverProperties = new HashMap<>();
         serverProperties.put("id", "usernameAndPasswordServer");
-        serverProperties.put("username", "confluence-publisher-it");
-        serverProperties.put("password", "{3ddzJwZi04gHy8WJMQ0C9N4FgT5VzpFW975lyFXLenY=}");
+        serverProperties.put("username", USERNAME);
+        serverProperties.put("password", encrypted(PASSWORD, PLAINTEXT_MAVEN_MASTER_PASSWORD));
 
-        String encryptedMasterPassword = "{dXtQ9/Xk/ZwHrozpmlDcatoR8eOZrTB9JRaIUaCI0hM=}";
+        String encryptedMasterPassword = encrypted(PLAINTEXT_MAVEN_MASTER_PASSWORD);
 
         // act
         publishAndVerify("default", properties, serverProperties, encryptedMasterPassword, () -> {
@@ -406,7 +418,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 });
             }
 
-            verifier.addCliOption("-s " + settingsPath.toAbsolutePath().toString());
+            verifier.addCliOption("-s " + settingsPath.toAbsolutePath());
             verifier.executeGoal("org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-plugin:publish");
 
             verifier.verifyErrorFreeLog();
@@ -423,14 +435,15 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         Files.readAllLines(logFile.toPath()).forEach((line) -> System.out.println(line));
     }
 
-    private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, PortAwareRunnable runnable) throws Exception {
+    private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetScheme, String targetHost, int targetPort, PortAwareRunnable runnable) throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("PROXY_HOST", proxyHost);
         env.put("PROXY_PORT", valueOf(proxyPort));
+        env.put("TARGET_SCHEME", targetScheme);
         env.put("TARGET_HOST", targetHost);
         env.put("TARGET_PORT", valueOf(targetPort));
 
-        startProxy("confluencepublisher/reverse-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/reverse-proxy-it:1.3.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void withForwardProxyEnabled(String proxyHost, int proxyPort, PortAwareRunnable runnable) throws Exception {
@@ -467,20 +480,45 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         }
     }
 
+    private static String schemeIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getScheme();
+    }
+
+    private static String hostIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getHost();
+    }
+
+    private static int portIn(String confluenceRootUrl) {
+        URI uri = uri(confluenceRootUrl);
+        return uri.getPort() != -1 ? uri.getPort() : uri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
+    }
+
+    private static String pathIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getPath();
+    }
+
+    private static URI uri(String confluenceRootUrl) {
+        try {
+            return new URI(confluenceRootUrl);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid uri '" + confluenceRootUrl + "'", e);
+        }
+    }
+
     private static RequestSpecification givenAuthenticatedAsPublisher() {
-        return given().auth().preemptive().basic("confluence-publisher-it", "1234");
+        return given().auth().preemptive().basic(USERNAME, PASSWORD);
     }
 
     private static String rootPage() {
-        return page("327706");
+        return page(ANCESTOR_ID);
     }
 
     private static String page(String pageId) {
-        return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
     }
 
     private static String childPages() {
-        return "http://localhost:8090/rest/api/content/327706/child/page";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
 
     private static String pageIdBy(String title) {
@@ -491,11 +529,11 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
 
     private static Map<String, String> mandatoryProperties() {
         Map<String, String> properties = new HashMap<>();
-        properties.put("rootConfluenceUrl", "http://localhost:8090");
-        properties.put("spaceKey", "CPI");
-        properties.put("ancestorId", "327706");
-        properties.put("username", "confluence-publisher-it");
-        properties.put("password", "1234");
+        properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
+        properties.put("spaceKey", SPACE_KEY);
+        properties.put("ancestorId", ANCESTOR_ID);
+        properties.put("username", USERNAME);
+        properties.put("password", PASSWORD);
         properties.put("asciidocRootFolder", ".");
 
         return properties;
@@ -556,6 +594,21 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 "</settingsSecurity>";
     }
 
+    private static String encrypted(String password) {
+        // hardcoded maven master password (see MavenCli class)
+        String defaultMavenMasterPassword = DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION;
+        return encrypted(password, defaultMavenMasterPassword);
+    }
+
+    private static String encrypted(String password, String masterPassword) {
+        try {
+            DefaultPlexusCipher defaultPlexusCipher = new DefaultPlexusCipher();
+            String encryptedPassword = defaultPlexusCipher.encrypt(password, masterPassword);
+            return "{" + encryptedPassword + "}";
+        } catch (PlexusCipherException e) {
+            throw new RuntimeException("Failed to encrypt password", e);
+        }
+    }
 
     @FunctionalInterface
     private interface PortAwareRunnable {

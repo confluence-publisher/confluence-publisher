@@ -26,6 +26,8 @@ import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +44,12 @@ import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 import static org.testcontainers.containers.wait.strategy.Wait.forLogMessage;
 
 public class DockerBasedPublishingIntegrationTest {
+
+    private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
+    private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
+    private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String USERNAME = System.getenv("CPI_USERNAME");
+    private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
     @BeforeClass
     public static void exposeConfluenceServerPortOnHost() {
@@ -166,9 +174,9 @@ public class DockerBasedPublishingIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() {
         // arrange
-        withReverseProxyEnabled("proxy", 8443, "host.testcontainers.internal", 8090, () -> {
+        withReverseProxyEnabled("proxy", 8443, schemeIn(CONFLUENCE_ROOT_URL), hostIn(CONFLUENCE_ROOT_URL), portIn(CONFLUENCE_ROOT_URL), () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", "https://proxy:8443");
+            env.put("ROOT_CONFLUENCE_URL", schemeIn(CONFLUENCE_ROOT_URL) + "://proxy:8443" + pathIn(CONFLUENCE_ROOT_URL));
             env.put("SKIP_SSL_VERIFICATION", "true");
 
             // act
@@ -201,7 +209,7 @@ public class DockerBasedPublishingIntegrationTest {
         // arrange
         withForwardProxyEnabled("proxy", 8443, () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", "http://host.testcontainers.internal:8090");
+            env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
             env.put("SKIP_SSL_VERIFICATION", "true");
             env.put("PROXY_SCHEME", "https");
             env.put("PROXY_HOST", "proxy");
@@ -222,7 +230,7 @@ public class DockerBasedPublishingIntegrationTest {
         // arrange
         withForwardProxyEnabled("proxy", 8443, "proxy-user", "proxy-password", () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", "http://host.testcontainers.internal:8090");
+            env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
             env.put("SKIP_SSL_VERIFICATION", "true");
             env.put("PROXY_SCHEME", "https");
             env.put("PROXY_HOST", "proxy");
@@ -279,14 +287,15 @@ public class DockerBasedPublishingIntegrationTest {
         }
     }
 
-    private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetHost, int targetPort, Runnable runnable) {
+    private static void withReverseProxyEnabled(String proxyHost, int proxyPort, String targetScheme, String targetHost, int targetPort, Runnable runnable) {
         Map<String, String> env = new HashMap<>();
         env.put("PROXY_HOST", proxyHost);
         env.put("PROXY_PORT", valueOf(proxyPort));
+        env.put("TARGET_SCHEME", targetScheme);
         env.put("TARGET_HOST", targetHost);
         env.put("TARGET_PORT", valueOf(targetPort));
 
-        startProxy("confluencepublisher/reverse-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/reverse-proxy-it:1.3.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void withForwardProxyEnabled(String proxyHost, int proxyPort, Runnable runnable) {
@@ -323,24 +332,49 @@ public class DockerBasedPublishingIntegrationTest {
         }
     }
 
+    private static String schemeIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getScheme();
+    }
+
+    private static String hostIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getHost();
+    }
+
+    private static int portIn(String confluenceRootUrl) {
+        URI uri = uri(confluenceRootUrl);
+        return uri.getPort() != -1 ? uri.getPort() : uri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
+    }
+
+    private static String pathIn(String confluenceRootUrl) {
+        return uri(confluenceRootUrl).getPath();
+    }
+
+    private static URI uri(String confluenceRootUrl) {
+        try {
+            return new URI(confluenceRootUrl);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid uri '" + confluenceRootUrl + "'", e);
+        }
+    }
+
     private static boolean isConvertOnly(Map<String, String> env) {
         return env.getOrDefault("CONVERT_ONLY", "false").equals("true");
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {
-        return given().auth().preemptive().basic("confluence-publisher-it", "1234");
+        return given().auth().preemptive().basic(USERNAME, PASSWORD);
     }
 
     private static String rootPage() {
-        return page("327706");
+        return page(ANCESTOR_ID);
     }
 
     private static String page(String pageId) {
-        return "http://localhost:8090/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + pageId + "?expand=body.view,history.lastUpdated";
     }
 
     private static String childPages() {
-        return "http://localhost:8090/rest/api/content/327706/child/page";
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + ANCESTOR_ID + "/child/page";
     }
 
     private static String pageIdBy(String title) {
@@ -351,11 +385,11 @@ public class DockerBasedPublishingIntegrationTest {
 
     private static Map<String, String> mandatoryEnvVars() {
         Map<String, String> env = new HashMap<>();
-        env.put("ROOT_CONFLUENCE_URL", "http://host.testcontainers.internal:8090");
-        env.put("SPACE_KEY", "CPI");
-        env.put("ANCESTOR_ID", "327706");
-        env.put("USERNAME", "confluence-publisher-it");
-        env.put("PASSWORD", "1234");
+        env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
+        env.put("SPACE_KEY", SPACE_KEY);
+        env.put("ANCESTOR_ID", ANCESTOR_ID);
+        env.put("USERNAME", USERNAME);
+        env.put("PASSWORD", PASSWORD);
 
         return env;
     }

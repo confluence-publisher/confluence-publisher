@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     machine:
@@ -35,17 +35,17 @@ jobs:
       - run:
           name: Execute integration tests
           command: |
+            echo 'export CPI_ROOT_URL=https://confluence-publisher.atlassian.net/wiki' >> $BASH_ENV
+            echo 'export CPI_USERNAME=$CONFLUENCE_IT_USERNAME' >> $BASH_ENV
+            echo 'export CPI_PASSWORD=$CONFLUENCE_IT_TOKEN' >> $BASH_ENV
+            echo 'export CPI_SPACE_KEY=CPIV1' >> $BASH_ENV
+            echo 'export CPI_ANCESTOR_ID=3153166339' >> $BASH_ENV
+            source $BASH_ENV
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
             ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
             ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
             ./publishWithDockerImage.sh
-          environment:
-            CPI_ROOT_URL: http://localhost:8090
-            CPI_SPACE_KEY: CPI
-            CPI_ANCESTOR_ID: 327706
-            CPI_USERNAME: confluence-publisher-it
-            CPI_PASSWORD: 1234
 
       - run:
           name: Sign and publish artifacts (master or tag builds only)

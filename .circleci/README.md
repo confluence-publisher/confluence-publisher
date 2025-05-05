@@ -21,18 +21,20 @@
 
 The following secret environment variables have to be set on the build server:
 
-| Name                   | Description                                                | Value                                           |
-|------------------------|------------------------------------------------------------| ------------------------------------------------|
-| CODE_SIGNING_ID        | id of key pair (see gpg)                                   | FD2EA172 (changes for each new key pair)        |	
-| CODE_SIGNING_IV        | initialization vector for key pair encryption              | (defined at key pair generation)                |
-| CODE_SIGNING_KEY       | encryption key for key pair encryption                     | (defined at key pair generation)                |	
-| CODE_SIGNING_PASSWORD  | private key password                                       | (defined at key pair generation)                |	
-| CONFLUENCE_ANCESTOR_ID | ancestor id of documentation in atlassian confluence       | 327681                                          |	
-| CONFLUENCE_PASSWORD    | password of atlassian user for publishing documentation    | (secret)                                        |	
-| CONFLUENCE_SPACE_KEY   | space key of documentation in atlassian confluence         | CPD                                             |
-| CONFLUENCE_URL         | url of documentation in atlassian confluence               | https://confluence-publisher.atlassian.net/wiki |	
-| CONFLUENCE_USERNAME    | username of atlassian user for publishing documentation    | confluence-publisher                            |
-| DOCKER_HUB_PASSWORD    | password of docker hub user for publishing docker image    | (secret)                                        |	
-| DOCKER_HUB_USERNAME    | username of docker hub user for publishing docker image    | confluencepublisher                             |	
-| OSSRH_PASSWORD         | password of sonatype user for publishing maven artifacts   | (secret)                                        |	
-| OSSRH_USERNAME         | username of sonatype user for publishing maven artifacts   | confluence-publisher                            |
+| Name                   | Description                                                         | Value                                          |
+|------------------------|---------------------------------------------------------------------|------------------------------------------------|
+| CODE_SIGNING_ID        | id of key pair (see gpg)                                            | FD2EA172 (changes for each new key pair)       |	
+| CODE_SIGNING_IV        | initialization vector for key pair encryption                       | (defined at key pair generation)               |
+| CODE_SIGNING_KEY       | encryption key for key pair encryption                              | (defined at key pair generation)               |	
+| CODE_SIGNING_PASSWORD  | private key password                                                | (defined at key pair generation)               |	
+| CONFLUENCE_ANCESTOR_ID | ancestor id of documentation in atlassian confluence                | 327681                                         |	
+| CONFLUENCE_SPACE_KEY   | space key of documentation in atlassian confluence                  | CPD                                            |
+| CONFLUENCE_URL         | url of documentation in atlassian confluence                        | https://confluence-publisher.atlassian.net/wiki |	
+| CONFLUENCE_USERNAME    | username of atlassian user for publishing documentation             | confluence-publisher                           |
+| CONFLUENCE_PASSWORD    | password of atlassian user for publishing documentation             | (secret)                                       |	
+| DOCKER_HUB_PASSWORD    | password of docker hub user for publishing docker image             | (secret)                                       |	
+| DOCKER_HUB_USERNAME    | username of docker hub user for publishing docker image             | confluencepublisher                            |	
+| OSSRH_PASSWORD         | password of sonatype user for publishing maven artifacts            | (secret)                                       |	
+| OSSRH_USERNAME         | username of sonatype user for publishing maven artifacts            | confluence-publisher                           |
+| CONFLUENCE_IT_USERNAME | username of atlassian user for publishing to integration test space | (secret)                                       |
+| CONFLUENCE_IT_TOKEN    | token of atlassian user for publishing to integration test space    | (secret)                                       |

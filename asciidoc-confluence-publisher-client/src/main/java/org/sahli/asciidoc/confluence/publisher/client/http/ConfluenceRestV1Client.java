@@ -23,6 +23,8 @@ import com.google.common.util.concurrent.RateLimiter;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -31,10 +33,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -46,12 +48,10 @@ import java.util.List;
 import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
@@ -434,7 +434,9 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
                     String proxyUsername = proxyConfiguration.proxyUsername();
                     String proxyPassword = proxyConfiguration.proxyPassword();
 
-                    builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, authorizationHeaderValue(proxyUsername, proxyPassword))));
+                    BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUsername, proxyPassword));
+                    builder.setDefaultCredentialsProvider(credentialsProvider);
                 }
             }
         }

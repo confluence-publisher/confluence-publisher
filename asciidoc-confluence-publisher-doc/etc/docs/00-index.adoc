@@ -295,9 +295,12 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | The username of the forward proxy (in case the forward proxy requires basic authentication).
 | optional (defaults to empty)
 
-| proxyPassword
-| The password of the forward proxy (in case the forward proxy requires basic authentication).
-| optional (defaults to empty)
+| restApiVersion
+| The version of the Confluence REST API to be used, either `v1` or `v2`. Default is version 2.
+  +
+  +
+  _Note:_ version 1 is no longer supported for Confluence Cloud. Only use version 1 for on-premise Confluence and only in case of issues with version 2.
+| optional (defaults to `v2`)
 |===
 
 As usually with Maven, configuration properties can either be defined directly in the Confluence Publisher maven plugin
@@ -411,6 +414,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PROXY_HOST=my.proxy.com \
    -e PROXY_PORT=8443 \
    -e CONVERT_ONLY=false \
+   -e REST_API_VERSION=v2 \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
    confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

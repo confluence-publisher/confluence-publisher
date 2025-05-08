@@ -24,4 +24,5 @@ exec java -cp "/opt/*:/opt/extensions/*" \
     proxyUsername="$PROXY_USERNAME" \
     proxyPassword="$PROXY_PASSWORD" \
     convertOnly="$CONVERT_ONLY" \
-    asciidocBuildFolder="$ASCIIDOC_BUILD_FOLDER"
+    asciidocBuildFolder="$ASCIIDOC_BUILD_FOLDER" \
+    restApiVersion="$REST_API_VERSION"

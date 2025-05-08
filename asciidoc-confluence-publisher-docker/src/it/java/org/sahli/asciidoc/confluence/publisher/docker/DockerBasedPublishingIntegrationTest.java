@@ -48,6 +48,7 @@ public class DockerBasedPublishingIntegrationTest {
     private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
     private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
     private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String REST_API_VERSION = System.getenv("CPI_REST_API_VERSION");
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
@@ -174,9 +175,9 @@ public class DockerBasedPublishingIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() {
         // arrange
-        withReverseProxyEnabled("proxy", 8443, schemeIn(CONFLUENCE_ROOT_URL), hostIn(CONFLUENCE_ROOT_URL), portIn(CONFLUENCE_ROOT_URL), () -> {
+        withReverseProxyEnabled("proxy", 8443, schemeIn(CONFLUENCE_ROOT_URL), toDockerInternalHostIfNeed(hostIn(CONFLUENCE_ROOT_URL)), portIn(CONFLUENCE_ROOT_URL), () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", schemeIn(CONFLUENCE_ROOT_URL) + "://proxy:8443" + pathIn(CONFLUENCE_ROOT_URL));
+            env.put("ROOT_CONFLUENCE_URL", "https://proxy:8443" + pathIn(CONFLUENCE_ROOT_URL));
             env.put("SKIP_SSL_VERIFICATION", "true");
 
             // act
@@ -209,7 +210,7 @@ public class DockerBasedPublishingIntegrationTest {
         // arrange
         withForwardProxyEnabled("proxy", 8443, () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
+            env.put("ROOT_CONFLUENCE_URL", toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL));
             env.put("SKIP_SSL_VERIFICATION", "true");
             env.put("PROXY_SCHEME", "https");
             env.put("PROXY_HOST", "proxy");
@@ -230,7 +231,7 @@ public class DockerBasedPublishingIntegrationTest {
         // arrange
         withForwardProxyEnabled("proxy", 8443, "proxy-user", "proxy-password", () -> {
             Map<String, String> env = mandatoryEnvVars();
-            env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
+            env.put("ROOT_CONFLUENCE_URL", toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL));
             env.put("SKIP_SSL_VERIFICATION", "true");
             env.put("PROXY_SCHEME", "https");
             env.put("PROXY_HOST", "proxy");
@@ -332,6 +333,10 @@ public class DockerBasedPublishingIntegrationTest {
         }
     }
 
+    private static String toDockerInternalHostIfNeed(String url) {
+        return url.replaceAll("localhost", "host.testcontainers.internal");
+    }
+
     private static String schemeIn(String confluenceRootUrl) {
         return uri(confluenceRootUrl).getScheme();
     }
@@ -385,9 +390,10 @@ public class DockerBasedPublishingIntegrationTest {
 
     private static Map<String, String> mandatoryEnvVars() {
         Map<String, String> env = new HashMap<>();
-        env.put("ROOT_CONFLUENCE_URL", CONFLUENCE_ROOT_URL);
+        env.put("ROOT_CONFLUENCE_URL", toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL));
         env.put("SPACE_KEY", SPACE_KEY);
         env.put("ANCESTOR_ID", ANCESTOR_ID);
+        env.put("REST_API_VERSION", REST_API_VERSION);
         env.put("USERNAME", USERNAME);
         env.put("PASSWORD", PASSWORD);
 

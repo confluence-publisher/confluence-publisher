@@ -65,6 +65,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
     private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
     private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String REST_API_VERSION = System.getenv("CPI_REST_API_VERSION");
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
@@ -206,9 +207,9 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() throws Exception {
         // arrange
-        withReverseProxyEnabled("localhost", 8443, schemeIn(CONFLUENCE_ROOT_URL), hostIn(CONFLUENCE_ROOT_URL), portIn(CONFLUENCE_ROOT_URL), (proxyPort) -> {
+        withReverseProxyEnabled("localhost", 8443, schemeIn(CONFLUENCE_ROOT_URL), toDockerInternalHostIfNeed(hostIn(CONFLUENCE_ROOT_URL)), portIn(CONFLUENCE_ROOT_URL), (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", schemeIn(CONFLUENCE_ROOT_URL) + "://localhost:" + proxyPort + pathIn(CONFLUENCE_ROOT_URL));
+            properties.put("rootConfluenceUrl", "https://localhost:" + proxyPort + pathIn(CONFLUENCE_ROOT_URL));
             properties.put("skipSslVerification", "true");
 
             // act
@@ -241,7 +242,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
+            properties.put("rootConfluenceUrl", toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL));
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -262,7 +263,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, "proxy-user", "proxy-password", (proxyPort) -> {
             Map<String, String> properties = mandatoryProperties();
-            properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
+            properties.put("rootConfluenceUrl", toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL));
             properties.put("skipSslVerification", "true");
             properties.put("proxyScheme", "https");
             properties.put("proxyHost", "localhost");
@@ -480,6 +481,10 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         }
     }
 
+    private static String toDockerInternalHostIfNeed(String url) {
+        return url.replaceAll("localhost", "host.testcontainers.internal");
+    }
+
     private static String schemeIn(String confluenceRootUrl) {
         return uri(confluenceRootUrl).getScheme();
     }
@@ -532,6 +537,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         properties.put("rootConfluenceUrl", CONFLUENCE_ROOT_URL);
         properties.put("spaceKey", SPACE_KEY);
         properties.put("ancestorId", ANCESTOR_ID);
+        properties.put("restApiVersion", REST_API_VERSION);
         properties.put("username", USERNAME);
         properties.put("password", PASSWORD);
         properties.put("asciidocRootFolder", ".");

@@ -18,6 +18,7 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 
 import io.restassured.specification.RequestSpecification;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
@@ -37,6 +38,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeTrue;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -50,8 +52,14 @@ public class ConfluencePublisherV1IntegrationTest {
     private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
     private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
     private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String REST_API_VERSION = System.getenv("CPI_REST_API_VERSION");
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
+
+    @BeforeClass
+    public static void runForRestApiV1Only() {
+        assumeTrue(REST_API_VERSION != null && REST_API_VERSION.equals("v1"));
+    }
 
     @Test
     public void publish_singlePageAndAppendToAncestorPublishingStrategy_pageIsCreatedAndAttachmentsAddedInConfluence() {

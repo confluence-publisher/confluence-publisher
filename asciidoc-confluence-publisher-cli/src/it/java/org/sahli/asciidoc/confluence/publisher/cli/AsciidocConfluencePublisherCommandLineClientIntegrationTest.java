@@ -46,6 +46,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
     private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
     private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
     private static final String ANCESTOR_ID = System.getenv("CPI_ANCESTOR_ID");
+    private static final String REST_API_VERSION = System.getenv("CPI_REST_API_VERSION");
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
@@ -62,6 +63,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/empty"
         };
 
@@ -77,6 +79,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default"
         };
 
@@ -102,6 +105,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/attributes",
                 "attributes={\"attribute-1\": \"value-1\", \"attribute-2\": \"value-2\"}"
         };
@@ -118,13 +122,14 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
     @Test
     public void publish_withSkipSslVerificationTrue_allowsPublishingViaSslAndUntrustedCertificate() throws Exception {
         // arrange
-        withReverseProxyEnabled("localhost", 8443, schemeIn(CONFLUENCE_ROOT_URL), hostIn(CONFLUENCE_ROOT_URL), portIn(CONFLUENCE_ROOT_URL), (proxyPort) -> {
+        withReverseProxyEnabled("localhost", 8443, schemeIn(CONFLUENCE_ROOT_URL), toDockerInternalHostIfNeed(hostIn(CONFLUENCE_ROOT_URL)), portIn(CONFLUENCE_ROOT_URL), (proxyPort) -> {
             String[] args = {
-                    "rootConfluenceUrl=" + schemeIn(CONFLUENCE_ROOT_URL) + "://localhost:" + proxyPort + pathIn(CONFLUENCE_ROOT_URL),
+                    "rootConfluenceUrl=https://localhost:" + proxyPort + pathIn(CONFLUENCE_ROOT_URL),
                     "username=" + USERNAME,
                     "password=" + PASSWORD,
                     "spaceKey=" + SPACE_KEY,
                     "ancestorId=" + ANCESTOR_ID,
+                    "restApiVersion=" + REST_API_VERSION,
                     "asciidocRootFolder=src/it/resources/default",
                     "skipSslVerification=true"
             };
@@ -148,6 +153,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default",
                 "maxRequestsPerSecond=1.5"
         };
@@ -166,11 +172,12 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {
             String[] args = {
-                    "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+                    "rootConfluenceUrl=" + toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL),
                     "username=" + USERNAME,
                     "password=" + PASSWORD,
                     "spaceKey=" + SPACE_KEY,
                     "ancestorId=" + ANCESTOR_ID,
+                    "restApiVersion=" + REST_API_VERSION,
                     "asciidocRootFolder=src/it/resources/default",
                     "skipSslVerification=true",
                     "proxyScheme=https",
@@ -193,11 +200,12 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         // arrange
         withForwardProxyEnabled("localhost", 8443, "proxy-user", "proxy-password", (proxyPort) -> {
             String[] args = {
-                    "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+                    "rootConfluenceUrl=" + toDockerInternalHostIfNeed(CONFLUENCE_ROOT_URL),
                     "username=" + USERNAME,
                     "password=" + PASSWORD,
                     "spaceKey=" + SPACE_KEY,
                     "ancestorId=" + ANCESTOR_ID,
+                    "restApiVersion=" + REST_API_VERSION,
                     "asciidocRootFolder=src/it/resources/default",
                     "skipSslVerification=true",
                     "proxyScheme=https",
@@ -226,6 +234,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default",
                 "convertOnly=true"
         };
@@ -251,6 +260,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "password=" + PASSWORD,
                 "spaceKey=" + SPACE_KEY,
                 "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default",
                 "convertOnly=true",
                 "asciidocBuildFolder="+ buildDirectory.getRoot().getAbsolutePath()
@@ -324,6 +334,10 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
             proxy.start();
             runnable.run(proxy.getMappedPort(proxyPort));
         }
+    }
+
+    private static String toDockerInternalHostIfNeed(String url) {
+        return url.replaceAll("localhost", "host.testcontainers.internal");
     }
 
     private static String schemeIn(String confluenceRootUrl) {

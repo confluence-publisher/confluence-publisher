@@ -37,6 +37,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -49,8 +50,10 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
@@ -469,6 +472,10 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
                     String proxyUsername = proxyConfiguration.proxyUsername();
                     String proxyPassword = proxyConfiguration.proxyPassword();
 
+                    // for http target urls
+                    builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, authorizationHeaderValue(proxyUsername, proxyPassword))));
+
+                    // for https target urls
                     BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                     credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUsername, proxyPassword));
                     builder.setDefaultCredentialsProvider(credentialsProvider);

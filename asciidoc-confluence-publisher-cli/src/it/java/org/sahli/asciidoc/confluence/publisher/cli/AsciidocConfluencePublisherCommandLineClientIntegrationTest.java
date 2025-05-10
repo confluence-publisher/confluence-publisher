@@ -35,6 +35,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.lang.String.valueOf;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -117,6 +118,29 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         givenAuthenticatedAsPublisher()
                 .when().get(contentFor(pageIdBy("Index")))
                 .then().body("body.storage.value", is("<p>value-1 value-2</p>"));
+    }
+
+    @Test
+    public void publish_labelsProvided_setsLabelsToPage() throws Exception {
+        // arrange
+        String[] args = {
+                "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+                "username=" + USERNAME,
+                "password=" + PASSWORD,
+                "spaceKey=" + SPACE_KEY,
+                "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
+                "asciidocRootFolder=src/it/resources/labels"
+        };
+
+        // act
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(labelsFor(pageIdBy("Index")))
+                .then().body("results", hasSize(2))
+                .and().body("results.name", hasItems("label-one", "label-two"));
     }
 
     @Test
@@ -263,14 +287,14 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default",
                 "convertOnly=true",
-                "asciidocBuildFolder="+ buildDirectory.getRoot().getAbsolutePath()
+                "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath()
         };
 
         // act
         AsciidocConfluencePublisherCommandLineClient.main(args);
 
         // assert
-        assertTrue("Build directory was deleted", buildDirectory.getRoot().exists());
+        assertTrue("Build directory was deleted", this.buildDirectory.getRoot().exists());
     }
 
     private static String pageIdBy(String title) {
@@ -285,6 +309,10 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
 
     private String contentFor(String pageId) {
         return CONFLUENCE_ROOT_URL + "/rest/api/content/" + pageId + "?expand=body.storage";
+    }
+
+    private String labelsFor(String pageId) {
+        return CONFLUENCE_ROOT_URL + "/rest/api/content/" + pageId + "/label";
     }
 
     private static RequestSpecification givenAuthenticatedAsPublisher() {

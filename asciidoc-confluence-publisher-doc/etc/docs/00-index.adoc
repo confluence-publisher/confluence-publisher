@@ -9,7 +9,9 @@ publication is again re-published.
 
 [NOTE]
 ====
-The Confluence Publisher has been tested with Confluence 6.0.5
+The Confluence Publisher has been tested with Confluence 6.0.5 and Confluence Cloud.
+
+Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion>> configuration property)
 ====
 
 
@@ -295,7 +297,7 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | The username of the forward proxy (in case the forward proxy requires basic authentication).
 | optional (defaults to empty)
 
-| restApiVersion
+| [[restApiVersion]] restApiVersion
 | The version of the Confluence REST API to be used, either `v1` or `v2`. Default is version 2.
   +
   +

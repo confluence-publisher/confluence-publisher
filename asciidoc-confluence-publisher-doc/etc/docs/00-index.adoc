@@ -245,9 +245,13 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | notifyWatchers
 | Defines whether to notify page/space watchers upon changes when re-publishing. If set to `false`, subscribers will not
   receive notifications, except for new page or attachment creations.
+  +
+  +
+  _Note:_ suppressing notifications to watchers on page changes is not supported by Confluence Cloud.
 | optional (defaults to true)
 
-| attributes| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
+| attributes
+| User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
   +
   +
   _Note:_ when using Docker-based publishing, user attributes have to be provided as JSON object structure.

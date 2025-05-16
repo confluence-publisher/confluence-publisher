@@ -9,7 +9,7 @@ publication is again re-published.
 
 [NOTE]
 ====
-The Confluence Publisher has been tested with Confluence 6.0.5 and Confluence Cloud.
+The Confluence Publisher has been tested with Confluence Server 6.0.5 and Confluence Cloud.
 
 Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion>> configuration property)
 ====
@@ -202,7 +202,7 @@ When relying on Maven support for encrypted credentials using the `serverId` con
   be used as password.
   +
   +
-  _Note:_ when publishing to on-premise Confluence with an API token, leave the username empty ("") or unspecified
+  _Note:_ when publishing to Confluence Server with an API token, leave the username empty ("") or unspecified
   (for Maven plugin)
   +
   +
@@ -305,7 +305,7 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | The version of the Confluence REST API to be used, either `v1` or `v2`. Default is version 2.
   +
   +
-  _Note:_ version 1 is no longer supported for Confluence Cloud. Only use version 1 for on-premise Confluence and only in case of issues with version 2.
+  _Note:_ version 1 is no longer supported for Confluence Cloud. Only use version 1 for Confluence Server and only in case of issues with version 2.
 | optional (defaults to `v2`)
 |===
 

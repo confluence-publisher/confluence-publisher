@@ -33,7 +33,7 @@ jobs:
             if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw clean install jacoco:report coveralls:report -nsu -B; fi
 
       - run:
-          name: Execute integration tests (local server, v1)
+          name: Execute integration tests (confluence server, v1)
           command: |
             echo 'export CPI_ROOT_URL=http://localhost:8090' >> $BASH_ENV
             echo 'export CPI_USERNAME=confluence-publisher-it' >> $BASH_ENV

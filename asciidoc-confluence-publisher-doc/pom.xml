@@ -37,6 +37,7 @@
         <ancestorId>327706</ancestorId>
         <username>confluence-publisher-it</username>
         <password>1234</password>
+        <restApiVersion>v1</restApiVersion>
     </properties>
 
     <build>
@@ -51,6 +52,7 @@
                     <ancestorId>${ancestorId}</ancestorId>
                     <username>${username}</username>
                     <password>${password}</password>
+                    <restApiVersion>${restApiVersion}</restApiVersion>
                     <attributes>
                         <confluencePublisherVersion>${project.version}</confluencePublisherVersion>
                     </attributes>

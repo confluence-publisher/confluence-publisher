@@ -20,9 +20,11 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV2Client;
+import org.sahli.asciidoc.confluence.publisher.client.http.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
@@ -39,7 +41,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -91,6 +92,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
 
         boolean convertOnly = argumentsParser.optionalBooleanArgument("convertOnly", args).orElse(false);
         boolean notifyWatchers = argumentsParser.optionalBooleanArgument("notifyWatchers", args).orElse(true);
+        String restApiVersion = argumentsParser.optionalArgument("restApiVersion", args).orElse("v2");
 
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
@@ -102,9 +104,10 @@ public class AsciidocConfluencePublisherCommandLineClient {
             if (convertOnly) {
                 System.out.println("Publishing to Confluence skipped ('convert only' is enabled)");
             } else {
+                System.out.println("Publishing to Confluence (REST API " + restApiVersion + ")");
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
-                ConfluenceRestClient confluenceClient = new ConfluenceRestClient(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, connectionTTL, username, password);
+                ConfluenceClient confluenceClient = buildConfluenceClient(restApiVersion, rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, connectionTTL, username, password);
                 ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, notifyWatchers);
                 confluencePublisher.publish();
             }
@@ -112,6 +115,14 @@ public class AsciidocConfluencePublisherCommandLineClient {
             if (cleanupBuildFolder) {
                 deleteDirectory(buildFolder);
             }
+        }
+    }
+
+    private static ConfluenceClient buildConfluenceClient(String restApiVersion, String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean skipSslVerification, Double maxRequestsPerSecond, Integer connectionTTL, String username, String password) {
+        if ("v1".equals(restApiVersion)) {
+            return new ConfluenceRestV1Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, connectionTTL, username, password);
+        } else {
+            return new ConfluenceRestV2Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, connectionTTL, username, password);
         }
     }
 

@@ -28,9 +28,11 @@ import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisher;
 import org.sahli.asciidoc.confluence.publisher.client.ConfluencePublisherListener;
 import org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy;
 import org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluencePage;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient;
-import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestClient.ProxyConfiguration;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV1Client;
+import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV2Client;
+import org.sahli.asciidoc.confluence.publisher.client.http.ProxyConfiguration;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider;
@@ -137,6 +139,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "notifyWatchers")
     private boolean notifyWatchers;
 
+    @Parameter(property = PREFIX + "restApiVersion", defaultValue = "v2")
+    private String restApiVersion;
+
     @Parameter
     private Map<String, Object> attributes;
 
@@ -166,11 +171,13 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             if (this.convertOnly) {
                 getLog().info("Publishing to Confluence skipped ('convert only' is enabled)");
             } else {
+                getLog().info("Publishing to Confluence (REST API " + this.restApiVersion + ")");
+
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(this.proxyScheme, this.proxyHost, this.proxyPort, this.proxyUsername, this.proxyPassword);
-                ConfluenceRestClient confluenceRestClient = new ConfluenceRestClient(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
+                ConfluenceClient confluenceClient = buildConfluenceClient(proxyConfiguration);
                 ConfluencePublisherListener confluencePublisherListener = new LoggingConfluencePublisherListener(getLog());
 
-                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceRestClient, confluencePublisherListener, this.versionMessage, this.notifyWatchers);
+                ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, this.publishingStrategy, this.orphanRemovalStrategy, confluenceClient, confluencePublisherListener, this.versionMessage, this.notifyWatchers);
                 confluencePublisher.publish();
             }
         } catch (Exception e) {
@@ -181,6 +188,14 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
             }
 
             throw new MojoExecutionException("Publishing to Confluence failed", e);
+        }
+    }
+
+    private ConfluenceClient buildConfluenceClient(ProxyConfiguration proxyConfiguration) {
+        if ("v1".equals(this.restApiVersion)) {
+            return new ConfluenceRestV1Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
+        } else {
+            return new ConfluenceRestV2Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
         }
     }
 

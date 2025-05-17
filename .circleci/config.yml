@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     machine:
@@ -33,10 +33,31 @@ jobs:
             if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw clean install jacoco:report coveralls:report -nsu -B; fi
 
       - run:
-          name: Execute integration tests
+          name: Execute integration tests (confluence server, v1)
           command: |
+            echo 'export CPI_ROOT_URL=http://localhost:8090' >> $BASH_ENV
+            echo 'export CPI_USERNAME=confluence-publisher-it' >> $BASH_ENV
+            echo 'export CPI_PASSWORD=1234' >> $BASH_ENV
+            echo 'export CPI_SPACE_KEY=CPI' >> $BASH_ENV
+            echo 'export CPI_ANCESTOR_ID=327706' >> $BASH_ENV
+            echo 'export CPI_REST_API_VERSION=v1' >> $BASH_ENV
+            source $BASH_ENV
             docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
             ./waitForConfluenceStartup.sh confluence-publisher-it 300
+            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+            ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+            ./publishWithDockerImage.sh
+
+      - run:
+          name: Execute integration tests (cloud server, v2)
+          command: |
+            echo 'export CPI_ROOT_URL=https://confluence-publisher.atlassian.net/wiki' >> $BASH_ENV
+            echo 'export CPI_USERNAME=$CONFLUENCE_IT_USERNAME' >> $BASH_ENV
+            echo 'export CPI_PASSWORD=$CONFLUENCE_IT_TOKEN' >> $BASH_ENV
+            echo 'export CPI_SPACE_KEY=CPIV1' >> $BASH_ENV
+            echo 'export CPI_ANCESTOR_ID=3153166339' >> $BASH_ENV
+            echo 'export CPI_REST_API_VERSION=v2' >> $BASH_ENV        
+            source $BASH_ENV
             ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
             ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
             ./publishWithDockerImage.sh

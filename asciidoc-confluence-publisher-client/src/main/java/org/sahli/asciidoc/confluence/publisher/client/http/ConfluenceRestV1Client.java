@@ -23,6 +23,8 @@ import com.google.common.util.concurrent.RateLimiter;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -31,6 +33,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -59,7 +62,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
  * @author Alain Sahli
  * @author Christian Stettler
  */
-public class ConfluenceRestClient implements ConfluenceClient {
+public class ConfluenceRestV1Client implements ConfluenceClient {
 
     private final CloseableHttpClient httpClient;
     private final String username;
@@ -68,16 +71,16 @@ public class ConfluenceRestClient implements ConfluenceClient {
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
 
-    public ConfluenceRestClient(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
+    public ConfluenceRestV1Client(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken );
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
+    public ConfluenceRestV1Client(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, defaultHttpClient(proxyConfiguration, disableSslVerification, enableHttpClientSystemProperties, connectionTTL), maxRequestsPerSecond, username,
                 passwordOrPersonalAccessToken);
     }
 
-    public ConfluenceRestClient(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+    public ConfluenceRestV1Client(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
         assertMandatoryParameter(httpClient != null, "httpClient");
 
         this.httpClient = httpClient;
@@ -85,7 +88,7 @@ public class ConfluenceRestClient implements ConfluenceClient {
         this.username = username;
         this.passwordOrPersonalAccessToken = passwordOrPersonalAccessToken;
 
-        this.httpRequestFactory = new HttpRequestFactory(rootConfluenceUrl);
+        this.httpRequestFactory = new HttpRequestV1Factory(rootConfluenceUrl);
         configureObjectMapper();
     }
 
@@ -434,7 +437,13 @@ public class ConfluenceRestClient implements ConfluenceClient {
                     String proxyUsername = proxyConfiguration.proxyUsername();
                     String proxyPassword = proxyConfiguration.proxyPassword();
 
+                    // for http target urls
                     builder.setDefaultHeaders(singletonList(new BasicHeader(PROXY_AUTHORIZATION, authorizationHeaderValue(proxyUsername, proxyPassword))));
+
+                    // for https target urls
+                    BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), new UsernamePasswordCredentials(proxyUsername, proxyPassword));
+                    builder.setDefaultCredentialsProvider(credentialsProvider);
                 }
             }
         }
@@ -468,44 +477,4 @@ public class ConfluenceRestClient implements ConfluenceClient {
             return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(UTF_8));
         }
     }
-
-
-    public static class ProxyConfiguration {
-
-        private final String proxyScheme;
-        private final String proxyHost;
-        private final Integer proxyPort;
-        private final String proxyUsername;
-        private final String proxyPassword;
-
-        public ProxyConfiguration(String proxyScheme, String proxyHost, Integer proxyPort, String proxyUsername, String proxyPassword) {
-            this.proxyScheme = proxyScheme;
-            this.proxyHost = proxyHost;
-            this.proxyPort = proxyPort;
-            this.proxyUsername = proxyUsername;
-            this.proxyPassword = proxyPassword;
-        }
-
-        public String proxyScheme() {
-            return this.proxyScheme;
-        }
-
-        public String proxyHost() {
-            return this.proxyHost;
-        }
-
-        public Integer proxyPort() {
-            return this.proxyPort;
-        }
-
-        public String proxyUsername() {
-            return this.proxyUsername;
-        }
-
-        public String proxyPassword() {
-            return this.proxyPassword;
-        }
-
-    }
-
 }

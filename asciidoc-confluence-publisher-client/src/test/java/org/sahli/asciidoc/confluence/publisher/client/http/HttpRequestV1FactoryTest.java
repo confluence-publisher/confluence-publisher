@@ -44,7 +44,7 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.SameJsonAsMat
  * @author Alain Sahli
  * @author Christian Stettler
  */
-public class HttpRequestFactoryTest {
+public class HttpRequestV1FactoryTest {
 
     private static final String CLASS_LOCATION = Paths.get("src", "test", "resources", "org", "sahli", "asciidoc", "confluence", "publisher", "client", "http").toString();
     private static final String APPLICATION_JSON_UTF8 = "application/json;charset=utf-8";
@@ -55,7 +55,7 @@ public class HttpRequestFactoryTest {
 
     @Before
     public void setUp() {
-        this.httpRequestFactory = new HttpRequestFactory(ROOT_CONFLUENCE_URL);
+        this.httpRequestFactory = new HttpRequestV1Factory(ROOT_CONFLUENCE_URL);
     }
 
     @Test
@@ -63,7 +63,7 @@ public class HttpRequestFactoryTest {
         // assert
         assertThrows("rootConfluenceUrl must be set", IllegalArgumentException.class, () -> {
             // arrange + act
-            new HttpRequestFactory("");
+            new HttpRequestV1Factory("");
         });
     }
 

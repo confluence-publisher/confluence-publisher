@@ -26,12 +26,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -72,7 +67,7 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
     private final RateLimiter rateLimiter;
 
     public ConfluenceRestV1Client(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
-        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken );
+        this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken);
     }
 
     public ConfluenceRestV1Client(String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
@@ -240,6 +235,7 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
+        httpRequest.addHeader("Host", "confluence.hlag.com");
 
         if (this.rateLimiter != null) {
             this.rateLimiter.acquire(1);

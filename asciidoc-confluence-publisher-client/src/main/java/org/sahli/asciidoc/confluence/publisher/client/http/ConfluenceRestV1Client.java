@@ -235,7 +235,12 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
 
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
-        httpRequest.addHeader("Host", "confluence.hlag.com");
+
+        String hostHeader = System.getenv("HOST_HEADER");
+        if (hostHeader != null) {
+            httpRequest.addHeader("Host", hostHeader);
+
+        }
 
         if (this.rateLimiter != null) {
             this.rateLimiter.acquire(1);

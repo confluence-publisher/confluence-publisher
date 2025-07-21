@@ -1,4 +1,4 @@
-table
+*{tag: %(table), style: (attr?("width") ? "width: #{attr "width"}" : nil)}
   - if title?
     caption.title =captioned_title
   - unless (attr :rowcount).zero?

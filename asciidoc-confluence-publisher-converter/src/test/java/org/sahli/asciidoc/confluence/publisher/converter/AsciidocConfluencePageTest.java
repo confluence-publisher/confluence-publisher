@@ -249,6 +249,19 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithSourceFileAttributes_returnsConfluencePageContentWithSourceFileInfo() {
+        // arrange
+        String adocContent = prependTitle("{confluencepublisher-source-file} {confluencepublisher-source-file-name} {confluencepublisher-source-file-name-without-extension}");
+        
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        
+        // assert
+        assertThat(asciidocConfluencePage.content(), containsString("test-page.adoc"));
+        assertThat(asciidocConfluencePage.content(), containsString("test-page"));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithListing_returnsConfluencePageContentWithMacroWithNameNoFormat() {
         // arrange
         String adocContent = "----\n" +

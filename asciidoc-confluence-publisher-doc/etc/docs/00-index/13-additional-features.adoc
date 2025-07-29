@@ -70,7 +70,12 @@ The Confluence Publisher automatically exposes information about the source Asci
 
 === Usage Examples
 
-==== Display Source File Name in Content
+[listing]
+....
+The source file path is: {cp-source-path}
+....
+
+The source file path is: {cp-source-path}
 
 [listing]
 ....
@@ -79,20 +84,9 @@ This page was generated from: {cp-source-file}
 
 This page was generated from: {cp-source-file}
 
-==== Use File Name in Document Title
-
 [listing]
 ....
-= {cp-source-name} Documentation
+The page name is: {cp-source-name}
 ....
 
-= {cp-source-name} Documentation
-
-==== Reference Source File Path
-
-[listing]
-....
-Source file location: `{cp-source-path}`
-....
-
-Source file location: `{cp-source-path}`
+The page name is: {cp-source-name}

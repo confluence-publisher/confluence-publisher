@@ -251,15 +251,18 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithSourceFileAttributes_returnsConfluencePageContentWithSourceFileInfo() {
         // arrange
-        String adocContent = prependTitle("{cp-source-path} {cp-source-file} {cp-source-name}");
+        String adocContent = prependTitle("Source path: {cp-source-path}, Source file: {cp-source-file}, Source name: {cp-source-name}");
         
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
         
         // assert
-        assertThat(asciidocConfluencePage.content(), containsString("tmp/")); // relative path should contain tmp/ directory
-        assertThat(asciidocConfluencePage.content(), containsString(".adoc")); // cp-source-file should contain .adoc extension
-        assertThat(asciidocConfluencePage.content(), matchesPattern(".*\\b[a-f0-9]{64}\\b.*")); // cp-source-name should contain the hash without extension
+        String content = asciidocConfluencePage.content();
+        assertThat(content, containsString("Source path: tmp/")); // cp-source-path with prefix
+        assertThat(content, containsString("Source file: "));
+        assertThat(content, containsString(".adoc")); // cp-source-file should contain .adoc extension
+        assertThat(content, containsString("Source name: "));
+        assertThat(content, matchesPattern(".*Source name: [a-f0-9]{64}.*")); // cp-source-name with prefix and hash
     }
 
     @Test
@@ -281,9 +284,9 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
         
         // assert
-        assertThat(asciidocConfluencePage.content(), containsString("docs/pages/user-guide.adoc")); // cp-source-path
-        assertThat(asciidocConfluencePage.content(), containsString("user-guide.adoc")); // cp-source-file
-        assertThat(asciidocConfluencePage.content(), containsString("user-guide")); // cp-source-name
+        assertThat(asciidocConfluencePage.content(), containsString("Path: docs/pages/user-guide.adoc")); // cp-source-path with prefix
+        assertThat(asciidocConfluencePage.content(), containsString("File: user-guide.adoc")); // cp-source-file with prefix
+        assertThat(asciidocConfluencePage.content(), containsString("Name: user-guide")); // cp-source-name with prefix
     }
 
     @Test

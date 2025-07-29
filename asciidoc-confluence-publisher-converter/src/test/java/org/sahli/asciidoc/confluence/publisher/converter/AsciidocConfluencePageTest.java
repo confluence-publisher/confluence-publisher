@@ -249,36 +249,15 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithSourceFileAttributes_returnsConfluencePageContentWithSourceFileInfo() {
-        // arrange
-        String adocContent = prependTitle("Source path: {cp-source-path}, Source file: {cp-source-file}, Source name: {cp-source-name}");
-        
-        // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
-        
-        // assert
-        String content = asciidocConfluencePage.content();
-        assertThat(content, containsString("Source path: tmp/")); // cp-source-path with prefix
-        assertThat(content, containsString("Source file: "));
-        assertThat(content, containsString(".adoc")); // cp-source-file should contain .adoc extension
-        assertThat(content, containsString("Source name: "));
-        assertThat(content, matchesPattern(".*Source name: [a-f0-9]{64}.*")); // cp-source-name with prefix and hash
-    }
-
-    @Test
-    public void renderConfluencePage_asciiDocWithSourceFileAttributesInSubdirectory_returnsConfluencePageContentWithCorrectRelativePath() {
+    public void renderConfluencePage_asciiDocWithSourceFileAttributesInSubdirectory_returnsConfluencePageContentWithCorrectRelativePath() throws IOException {
         // arrange
         Path rootFolder = TEMPORARY_FOLDER.newFolder().toPath();
         Path subDir = rootFolder.resolve("docs").resolve("pages");
         String adocContent = prependTitle("Path: {cp-source-path}, File: {cp-source-file}, Name: {cp-source-name}");
         Path sourceFile = subDir.resolve("user-guide.adoc");
         
-        try {
-            createDirectories(subDir);
-            write(sourceFile, adocContent.getBytes(UTF_8));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create test file structure", e);
-        }
+        createDirectories(subDir);
+        write(sourceFile, adocContent.getBytes(UTF_8));
         
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());

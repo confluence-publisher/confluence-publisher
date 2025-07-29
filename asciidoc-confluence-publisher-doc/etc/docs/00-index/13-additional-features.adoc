@@ -77,7 +77,7 @@ The Confluence Publisher automatically exposes information about the source Asci
 This page was generated from: {cp-source-file}
 ....
 
-Output: This page was generated from: user-guide.adoc
+This page was generated from: {cp-source-file}
 
 ==== Use File Name in Document Title
 
@@ -86,7 +86,7 @@ Output: This page was generated from: user-guide.adoc
 = {cp-source-name} Documentation
 ....
 
-Output: = user-guide Documentation
+= {cp-source-name} Documentation
 
 ==== Reference Source File Path
 
@@ -95,4 +95,4 @@ Output: = user-guide Documentation
 Source file location: `{cp-source-path}`
 ....
 
-Output: Source file location: `pages/user-guide.adoc`
+Source file location: `{cp-source-path}`

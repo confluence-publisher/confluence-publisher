@@ -236,9 +236,9 @@ public class AsciidocConfluencePage {
                 .attribute("imagesoutdir", generatedAssetsTargetFolder.toString())
                 .attribute("outdir", generatedAssetsTargetFolder.toString())
                 .attribute("source-highlighter", "none")
-                .attribute("confluencepublisher-source-file", relativeSourcePath.toString())
-                .attribute("confluencepublisher-source-file-name", fileName)
-                .attribute("confluencepublisher-source-file-name-without-extension", fileNameWithoutExtension)
+                .attribute("cp-source-path", relativeSourcePath.toString())
+                .attribute("cp-source-file", fileName)
+                .attribute("cp-source-name", fileNameWithoutExtension)
                 .build();
 
 

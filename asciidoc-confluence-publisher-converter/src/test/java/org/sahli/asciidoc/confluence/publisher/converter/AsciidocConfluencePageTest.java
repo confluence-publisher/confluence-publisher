@@ -251,7 +251,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithSourceFileAttributes_returnsConfluencePageContentWithSourceFileInfo() {
         // arrange
-        String adocContent = prependTitle("{confluencepublisher-source-file} {confluencepublisher-source-file-name} {confluencepublisher-source-file-name-without-extension}");
+        String adocContent = prependTitle("{cp-source-path} {cp-source-file} {cp-source-name}");
         
         // act
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());

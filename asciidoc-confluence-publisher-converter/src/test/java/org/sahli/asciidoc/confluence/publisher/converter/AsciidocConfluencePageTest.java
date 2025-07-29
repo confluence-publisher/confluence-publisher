@@ -257,8 +257,33 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(adocContent), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
         
         // assert
-        assertThat(asciidocConfluencePage.content(), containsString("test-page.adoc"));
-        assertThat(asciidocConfluencePage.content(), containsString("test-page"));
+        assertThat(asciidocConfluencePage.content(), containsString("tmp/")); // relative path should contain tmp/ directory
+        assertThat(asciidocConfluencePage.content(), containsString(".adoc")); // cp-source-file should contain .adoc extension
+        assertThat(asciidocConfluencePage.content(), matchesPattern(".*\\b[a-f0-9]{64}\\b.*")); // cp-source-name should contain the hash without extension
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceFileAttributesInSubdirectory_returnsConfluencePageContentWithCorrectRelativePath() {
+        // arrange
+        Path rootFolder = TEMPORARY_FOLDER.newFolder().toPath();
+        Path subDir = rootFolder.resolve("docs").resolve("pages");
+        String adocContent = prependTitle("Path: {cp-source-path}, File: {cp-source-file}, Name: {cp-source-name}");
+        Path sourceFile = subDir.resolve("user-guide.adoc");
+        
+        try {
+            createDirectories(subDir);
+            write(sourceFile, adocContent.getBytes(UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create test file structure", e);
+        }
+        
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        
+        // assert
+        assertThat(asciidocConfluencePage.content(), containsString("docs/pages/user-guide.adoc")); // cp-source-path
+        assertThat(asciidocConfluencePage.content(), containsString("user-guide.adoc")); // cp-source-file
+        assertThat(asciidocConfluencePage.content(), containsString("user-guide")); // cp-source-name
     }
 
     @Test

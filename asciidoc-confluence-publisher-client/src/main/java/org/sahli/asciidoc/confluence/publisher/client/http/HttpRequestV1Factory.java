@@ -51,7 +51,7 @@ import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.entity.ContentType.APPLICATION_OCTET_STREAM;
 import static org.sahli.asciidoc.confluence.publisher.client.http.HttpRequestV1Factory.PagePayloadBuilder.pagePayloadBuilder;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;

@@ -62,7 +62,7 @@ import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml3;
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import static org.asciidoctor.SafeMode.UNSAFE;
 
@@ -150,7 +150,7 @@ public class AsciidocConfluencePage {
 
             Document document = ASCIIDOCTOR.load(asciidocContent, options);
 
-            String pageTitle = unescapeHtml(pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor));
+            String pageTitle = unescapeHtml3(pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor));
             String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey, options);
 
             List<String> keywords = keywords(document);
@@ -177,7 +177,7 @@ public class AsciidocConfluencePage {
     }
 
     private static Function<String, String> unescapeCdataHtmlContent() {
-        return (content) -> replaceAll(content, CDATA_PATTERN, (matchResult) -> unescapeHtml(matchResult.group()));
+        return (content) -> replaceAll(content, CDATA_PATTERN, (matchResult) -> unescapeHtml3(matchResult.group()));
     }
 
     private static Function<String, String> collectAndReplaceAttachmentFileNames(Map<String, String> attachmentCollector, Charset sourceEncoding) {

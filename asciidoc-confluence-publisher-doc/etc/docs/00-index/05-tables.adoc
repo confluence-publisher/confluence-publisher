@@ -191,3 +191,65 @@ a|
 * A3
 * A4
 |===
+
+== Table with Width
+
+Tables can be configured with a specific width using the `width` attribute. This allows you to control how much horizontal space the table occupies.
+
+=== Percentage Width
+
+[listing]
+....
+[cols="2", width="100%", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+....
+
+[cols="2", width="100%", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+
+=== Fixed Width
+
+[listing]
+....
+[cols="2", width="400px", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+....
+
+[cols="2", width="400px", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===

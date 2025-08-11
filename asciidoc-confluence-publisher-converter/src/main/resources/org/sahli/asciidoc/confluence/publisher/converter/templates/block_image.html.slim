@@ -1,5 +1,5 @@
 = html_a_tag_if (attr? :link)
-  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:title=(title if title?) ac:alt=(title if title?) ac:border=(attr :border if attr :border)
+  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:title=(title if title?) ac:alt=(title if title?) ac:border=(attr :border if attr :border) ac:custom-width=("true" if attr(:width) || attr(:height))
     - if uriish? attr :target
       ri:url ri:value=(attr :target)
     - else

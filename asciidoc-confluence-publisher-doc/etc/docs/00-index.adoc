@@ -349,8 +349,8 @@ the following configuration in your `pom.xml` in order to use the latest snapsho
 [source,xml]
 ----
 <pluginRepository>
-  <id>sonatype-snapshot-repo</id>
-  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  <id>maven-central-snapshots</id>
+  <url>https://central.sonatype.com/repository/maven-snapshots/</url>
   <releases>
     <enabled>false</enabled>
   </releases>

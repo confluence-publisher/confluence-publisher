@@ -66,7 +66,7 @@ jobs:
           name: Sign and publish artifacts (master or tag builds only)
           command: |
             if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./importGpgKey.sh; fi
-            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Possrh -nsu; fi
+            if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then ./mvnw -s .settings.xml jar:jar source:jar javadoc:jar gpg:sign deploy:deploy -Pcentral -nsu; fi
 
       - run:
           name: Publish image to Docker Hub (master or tag builds only)

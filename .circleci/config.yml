@@ -51,16 +51,16 @@ jobs:
       - run:
           name: Execute integration tests (cloud server, v2)
           command: |
-            echo 'export CPI_ROOT_URL=https://confluence-publisher.atlassian.net/wiki' >> $BASH_ENV
-            echo 'export CPI_USERNAME=$CONFLUENCE_IT_USERNAME' >> $BASH_ENV
-            echo 'export CPI_PASSWORD=$CONFLUENCE_IT_TOKEN' >> $BASH_ENV
-            echo 'export CPI_SPACE_KEY=CPIV1' >> $BASH_ENV
-            echo 'export CPI_ANCESTOR_ID=3153166339' >> $BASH_ENV
-            echo 'export CPI_REST_API_VERSION=v2' >> $BASH_ENV        
-            source $BASH_ENV
-            ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
-            ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
-            ./publishWithDockerImage.sh
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_ROOT_URL=https://confluence-publisher.atlassian.net/wiki' >> $BASH_ENV; fi;
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_USERNAME=$CONFLUENCE_IT_USERNAME' >> $BASH_ENV; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_PASSWORD=$CONFLUENCE_IT_TOKEN' >> $BASH_ENV; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_SPACE_KEY=CPIV1' >> $BASH_ENV; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_ANCESTOR_ID=3153166339' >> $BASH_ENV; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then echo 'export CPI_REST_API_VERSION=v2' >> $BASH_ENV; fi        
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then source $BASH_ENV; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu; fi
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then ./publishWithDockerImage.sh; fi
 
       - run:
           name: Sign and publish artifacts (master or tag builds only)

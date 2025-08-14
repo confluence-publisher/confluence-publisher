@@ -1546,7 +1546,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        String expectedContent = "<p>Some text <span><ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1560,7 +1560,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\" ac:border=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        String expectedContent = "<p>Some text <span><ac:image ac:alt=\"sunset\" ac:border=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1575,9 +1575,9 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<p>Some text " +
-                "<ac:image ac:alt=\"GitHub mascot\">" +
+                "<span><ac:image ac:alt=\"GitHub mascot\">" +
                 "<ri:url ri:value=\"https://asciidoctor.org/images/octocat.jpg\"></ri:url>" +
-                "</ac:image></p>";
+                "</ac:image></span></p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
         assertThat(asciidocConfluencePage.attachments().size(), is(0));
     }
@@ -1609,7 +1609,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><ac:image ac:height=\"20\" ac:width=\"16\" ac:alt=\"Sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></a> with inline image</p>";
+        String expectedContent = "<p>Some text <a href=\"http://www.foo.ch\"><span><ac:image ac:height=\"20\" ac:width=\"16\" ac:alt=\"Sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span></a> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1622,7 +1622,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image> with inline image</p>";
+        String expectedContent = "<p>Some text <span><ac:image ac:alt=\"sunset\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -2046,10 +2046,10 @@ public class AsciidocConfluencePageTest {
         String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n" +
             "<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\nThis is demo string 0.3</p>\n" +
             "</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter>" +
-            "</ac:structured-macro>Demo</h1><p>This is demo string 1</p>\n<h1 style=\"text-align: center;\">" + 
-            "<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" + 
+            "</ac:structured-macro>Demo</h1><p>This is demo string 1</p>\n<h1 style=\"text-align: center;\">" +
+            "<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" +
             "</ac:structured-macro>Demo Size</h1><p style=\"text-align: right;\">This is demo string 2</p>\n" +
-            "<p style=\"text-align: center;\">This is demo string 3</p>\n<p style=\"text-align: left;\">This is demo string 4</p>\n" + 
+            "<p style=\"text-align: center;\">This is demo string 3</p>\n<p style=\"text-align: left;\">This is demo string 4</p>\n" +
             "<p style=\"text-align: justify;\">This is demo string 5</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }

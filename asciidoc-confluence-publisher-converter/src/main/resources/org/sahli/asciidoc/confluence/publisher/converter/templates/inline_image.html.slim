@@ -1,6 +1,7 @@
 = html_a_tag_if (attr? :link)
-  ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt) ac:border=(attr :border if attr :border)
-    - if uriish? target
-      ri:url ri:value=(target)
-    - else
-      ri:attachment ri:filename=(target)
+  span
+    ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt) ac:border=(attr :border if attr :border)
+      - if uriish? target
+        ri:url ri:value=(target)
+      - else
+        ri:attachment ri:filename=(target)

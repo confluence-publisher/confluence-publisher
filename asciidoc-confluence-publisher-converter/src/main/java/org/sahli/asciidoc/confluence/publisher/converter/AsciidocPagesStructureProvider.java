@@ -26,6 +26,8 @@ public interface AsciidocPagesStructureProvider {
 
     Charset sourceEncoding();
 
+    Path rootFolder();
+
 
     interface AsciidocPagesStructure {
 

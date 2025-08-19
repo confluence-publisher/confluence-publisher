@@ -36,8 +36,10 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
 
     private final AsciidocPagesStructure structure;
     private final Charset sourceEncoding;
+    private final Path documentationRootFolder;
 
     public FolderBasedAsciidocPagesStructureProvider(Path documentationRootFolder, Charset sourceEncoding) {
+        this.documentationRootFolder = documentationRootFolder;
         this.structure = buildStructure(documentationRootFolder);
         this.sourceEncoding = sourceEncoding;
     }
@@ -50,6 +52,11 @@ public class FolderBasedAsciidocPagesStructureProvider implements AsciidocPagesS
     @Override
     public Charset sourceEncoding() {
         return this.sourceEncoding;
+    }
+
+    @Override
+    public Path rootFolder() {
+        return this.documentationRootFolder;
     }
 
     private AsciidocPagesStructure buildStructure(Path documentationRootFolder) {

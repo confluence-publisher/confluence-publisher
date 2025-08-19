@@ -20,6 +20,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.sahli.asciidoc.confluence.publisher.converter.NoOpPageTitlePostProcessor;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -260,7 +261,7 @@ public class AsciidocConfluencePageTest {
         write(sourceFile, adocContent.getBytes(UTF_8));
         
         // act
-        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), new NoOpPageTitlePostProcessor(), emptyMap(), "", rootFolder);
         
         // assert
         assertThat(asciidocConfluencePage.content(), containsString("Path: docs/pages/user-guide.adoc")); // cp-source-path with prefix

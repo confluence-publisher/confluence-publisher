@@ -139,6 +139,10 @@ public class AsciidocConfluencePage {
     }
 
     public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey) {
+        return newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesDir, pageAssetsFolder, pageTitlePostProcessor, userAttributes, spaceKey, asciidocPage.path().getParent());
+    }
+
+    public static AsciidocConfluencePage newAsciidocConfluencePage(AsciidocPage asciidocPage, Charset sourceEncoding, Path templatesDir, Path pageAssetsFolder, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey, Path rootFolder) {
         try {
             Path asciidocPagePath = asciidocPage.path();
             String asciidocContent = readIntoString(newInputStream(asciidocPagePath), sourceEncoding);
@@ -146,12 +150,12 @@ public class AsciidocConfluencePage {
             Map<String, String> attachmentCollector = new HashMap<>();
 
             Map<String, Object> userAttributesWithMaskedNullValues = maskNullWithEmptyString(userAttributes);
-            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributesWithMaskedNullValues);
+            Options options = options(templatesDir, asciidocPagePath.getParent(), pageAssetsFolder, userAttributesWithMaskedNullValues, asciidocPagePath, rootFolder);
 
             Document document = ASCIIDOCTOR.load(asciidocContent, options);
 
             String pageTitle = unescapeHtml3(pageTitle(document, userAttributesWithMaskedNullValues, pageTitlePostProcessor));
-            String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey, options);
+            String pageContent = convertedContent(document, asciidocPagePath, attachmentCollector, userAttributesWithMaskedNullValues, pageTitlePostProcessor, sourceEncoding, spaceKey, templatesDir, pageAssetsFolder, rootFolder, options);
 
             List<String> keywords = keywords(document);
 
@@ -165,10 +169,10 @@ public class AsciidocConfluencePage {
         return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 
-    private static String convertedContent(Document document, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Options options) {
+    private static String convertedContent(Document document, Path pagePath, Map<String, String> attachmentCollector, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Path templatesDir, Path pageAssetsFolder, Path rootFolder, Options options) {
         String content = document.convert();
         String postProcessedContent = postProcessContent(content,
-                replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey, options),
+                replaceCrossReferenceTargets(pagePath, userAttributes, pageTitlePostProcessor, sourceEncoding, spaceKey, templatesDir, pageAssetsFolder, rootFolder),
                 collectAndReplaceAttachmentFileNames(attachmentCollector, sourceEncoding),
                 unescapeCdataHtmlContent()
         );
@@ -217,7 +221,7 @@ public class AsciidocConfluencePage {
                 .orElseThrow(() -> new RuntimeException("top-level heading or title meta information must be set"));
     }
 
-    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder, Map<String, Object> userAttributes) {
+    private static Options options(Path templatesFolder, Path baseFolder, Path generatedAssetsTargetFolder, Map<String, Object> userAttributes, Path sourceFile, Path rootFolder) {
         if (!exists(templatesFolder)) {
             throw new RuntimeException("templateDir folder does not exist");
         }
@@ -228,10 +232,17 @@ public class AsciidocConfluencePage {
 
         AttributesBuilder attributesBuilder = Attributes.builder();
         userAttributes.forEach(attributesBuilder::attribute);
+
+        Path relativeSourcePath = rootFolder.relativize(sourceFile);
+        String fileName = sourceFile.getFileName().toString();
+        String fileNameWithoutExtension = fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
         Attributes attributes = attributesBuilder
                 .attribute("imagesoutdir", generatedAssetsTargetFolder.toString())
                 .attribute("outdir", generatedAssetsTargetFolder.toString())
                 .attribute("source-highlighter", "none")
+                .attribute("cp-source-path", relativeSourcePath.toString())
+                .attribute("cp-source-file", fileName)
+                .attribute("cp-source-name", fileNameWithoutExtension)
                 .build();
 
 
@@ -244,15 +255,16 @@ public class AsciidocConfluencePage {
                 .build();
     }
 
-    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Options options) {
+    private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Path templatesDir, Path pageAssetsFolder, Path rootFolder) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
             Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
 
             try {
-                options.setBaseDir(referencedPagePath.getParent().toString());
+                Map<String, Object> userAttributesWithMaskedNullValues = maskNullWithEmptyString(userAttributes);
+                Options referencedPageOptions = options(templatesDir, referencedPagePath.getParent(), pageAssetsFolder, userAttributesWithMaskedNullValues, referencedPagePath, rootFolder);
                 String referencedPageContent = readIntoString(new FileInputStream(referencedPagePath.toFile()), sourceEncoding);
-                Document referencedDocument = ASCIIDOCTOR.load(referencedPageContent, options);
+                Document referencedDocument = ASCIIDOCTOR.load(referencedPageContent, referencedPageOptions);
                 String referencedPageTitle = pageTitle(referencedDocument, userAttributes, pageTitlePostProcessor);
 
                 /*

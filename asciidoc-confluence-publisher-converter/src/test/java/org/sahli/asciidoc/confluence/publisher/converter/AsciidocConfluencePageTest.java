@@ -20,6 +20,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
+import org.sahli.asciidoc.confluence.publisher.converter.NoOpPageTitlePostProcessor;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -246,6 +247,26 @@ public class AsciidocConfluencePageTest {
 
         // assert
         assertThat(asciidocConfluencePage.content(), is("<p>test{unknownAttribute}</p>"));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithSourceFileAttributesInSubdirectory_returnsConfluencePageContentWithCorrectRelativePath() throws IOException {
+        // arrange
+        Path rootFolder = TEMPORARY_FOLDER.newFolder().toPath();
+        Path subDir = rootFolder.resolve("docs").resolve("pages");
+        String adocContent = prependTitle("Path: {cp-source-path}, File: {cp-source-file}, Name: {cp-source-name}");
+        Path sourceFile = subDir.resolve("user-guide.adoc");
+        
+        createDirectories(subDir);
+        write(sourceFile, adocContent.getBytes(UTF_8));
+        
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(sourceFile), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath(), new NoOpPageTitlePostProcessor(), emptyMap(), "", rootFolder);
+        
+        // assert
+        assertThat(asciidocConfluencePage.content(), containsString("Path: docs/pages/user-guide.adoc")); // cp-source-path with prefix
+        assertThat(asciidocConfluencePage.content(), containsString("File: user-guide.adoc")); // cp-source-file with prefix
+        assertThat(asciidocConfluencePage.content(), containsString("Name: user-guide")); // cp-source-name with prefix
     }
 
     @Test

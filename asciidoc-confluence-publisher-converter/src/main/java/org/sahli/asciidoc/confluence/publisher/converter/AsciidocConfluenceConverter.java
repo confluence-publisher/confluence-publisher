@@ -75,7 +75,8 @@ public final class AsciidocConfluenceConverter {
         AsciidocPagesStructureProvider.AsciidocPagesStructure structure = asciidocPagesStructureProvider.structure();
         List<AsciidocPage> asciidocPages = structure.pages();
         Charset sourceEncoding = asciidocPagesStructureProvider.sourceEncoding();
-        List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, sourceEncoding, pageTitlePostProcessor, userAttributes, this.spaceKey);
+        Path rootFolder = asciidocPagesStructureProvider.rootFolder();
+        List<ConfluencePageMetadata> confluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPages, sourceEncoding, pageTitlePostProcessor, userAttributes, this.spaceKey, rootFolder);
 
         ConfluencePublisherMetadata confluencePublisherMetadata = new ConfluencePublisherMetadata();
         confluencePublisherMetadata.setSpaceKey(this.spaceKey);
@@ -85,21 +86,21 @@ public final class AsciidocConfluenceConverter {
         return confluencePublisherMetadata;
     }
 
-    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey) {
+    private static List<ConfluencePageMetadata> buildPageTree(Path templatesRootFolder, Path assetsRootFolder, List<AsciidocPage> asciidocPages, Charset sourceEncoding, PageTitlePostProcessor pageTitlePostProcessor, Map<String, Object> userAttributes, String spaceKey, Path rootFolder) {
         List<ConfluencePageMetadata> confluencePages = new ArrayList<>();
 
         asciidocPages.forEach((asciidocPage) -> {
             Path pageAssetsFolder = determinePageAssetsFolder(assetsRootFolder, asciidocPage);
             createDirectories(pageAssetsFolder);
 
-            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesRootFolder, pageAssetsFolder, pageTitlePostProcessor, userAttributes, spaceKey);
+            AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, sourceEncoding, templatesRootFolder, pageAssetsFolder, pageTitlePostProcessor, userAttributes, spaceKey, rootFolder);
             Path contentFileTargetPath = writeToTargetStructure(asciidocPage, pageAssetsFolder, asciidocConfluencePage);
 
             List<AttachmentMetadata> attachments = buildAttachments(asciidocPage, pageAssetsFolder, asciidocConfluencePage.attachments());
             copyAttachmentsAvailableInSourceStructureToTargetStructure(attachments);
             ensureAttachmentsExist(attachments);
 
-            List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children(), sourceEncoding, pageTitlePostProcessor, userAttributes, spaceKey);
+            List<ConfluencePageMetadata> childConfluencePages = buildPageTree(templatesRootFolder, assetsRootFolder, asciidocPage.children(), sourceEncoding, pageTitlePostProcessor, userAttributes, spaceKey, rootFolder);
             ConfluencePageMetadata confluencePageMetadata = buildConfluencePageMetadata(asciidocConfluencePage, contentFileTargetPath, childConfluencePages, attachments);
 
             confluencePages.add(confluencePageMetadata);

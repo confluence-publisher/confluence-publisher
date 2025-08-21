@@ -1,6 +1,6 @@
 = html_a_tag_if (attr? :link)
   span
-    ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt) ac:border=(attr :border if attr :border) ac:custom-width=("true" if attr(:width) || attr(:height))
+    ac:image ac:height=(attr :height) ac:width=(attr :width) ac:alt=(attr :alt if attr :alt) ac:border=(attr :border if attr :border) ac:inline="true" ac:custom-width=("true" if attr(:width) || attr(:height))
       - if attr :border
         ac:adf-mark key="border" size="2" color="#091e4224"
       - if uriish? target

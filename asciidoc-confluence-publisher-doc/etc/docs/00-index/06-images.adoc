@@ -42,6 +42,10 @@ image::../images/frisbee.png[height=75]
 
 image::../images/frisbee.png[height=75]
 
+[NOTE]
+====
+Image sizes are only respected for block images. Inline image will render based on the font size of the surrounding text.
+====
 
 == Inline Images
 
@@ -49,10 +53,10 @@ Inline images are supported as well:
 
 [listing]
 ....
-This line has an inline image image:../images/frisbee.png[width=16, height=16].
+This line has an inline image image:../images/frisbee.png[].
 ....
 
-This line has an inline image image:../images/frisbee.png[width=16, height=16] within a text block.
+This line has an inline image image:../images/frisbee.png[] within a text block.
 
 == Remote Images
 

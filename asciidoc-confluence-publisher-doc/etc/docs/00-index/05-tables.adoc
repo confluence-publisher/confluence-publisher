@@ -194,7 +194,14 @@ a|
 
 == Table with Width
 
-Tables can be configured with a specific width using the `width` attribute. This allows you to control how much horizontal space the table occupies.
+Tables can be configured with a specific width using the `width` attribute. This allows to control the horizontal space the table occupies.
+
+
+[NOTE]
+====
+Table width values are not honoured explicitly by the new Confluence editor.
+Table width values are mapped to the default, wide or full-width table layout based on internal Confluence editor logic.
+====
 
 === Percentage Width
 

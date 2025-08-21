@@ -798,7 +798,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<ac:image ac:border=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
+        String expectedContent = "<ac:image ac:border=\"true\"><ac:adf-mark key=\"border\" size=\"2\" color=\"#091e4224\"></ac:adf-mark><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1581,7 +1581,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<p>Some text <span><ac:image ac:alt=\"sunset\" ac:border=\"true\" ac:inline=\"true\"><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span> with inline image</p>";
+        String expectedContent = "<p>Some text <span><ac:image ac:alt=\"sunset\" ac:border=\"true\" ac:inline=\"true\"><ac:adf-mark key=\"border\" size=\"2\" color=\"#091e4224\"></ac:adf-mark><ri:attachment ri:filename=\"sunset.jpg\"></ri:attachment></ac:image></span> with inline image</p>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

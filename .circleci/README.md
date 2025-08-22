@@ -31,7 +31,8 @@ The following secret environment variables have to be set on the build server:
 | CONFLUENCE_SPACE_KEY   | space key of documentation in atlassian confluence                  | CPD                                             |
 | CONFLUENCE_URL         | url of documentation in atlassian confluence                        | https://confluence-publisher.atlassian.net/wiki |	
 | CONFLUENCE_USERNAME    | username of atlassian user for publishing documentation             | confluence-publisher                            |
-| CONFLUENCE_PASSWORD    | password of atlassian user for publishing documentation             | (secret)                                        |	
+| CONFLUENCE_PASSWORD    | password of atlassian user for publishing documentation             | (secret)                                        |
+| COVERALLS_TOKEN        | token for coveralls code coverage reporting                         | (secret)                                        |
 | DOCKER_HUB_PASSWORD    | password of docker hub user for publishing docker image             | (secret)                                        |	
 | DOCKER_HUB_USERNAME    | username of docker hub user for publishing docker image             | confluencepublisher                             |	
 | MAVEN_PASSWORD         | password of sonatype user token for publishing maven artifacts      | (secret)                                        |	

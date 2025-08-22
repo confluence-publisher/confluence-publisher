@@ -29,11 +29,11 @@ jobs:
         run: sudo apt-get update -y && sudo apt-get install -y graphviz
 
       - name: execute build and unit tests (feature branch or pull requests only)
-        if: github.event_name == 'pull_request' || (github.ref_type == 'branch' && github.ref_name != 'master')
+        if: (github.ref_type == 'branch' && github.ref_name != 'master') || github.event_name == 'pull_request'
         run: ./mvnw clean install -nsu -B
 
       - name: execute build and unit tests (master or tag builds only)
-        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || github.ref_type == 'tag'
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: ./mvnw clean install jacoco:report coveralls:report -nsu -B
@@ -143,7 +143,7 @@ jobs:
   it-cloud:
     name: cloud - v2 - integration tests
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event.pull_request.head.repo.fork != 'true'
     needs: build
     permissions:
       contents: read
@@ -176,7 +176,7 @@ jobs:
   maven-cloud:
     name: cloud - v2 - maven publishing
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event.pull_request.head.repo.fork != 'true'
     needs: build
     permissions:
       contents: read
@@ -209,7 +209,7 @@ jobs:
   docker-cloud:
     name: cloud - v2 - docker publishing
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event.pull_request.head.repo.fork != 'true'
     needs: build
     permissions:
       contents: read
@@ -242,7 +242,7 @@ jobs:
   deploy:
     name: deploy (master / tag)
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: (github.ref_type == 'branch' && github.ref_name == 'master') || github.ref_type == 'tag'
     needs:
       - build
       - it-server
@@ -265,11 +265,10 @@ jobs:
           cache: maven
 
       - name: set version (tag build only)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref_type == 'tag'
         run: ./mvnw versions:set -DnewVersion=${GITHUB_REF_NAME} -nsu
 
       - name: import GPG key (master or tag builds only)
-        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
         env:
           CODE_SIGNING_KEY: ${{ secrets.CODE_SIGNING_KEY }}
           CODE_SIGNING_IV: ${{ secrets.CODE_SIGNING_IV }}
@@ -277,7 +276,6 @@ jobs:
         run: ./importGpgKey.sh
 
       - name: sign and publish artifacts (master or tag builds only)
-        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
@@ -286,7 +284,6 @@ jobs:
         run: ./mvnw -s .settings.xml -B -DskipTests=true clean deploy -P release -nsu
 
       - name: publish image to docker hub (master or tag builds only)
-        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -295,7 +292,7 @@ jobs:
           ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu
 
       - name: publish release documentation to confluence (tag build only)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref_type == 'tag'
         env:
           CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
           CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}

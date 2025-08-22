@@ -126,7 +126,7 @@ jobs:
 
       - name: publish via Docker (confluence server, v1)
         env:
-          CPI_ROOT_URL: http://host.docker.internal:8090
+          CPI_ROOT_URL: http://localhost:8090
           CPI_USERNAME: confluence-publisher-it
           CPI_PASSWORD: 1234
           CPI_SPACE_KEY: CPI

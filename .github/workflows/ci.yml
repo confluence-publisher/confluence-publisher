@@ -39,7 +39,7 @@ jobs:
         run: ./mvnw clean install jacoco:report coveralls:report -nsu -B
 
   it-server:
-    name: integration tests (confluence server, v1)
+    name: server - v1 - integration tests
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -73,7 +73,7 @@ jobs:
           ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
 
   maven-server:
-    name: maven publishing (confluence server, v1)
+    name: server - v1 - maven publishing
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -107,7 +107,7 @@ jobs:
           ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
 
   docker-server:
-    name: docker publishing (confluence server, v1)
+    name: server - v1 - docker publishing
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -141,7 +141,7 @@ jobs:
           ./publishWithDockerImage.sh
 
   it-cloud:
-    name: integration tests (cloud server, v2)
+    name: cloud - v2 - integration tests
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: build
@@ -174,7 +174,7 @@ jobs:
           ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
 
   maven-cloud:
-    name: maven publishing (cloud server, v2)
+    name: cloud - v2 - maven publishing
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: build
@@ -207,7 +207,7 @@ jobs:
           ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
 
   docker-cloud:
-    name: docker publishing (cloud server, v2)
+    name: cloud - v2 - docker publishing
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: build

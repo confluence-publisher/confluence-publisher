@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Log Java version
+        run: java -version
+
+      - name: Set version (tag build only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./mvnw versions:set -DnewVersion=${GITHUB_REF_NAME} -nsu
+
+      - name: Install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: Execute build and unit tests (feature branch or pull requests only)
+        if: github.event_name == 'pull_request' || (github.ref_type == 'branch' && github.ref_name != 'master')
+        run: ./mvnw clean install -nsu -B
+
+      - name: Execute build and unit tests (master or tag builds only)
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: ./mvnw clean install jacoco:report coveralls:report -nsu -B
+
+      - name: Execute integration tests (confluence server, v1)
+        env:
+          CPI_ROOT_URL: http://localhost:8090
+          CPI_USERNAME: confluence-publisher-it
+          CPI_PASSWORD: 1234
+          CPI_SPACE_KEY: CPI
+          CPI_ANCESTOR_ID: 327706
+          CPI_REST_API_VERSION: v1
+        run: |
+          docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+          ./waitForConfluenceStartup.sh confluence-publisher-it 300
+          ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+          ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+          ./publishWithDockerImage.sh
+
+      - name: Execute integration tests (cloud server, v2)
+        if: github.event_name != 'pull_request'
+        env:
+          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_SPACE_KEY: CPIV1
+          CPI_ANCESTOR_ID: 3153166339
+          CPI_REST_API_VERSION: v2
+        run: |
+          ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+          ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+          ./publishWithDockerImage.sh
+
+      - name: Import GPG key (master or tag builds only)
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
+        env:
+          CODE_SIGNING_KEY: ${{ secrets.CODE_SIGNING_KEY }}
+          CODE_SIGNING_IV: ${{ secrets.CODE_SIGNING_IV }}
+          CODE_SIGNING_PASSWORD: ${{ secrets.CODE_SIGNING_PASSWORD }}
+        run: ./importGpgKey.sh
+
+      - name: Sign and publish artifacts (master or tag builds only)
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          CODE_SIGNING_ID: ${{ secrets.CODE_SIGNING_ID }}
+          CODE_SIGNING_PASSWORD: ${{ secrets.CODE_SIGNING_PASSWORD }}
+        run: ./mvnw -s .settings.xml -B clean deploy -P release -nsu
+
+      - name: Publish image to Docker Hub (master or tag builds only)
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || startsWith(github.ref, 'refs/tags/')
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+          ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu
+
+      - name: Publish documentation to Atlassian Confluence (tag build only)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
+          CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
+          CONFLUENCE_ANCESTOR_ID: ${{ secrets.CONFLUENCE_ANCESTOR_ID }}
+        run: ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+      - name: Prepare cache
+        if: always()
+        run: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher

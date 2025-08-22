@@ -2,6 +2,8 @@
 
 projectVersion=`./mvnw org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -e "^[0-9]\+\.[0-9]\+\.[0-9]\+.*" 2>&1`
 
+echo $CPI_ROOT_URL
+
 docker run --network container:confluence-publisher-it --rm \
     -e ROOT_CONFLUENCE_URL=$CPI_ROOT_URL \
     -e USERNAME=$CPI_USERNAME \

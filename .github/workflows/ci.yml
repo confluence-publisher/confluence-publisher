@@ -1,0 +1,313 @@
+name: Confluence Publisher Build Pipeline
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    name: build / tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: execute build and unit tests (feature branch or pull requests only)
+        if: (github.ref_type == 'branch' && github.ref_name != 'master') || github.event_name == 'pull_request'
+        run: ./mvnw clean install -nsu -B
+
+      - name: execute build and unit tests (master or tag builds only)
+        if: (github.ref_type == 'branch' && github.ref_name == 'master') || github.ref_type == 'tag'
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: ./mvnw clean install jacoco:report coveralls:report -nsu -B
+
+  it-server:
+    name: server - v1 - integration tests
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: execute integration tests (confluence server, v1)
+        env:
+          CPI_ROOT_URL: http://localhost:8090
+          CPI_USERNAME: confluence-publisher-it
+          CPI_PASSWORD: 1234
+          CPI_SPACE_KEY: CPI
+          CPI_ANCESTOR_ID: 327706
+          CPI_REST_API_VERSION: v1
+        run: |
+          docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+          ./waitForConfluenceStartup.sh confluence-publisher-it 300
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+
+  maven-server:
+    name: server - v1 - maven publishing
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: publish via Maven (confluence server, v1)
+        env:
+          CPI_ROOT_URL: http://localhost:8090
+          CPI_USERNAME: confluence-publisher-it
+          CPI_PASSWORD: 1234
+          CPI_SPACE_KEY: CPI
+          CPI_ANCESTOR_ID: 327706
+          CPI_REST_API_VERSION: v1
+        run: |
+          docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+          ./waitForConfluenceStartup.sh confluence-publisher-it 300
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  docker-server:
+    name: server - v1 - docker publishing
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: publish via Docker (confluence server, v1)
+        env:
+          CPI_ROOT_URL: http://localhost:8090
+          CPI_USERNAME: confluence-publisher-it
+          CPI_PASSWORD: 1234
+          CPI_SPACE_KEY: CPI
+          CPI_ANCESTOR_ID: 327706
+          CPI_REST_API_VERSION: v1
+        run: |
+          docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
+          ./waitForConfluenceStartup.sh confluence-publisher-it 300
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./publishWithDockerImage.sh
+
+  it-cloud:
+    name: cloud - v2 - integration tests
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork != 'true'
+    concurrency:
+      group: confluence-space-cpi-01
+      cancel-in-progress: false
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: execute integration tests (cloud server, v2)
+        env:
+          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_SPACE_KEY: CPI01
+          CPI_ANCESTOR_ID: 3341844673
+          CPI_REST_API_VERSION: v2
+        run: |
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
+
+  maven-cloud:
+    name: cloud - v2 - maven publishing
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork != 'true'
+    concurrency:
+      group: confluence-space-cpi-02
+      cancel-in-progress: false
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: publish via Maven (cloud server, v2)
+        env:
+          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_SPACE_KEY: CPI02
+          CPI_ANCESTOR_ID: 3341222328
+          CPI_REST_API_VERSION: v2
+        run: |
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  docker-cloud:
+    name: cloud - v2 - docker publishing
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork != 'true'
+    concurrency:
+      group: confluence-space-cpi-03
+      cancel-in-progress: false
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
+      - name: publish via Docker (cloud server, v2)
+        env:
+          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_SPACE_KEY: CPI03
+          CPI_ANCESTOR_ID: 3341320439
+          CPI_REST_API_VERSION: v2
+        run: |
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./publishWithDockerImage.sh
+
+  deploy:
+    name: deploy (master / tag)
+    runs-on: ubuntu-latest
+    if: (github.ref_type == 'branch' && github.ref_name == 'master') || github.ref_type == 'tag'
+    needs:
+      - build
+      - it-server
+      - maven-server
+      - docker-server
+      - it-cloud
+      - maven-cloud
+      - docker-cloud
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: set version (tag build only)
+        if: github.ref_type == 'tag'
+        run: ./mvnw versions:set -DnewVersion=${GITHUB_REF_NAME} -nsu
+
+      - name: import GPG key (master or tag builds only)
+        env:
+          CODE_SIGNING_KEY: ${{ secrets.CODE_SIGNING_KEY }}
+          CODE_SIGNING_IV: ${{ secrets.CODE_SIGNING_IV }}
+          CODE_SIGNING_PASSWORD: ${{ secrets.CODE_SIGNING_PASSWORD }}
+        run: ./importGpgKey.sh
+
+      - name: sign and publish artifacts (master or tag builds only)
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          CODE_SIGNING_ID: ${{ secrets.CODE_SIGNING_ID }}
+          CODE_SIGNING_PASSWORD: ${{ secrets.CODE_SIGNING_PASSWORD }}
+        run: ./mvnw -s .settings.xml -B -DskipTests=true clean deploy -P release -nsu
+
+      - name: publish image to docker hub (master or tag builds only)
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+          ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu
+
+      - name: publish release documentation to confluence (tag build only)
+        if: github.ref_type == 'tag'
+        env:
+          CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
+          CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
+          CONFLUENCE_ANCESTOR_ID: ${{ secrets.CONFLUENCE_ANCESTOR_ID }}
+        run: ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+      - name: prepare cache
+        if: always()
+        run: rm -rf ~/.m2/repository/org/sahli/asciidoc/confluence/publisher

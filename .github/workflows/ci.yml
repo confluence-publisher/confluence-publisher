@@ -170,8 +170,6 @@ jobs:
         run: |
           ./mvnw clean install -DskipTests=true -nsu -B
           ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
-          ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
-          ./publishWithDockerImage.sh
 
   maven-cloud:
     name: maven publishing (cloud server, v2)

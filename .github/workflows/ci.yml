@@ -102,7 +102,7 @@ jobs:
           docker run -d -p8090:8090 -p8091:8091 --name=confluence-publisher-it confluencepublisher/confluence-publisher-it:6.0.5
           ./waitForConfluenceStartup.sh confluence-publisher-it 300
           ./mvnw clean install -DskipTests=true -nsu -B
-          ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
 
   docker-server:
     name: docker publishing (confluence server, v1)
@@ -204,7 +204,7 @@ jobs:
           CPI_REST_API_VERSION: v2
         run: |
           ./mvnw clean install -DskipTests=true -nsu -B
-          ./mvnw -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
 
   docker-cloud:
     name: docker publishing (cloud server, v2)

@@ -1,5 +1,5 @@
 image:https://img.shields.io/maven-central/v/org.sahli.asciidoc.confluence.publisher/asciidoc-confluence-publisher-maven-plugin.svg["Maven Central", link="https://search.maven.org/artifact/org.sahli.asciidoc.confluence.publisher/asciidoc-confluence-publisher-maven-plugin"]
-image:https://img.shields.io/circleci/project/github/confluence-publisher/confluence-publisher/master.svg["Build Status", link="https://circleci.com/gh/confluence-publisher/confluence-publisher/tree/master"]
+image:https://github.com/confluence-publisher/confluence-publisher/actions/workflows/ci.yml/badge.svg["Build Status", link="https://github.com/confluence-publisher/confluence-publisher/actions/workflows/ci.yml"]
 image:https://coveralls.io/repos/github/confluence-publisher/confluence-publisher/badge.svg?branch=master["Coverage Status", link="https://coveralls.io/github/confluence-publisher/confluence-publisher?branch=master"]
 
 = Confluence Publisher

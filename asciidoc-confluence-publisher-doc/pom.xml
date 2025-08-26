@@ -29,7 +29,7 @@
     <name>Asciidoc Confluence Publisher Documentation</name>
 
     <artifactId>asciidoc-confluence-publisher-doc</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <properties>
         <rootConfluenceUrl>http://localhost:8090</rootConfluenceUrl>

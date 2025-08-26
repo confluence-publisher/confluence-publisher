@@ -60,7 +60,7 @@
     <scm>
         <connection>scm:git:git://github.com/confluence-publisher/confluence-publisher.git</connection>
         <developerConnection>scm:git:ssh://github.com:confluence-publisher/confluence-publisher.git</developerConnection>
-        <url>https://github.com/confluence-publisher/confluence-publisher.git</url>
+        <url>https://github.com/confluence-publisher/confluence-publisher</url>
     </scm>
 
     <properties>

@@ -141,7 +141,7 @@ jobs:
   it-cloud:
     name: cloud - v2 - integration tests
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork != 'true'
+    if: github.event.pull_request.head.repo.fork != 'true' && github.actor != 'dependabot[bot]'
     concurrency:
       group: confluence-space-cpi-01
       cancel-in-progress: false
@@ -177,7 +177,7 @@ jobs:
   maven-cloud:
     name: cloud - v2 - maven publishing
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork != 'true'
+    if: github.event.pull_request.head.repo.fork != 'true' && github.actor != 'dependabot[bot]'
     concurrency:
       group: confluence-space-cpi-02
       cancel-in-progress: false
@@ -213,7 +213,7 @@ jobs:
   docker-cloud:
     name: cloud - v2 - docker publishing
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork != 'true'
+    if: github.event.pull_request.head.repo.fork != 'true' && github.actor != 'dependabot[bot]'
     concurrency:
       group: confluence-space-cpi-03
       cancel-in-progress: false

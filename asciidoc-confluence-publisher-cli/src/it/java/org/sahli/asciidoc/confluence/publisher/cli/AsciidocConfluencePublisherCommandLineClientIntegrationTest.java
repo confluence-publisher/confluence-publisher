@@ -56,11 +56,6 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
         Testcontainers.exposeHostPorts(8090);
     }
 
-    @BeforeClass
-    public static void logJavaVersion() {
-      System.out.println("Java Version: " + Runtime.version());
-    }
-
     @Before
     public void deleteAllPages() throws Exception {
         String[] args = {

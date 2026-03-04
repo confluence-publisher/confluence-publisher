@@ -444,7 +444,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         env.put("TARGET_HOST", targetHost);
         env.put("TARGET_PORT", valueOf(targetPort));
 
-        startProxy("confluencepublisher/reverse-proxy-it:1.3.0", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/reverse-proxy-it:1.4.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void withForwardProxyEnabled(String proxyHost, int proxyPort, PortAwareRunnable runnable) throws Exception {
@@ -453,7 +453,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         env.put("PROXY_PORT", valueOf(proxyPort));
         env.put("BASIC_AUTH", "off");
 
-        startProxy("confluencepublisher/forward-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/forward-proxy-it:1.2.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void withForwardProxyEnabled(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, PortAwareRunnable runnable) throws Exception {
@@ -464,7 +464,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         env.put("BASIC_USERNAME", proxyUsername);
         env.put("BASIC_PASSWORD", proxyPassword);
 
-        startProxy("confluencepublisher/forward-proxy-it:1.0.0", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/forward-proxy-it:1.2.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void startProxy(String dockerImageName, String proxyHost, int proxyPort, Map<String, String> env, PortAwareRunnable runnable) throws Exception {

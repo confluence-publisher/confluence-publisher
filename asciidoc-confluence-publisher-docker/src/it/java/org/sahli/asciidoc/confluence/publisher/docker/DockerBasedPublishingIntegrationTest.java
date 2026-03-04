@@ -305,7 +305,7 @@ public class DockerBasedPublishingIntegrationTest {
         env.put("PROXY_PORT", valueOf(proxyPort));
         env.put("BASIC_AUTH", "off");
 
-        startProxy("confluencepublisher/forward-proxy-it:1.2.1", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/forward-proxy-it:1.3.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void withForwardProxyEnabled(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, Runnable runnable) {
@@ -316,7 +316,7 @@ public class DockerBasedPublishingIntegrationTest {
         env.put("BASIC_USERNAME", proxyUsername);
         env.put("BASIC_PASSWORD", proxyPassword);
 
-        startProxy("confluencepublisher/forward-proxy-it:1.2.1", proxyHost, proxyPort, env, runnable);
+        startProxy("confluencepublisher/forward-proxy-it:1.3.0", proxyHost, proxyPort, env, runnable);
     }
 
     private static void startProxy(String dockerImageName, String proxyHost, int proxyPort, Map<String, String> env, Runnable runnable) {

@@ -405,9 +405,9 @@
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
-                            <systemProperties>
+                            <systemPropertyVariables>
                                 <confluence-publisher.version>${project.version}</confluence-publisher.version>
-                            </systemProperties>
+                            </systemPropertyVariables>
                         </configuration>
                         <executions>
                             <execution>

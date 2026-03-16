@@ -405,7 +405,9 @@ jobs:
           CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
           CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
           CONFLUENCE_ANCESTOR_ID: ${{ secrets.CONFLUENCE_ANCESTOR_ID }}
-        run: ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+        run: |
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Dusername=$CONFLUENCE_USERNAME -D"password=$CONFLUENCE_PASSWORD" -DrootConfluenceUrl=$CONFLUENCE_URL -DspaceKey=$CONFLUENCE_SPACE_KEY -DancestorId=$CONFLUENCE_ANCESTOR_ID -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
 
       - name: prepare cache
         if: always()

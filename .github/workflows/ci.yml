@@ -5,6 +5,12 @@ on:
     branches: ["**"]
     tags: ["**"]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA to build (leave empty for latest)'
+        required: false
+        type: string
 
 jobs:
   build:
@@ -15,6 +21,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -45,6 +53,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -79,6 +89,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -113,6 +125,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -151,6 +165,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -187,6 +203,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -223,6 +241,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -263,6 +283,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -308,6 +330,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4
@@ -358,6 +382,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
 
       - name: set up java 11
         uses: actions/setup-java@v4

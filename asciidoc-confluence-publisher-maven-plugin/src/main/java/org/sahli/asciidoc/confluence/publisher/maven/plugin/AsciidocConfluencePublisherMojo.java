@@ -142,6 +142,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "restApiVersion", defaultValue = "v2")
     private String restApiVersion;
 
+    @Parameter(property = PREFIX + "failOnError", defaultValue = "true")
+    private boolean failOnError;
+
     @Parameter
     private Map<String, Object> attributes;
 
@@ -183,11 +186,14 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
         } catch (Exception e) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Publishing to Confluence failed", e);
-            } else {
-                getLog().error("Publishing to Confluence failed: " + e.getMessage());
             }
 
-            throw new MojoExecutionException("Publishing to Confluence failed", e);
+            if (this.failOnError) {
+                getLog().error("Publishing to Confluence failed: " + e.getMessage());
+                throw new MojoExecutionException("Publishing to Confluence failed", e);
+            } else {
+                getLog().warn("Publishing to Confluence failed", e);
+            }
         }
     }
 

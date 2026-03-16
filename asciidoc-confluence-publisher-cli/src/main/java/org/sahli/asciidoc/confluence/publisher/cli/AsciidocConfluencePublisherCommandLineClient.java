@@ -93,6 +93,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         boolean convertOnly = argumentsParser.optionalBooleanArgument("convertOnly", args).orElse(false);
         boolean notifyWatchers = argumentsParser.optionalBooleanArgument("notifyWatchers", args).orElse(true);
         String restApiVersion = argumentsParser.optionalArgument("restApiVersion", args).orElse("v2");
+        boolean failOnError = argumentsParser.optionalBooleanArgument("failOnError", args).orElse(true);
 
         try {
             AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, sourceEncoding);
@@ -110,6 +111,12 @@ public class AsciidocConfluencePublisherCommandLineClient {
                 ConfluenceClient confluenceClient = buildConfluenceClient(restApiVersion, rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, connectionTTL, username, password);
                 ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, notifyWatchers);
                 confluencePublisher.publish();
+            }
+        } catch (Exception e) {
+            if (failOnError) {
+                throw e;
+            } else {
+                System.err.println("Publishing to Confluence failed: " + e.getMessage());
             }
         } finally {
             if (cleanupBuildFolder) {

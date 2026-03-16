@@ -116,7 +116,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
             if (failOnError) {
                 throw e;
             } else {
-                System.err.println("Publishing to Confluence failed: " + e.getMessage());
+                System.err.println("Publishing to Confluence failed with error: " + e.getMessage());
             }
         } finally {
             if (cleanupBuildFolder) {

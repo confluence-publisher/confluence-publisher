@@ -28,7 +28,7 @@
     <name>Asciidoc Confluence Publisher Docker Image</name>
 
     <artifactId>asciidoc-confluence-publisher-docker</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

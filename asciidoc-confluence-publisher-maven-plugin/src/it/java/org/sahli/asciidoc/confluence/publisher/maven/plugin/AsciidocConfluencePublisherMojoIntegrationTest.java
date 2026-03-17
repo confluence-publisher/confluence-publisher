@@ -56,6 +56,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
@@ -360,6 +361,38 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                     .when().get(childPages())
                     .then().body("results.title", hasItem("Index"));
         });
+    }
+
+    @Test
+    public void publish_withFailOnErrorFalseAndInvalidCredentials_buildsSuccessfully() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("username", "invalid-user");
+        properties.put("password", "invalid-password");
+        properties.put("failOnError", "false");
+
+        // act
+        publishAndVerify("default", properties, () -> {
+            // assert - build succeeds despite publishing failure
+        });
+    }
+
+    @Test
+    public void publish_withFailOnErrorDefaultAndInvalidCredentials_fails() {
+        // arrange
+        Map<String, String> properties = mandatoryProperties();
+        properties.put("username", "invalid-user");
+        properties.put("password", "invalid-password");
+
+        // act
+        try {
+            publishAndVerify("default", properties, () -> {
+            });
+
+            // assert
+            fail("exception expected");
+        } catch (Exception expected) {
+        }
     }
 
     private void publish(String pathToContent, Map<String, String> properties) {

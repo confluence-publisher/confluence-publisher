@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
@@ -295,6 +296,49 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
 
         // assert
         assertTrue("Build directory was deleted", this.buildDirectory.getRoot().exists());
+    }
+
+    @Test
+    public void publish_withFailOnErrorFalseAndInvalidCredentials_buildsSuccessfully() throws Exception {
+        // arrange
+        String[] args = {
+            "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+            "username=invalid-user",
+            "password=invalid-password",
+            "spaceKey=" + SPACE_KEY,
+            "ancestorId=" + ANCESTOR_ID,
+            "restApiVersion=" + REST_API_VERSION,
+            "asciidocRootFolder=src/it/resources/default",
+            "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath(),
+            "failOnError=false"
+        };
+
+        // act + assert
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+    }
+
+    @Test
+    public void publish_withFailOnErrorDefaultAndInvalidCredentials_fails() {
+        // arrange
+        String[] args = {
+            "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+            "username=invalid-user",
+            "password=invalid-password",
+            "spaceKey=" + SPACE_KEY,
+            "ancestorId=" + ANCESTOR_ID,
+            "restApiVersion=" + REST_API_VERSION,
+            "asciidocRootFolder=src/it/resources/default",
+            "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath()
+        };
+
+      try {
+          // act
+          AsciidocConfluencePublisherCommandLineClient.main(args);
+
+          // assert
+          fail("exception expected");
+      } catch (Exception expected) {
+      }
     }
 
     private static String pageIdBy(String title) {

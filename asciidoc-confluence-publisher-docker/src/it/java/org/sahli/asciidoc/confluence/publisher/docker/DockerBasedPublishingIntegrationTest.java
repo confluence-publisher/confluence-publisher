@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
@@ -264,6 +265,38 @@ public class DockerBasedPublishingIntegrationTest {
         });
     }
 
+    @Test
+    public void publish_withFailOnErrorFalseAndInvalidCredentials_buildsSuccessfully() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("USERNAME", "invalid-user");
+        env.put("PASSWORD", "invalid-password");
+        env.put("FAIL_ON_ERROR", "false");
+
+        // act
+        publishAndVerify("default", env, () -> {
+            // assert - build succeeds despite publishing failure
+        });
+    }
+
+    @Test
+    public void publish_withFailOnErrorDefaultAndInvalidCredentials_fails() {
+        // arrange
+        Map<String, String> env = mandatoryEnvVars();
+        env.put("USERNAME", "invalid-user");
+        env.put("PASSWORD", "invalid-password");
+
+        // act
+        try {
+            publishAndVerify("default", env, () -> {
+            });
+
+            // assert
+            fail("Error expected");
+        } catch (Exception expected) {
+        }
+    }
+
     private static void publish(String pathToContent, Map<String, String> env) {
         publishAndVerify(pathToContent, env, () -> {
         });
@@ -275,7 +308,7 @@ public class DockerBasedPublishingIntegrationTest {
                 .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(DockerBasedPublishingIntegrationTest.class)))
-                .waitingFor(forLogMessage(isConvertOnly(env) ? ".*Publishing to Confluence skipped.*" : ".*Documentation successfully published to Confluence.*", 1))) {
+                .waitingFor(forLogMessage(isConvertOnly(env) ? ".*Publishing to Confluence skipped.*" : ".*Documentation successfully published to Confluence.*|.*Publishing to Confluence failed with error.*", 1))) {
 
             publisher.start();
             runnable.run();

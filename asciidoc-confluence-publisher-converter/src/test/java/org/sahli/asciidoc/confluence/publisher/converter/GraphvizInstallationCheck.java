@@ -16,8 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import net.sourceforge.plantuml.dot.Graphviz;
-import net.sourceforge.plantuml.dot.GraphvizUtils;
+import net.sourceforge.plantuml.dot.GraphvizRuntimeEnvironment;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -28,8 +27,7 @@ class GraphvizInstallationCheck implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        Graphviz graphviz = GraphvizUtils.create(null, "png");
-        File dotExe = graphviz.getDotExe();
+        File dotExe = GraphvizRuntimeEnvironment.getInstance().getDotExe();
 
         if (!dotExe.exists()) {
             throw new AssertionError("Graphviz is not installed (Dot binary expected at path '" + dotExe.getAbsolutePath() + "')");

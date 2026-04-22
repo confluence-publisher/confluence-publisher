@@ -53,7 +53,7 @@ Custom table of contents title using some bold text:
 = Page Title
 :toc: macro
 
-*Table of Contents*
+*My Table of Contents*
 
 toc::[]
 
@@ -67,8 +67,7 @@ Custom table of contents title using a collapsible block title:
 = Page Title
 :toc: macro
 
-.Table of Contents
-[%collapsible]
+.My Table of Contents
 ====
 toc::[]
 ====

@@ -1,4 +1,5 @@
 = Confluence Publisher
+:toc: macro
 
 _Version {confluencePublisherVersion}_
 
@@ -14,6 +15,11 @@ The Confluence Publisher has been tested with Confluence Server 6.0.5 and Conflu
 Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion>> configuration property)
 ====
 
+.Table of Contents
+[%collapsible]
+====
+toc::[]
+====
 
 == Supported Features
 

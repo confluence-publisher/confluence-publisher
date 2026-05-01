@@ -485,7 +485,7 @@ jbang run --java 21 \
   publishingStrategy=REPLACE_ANCESTOR \
   orphanRemoveStrategy=REMOVE_ORPHANS \
   convertOnly=false \
-  asciidocRootFolder=.
+  asciidocRootFolder=./docs/
 ----
 
 .Windows
@@ -511,6 +511,6 @@ jbang run --java 21 ^
   publishingStrategy=REPLACE_ANCESTOR ^
   orphanRemoveStrategy=REMOVE_ORPHANS ^
   convertOnly=false ^
-  asciidocRootFolder=.
+  asciidocRootFolder=.\docs\
 ----
 

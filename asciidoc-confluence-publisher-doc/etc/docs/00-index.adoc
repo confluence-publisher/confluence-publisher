@@ -150,7 +150,8 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 | The root URL of the Confluence instance to publish to.
   +
   +
-  _Note:_ when publishing to Confluence Cloud, the root URL is https://<project>.atlassian.net/wiki.
+  _Note:_ when publishing to Confluence Cloud using an API token, the root URL is https://<project>.atlassian.net/wiki.
+  _Note:_ when publishing to Confluence Cloud using a scoped API token, the root URL is https://api.atlassian.com/ex/confluence/<cloud-id> (see Atlassian documentation on how to identify the cloud id).
 | mandatory
 
 | skipSslVerification
@@ -195,18 +196,31 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 | optional (unspecified behaves like an empty string, see password)
 
 | password
-| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
-  +
-  +
-  _Note:_ when publishing to Confluence Cloud, an API token generated via the corresponding Atlassian account has to
-  be used as password.
-  +
-  +
-  _Note:_ when publishing to Confluence Server with an API token, leave the username empty ("") or unspecified
-  (for Maven plugin)
-  +
-  +
-  _Note:_ Overrules password defined by serverId, when set in conjunction with serverId
+a| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
+
+_Note:_ when publishing to Confluence Cloud, an API token or a scoped API token generated via the corresponding Atlassian account has to
+be used as password. Make sure to set the correct root URL for Confluence depending on the token type.
+
+_Note_: when using a scoped API token, the following OAuth 2.0 scopes are required:
+
+* read:hierarchical-content:confluence
+* read:space:confluence
+* read:page:confluence
+* read:content-details:confluence
+* read:label:confluence
+* read:attachment:confluence
+* delete:attachment:confluence
+* delete:page:confluence
+* write:attachment:confluence
+* write:confluence-file
+* write:confluence-content
+* write:label:confluence
+* write:page:confluence
+
+_Note:_ when publishing to Confluence Server with an API token, leave the username empty ("") or unspecified
+(for Maven plugin)
+
+_Note:_ Overrules password defined by serverId, when set in conjunction with serverId
 | mandatory, if serverId is not specified
 
 | serverId
@@ -239,7 +253,7 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
 
-  Note: Confluence only supports version messages for updated pages, but not when creating new pages.
+  _Note:_ Confluence only supports version messages for updated pages, but not when creating new pages.
 | optional (defaults to empty)
 
 | notifyWatchers

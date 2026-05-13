@@ -18,7 +18,7 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceAttachment;
@@ -45,7 +45,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -80,7 +80,7 @@ public class ConfluencePublisherTest {
     @Test
     public void publish_withMetadataMissingSpaceKey_throwsIllegalArgumentException() {
         // assert
-        assertThrows("spaceKey must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             ConfluenceClient confluenceClientMock = mock(ConfluenceClient.class);
             ConfluencePublisher confluencePublisher = confluencePublisher("without-space-key", confluenceClientMock);
@@ -91,7 +91,7 @@ public class ConfluencePublisherTest {
     @Test
     public void publish_withMetadataMissingAncestorId_throwsIllegalArgumentException() {
         // assert
-        assertThrows("ancestorId must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             ConfluenceClient confluenceClientMock = mock(ConfluenceClient.class);
             ConfluencePublisher confluencePublisher = confluencePublisher("without-ancestor-id", confluenceClientMock);

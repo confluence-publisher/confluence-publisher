@@ -16,7 +16,7 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 
 import java.nio.charset.Charset;

@@ -20,8 +20,8 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Christian Stettler
@@ -56,7 +56,7 @@ public class HttpRequestV2FactoryTest {
 
     private HttpRequestV2Factory httpRequestFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.httpRequestFactory = new HttpRequestV2Factory(ROOT_CONFLUENCE_URL);
     }
@@ -64,7 +64,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void instantiation_withEmptyConfluenceRestApiEndpoint_throwsIllegalArgumentException() {
         // assert
-        assertThrows("rootConfluenceUrl must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             new HttpRequestV2Factory("");
         });
@@ -84,7 +84,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void addPageUnderAncestorRequest_withBlankTitle_throwsIllegalArgumentException() {
         // assert
-        assertThrows("title must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.addPageUnderAncestorRequest("~personalSpace", "1234", "", "content", "version message");
         });
@@ -104,7 +104,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void updatePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.updatePageRequest("", "1", "title", "content", 2, "version message", true);
         });
@@ -123,7 +123,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void deletePageRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.deletePageRequest("");
         });
@@ -151,7 +151,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void addAttachmentRequest_withEmptyContentId_throwsIllegalArgumentException() {
         // assert
-        assertThrows("contentId must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.addAttachmentRequest("", "file.txt", new ByteArrayInputStream("hello".getBytes()));
         });
@@ -252,7 +252,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void getNextChildPagesByIdRequest_withEmptyNextLink_throwsIllegalArgumentException() {
         // assert
-        assertThrows("nextLink must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.getNextChildPagesByIdRequest("");
         });
@@ -284,7 +284,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void getNextAttachmentsRequest_withEmptyNextLink_throwsIllegalArgumentException() {
         // assert
-        assertThrows("nextLink must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.getNextAttachmentsRequest("");
         });
@@ -305,7 +305,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
         // assert
-        assertThrows("relativeDownloadLink must be set", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.getAttachmentContentRequest("");
         });

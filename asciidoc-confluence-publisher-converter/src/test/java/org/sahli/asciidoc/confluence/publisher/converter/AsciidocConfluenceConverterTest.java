@@ -16,10 +16,9 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePublisherMetadata;
 
@@ -29,33 +28,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluenceConverter.uniquePageId;
 
 /**
  * @author Alain Sahli
  * @author Christian Stettler
  */
+@ExtendWith(GraphvizInstallationCheck.class)
 public class AsciidocConfluenceConverterTest {
 
     private static final String DOCUMENTATION_LOCATION = "src/test/resources/org/sahli/asciidoc/confluence/publisher/converter/doc";
 
-    @ClassRule
-    public static final GraphvizInstallationCheck GRAPHVIZ_INSTALLATION_CHECK = new GraphvizInstallationCheck();
-
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
 
     @Test
     public void convertAndBuildConfluencePages_withThreeLevelAdocStructure_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
-        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Path buildFolder = createTempDirectory(this.temporaryFolder, "tmp").toAbsolutePath();
         Map<String, Object> userAttributes = new HashMap<>();
         userAttributes.put("name", "Rick and Morty");
         userAttributes.put("genre", "science fiction");
@@ -100,7 +98,7 @@ public class AsciidocConfluenceConverterTest {
     public void convertAndBuildConfluencePages_withPageReferencingNonExistingAttachment_throwsException() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get("src/test/resources/non-existing-attachment").toAbsolutePath();
-        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Path buildFolder = createTempDirectory(this.temporaryFolder, "tmp").toAbsolutePath();
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
 
@@ -115,7 +113,7 @@ public class AsciidocConfluenceConverterTest {
     public void convertAndBuildConfluencePages_withPageTitlePostProcessor_convertsTemplatesAndReturnsMetadata() throws Exception {
         // arrange
         Path documentationRootFolder = Paths.get(DOCUMENTATION_LOCATION).toAbsolutePath();
-        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Path buildFolder = createTempDirectory(this.temporaryFolder, "tmp").toAbsolutePath();
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         PageTitlePostProcessor pageTitlePostProcessor = new PrefixAndSuffixPageTitlePostProcessor("(Doc) ", " (1.0)");
@@ -136,8 +134,8 @@ public class AsciidocConfluenceConverterTest {
     @Test
     public void convertAndBuildConfluencePages_withTemplates_extractsTemplatesFromClassPathToTargetFolder() throws Exception {
         // arrange
-        Path documentationRootFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
-        Path buildFolder = this.temporaryFolder.newFolder().toPath().toAbsolutePath();
+        Path documentationRootFolder = createTempDirectory(this.temporaryFolder, "tmp").toAbsolutePath();
+        Path buildFolder = createTempDirectory(this.temporaryFolder, "tmp").toAbsolutePath();
 
         AsciidocPagesStructureProvider asciidocPagesStructureProvider = new FolderBasedAsciidocPagesStructureProvider(documentationRootFolder, UTF_8);
         AsciidocConfluenceConverter asciidocConfluenceConverter = new AsciidocConfluenceConverter("~personalSpace", "1234");

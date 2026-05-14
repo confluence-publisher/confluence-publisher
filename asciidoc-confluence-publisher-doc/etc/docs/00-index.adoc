@@ -135,6 +135,7 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 </settings>
 ----
 
+[cols="1,1a,1a"]
 |===
 | Configuration Property | Description | Constraint
 
@@ -148,9 +149,9 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 
 | rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
-+
-+
+
 _Note:_ when publishing to Confluence Cloud using an API token, the root URL is `+https://<project>.atlassian.net/wiki+`.
+
 _Note:_ when publishing to Confluence Cloud using a scoped API token, the root URL is `+https://api.atlassian.com/ex/confluence/<cloud-id>+` (see Atlassian documentation on how to identify the cloud id).
 | mandatory
 
@@ -162,8 +163,7 @@ signed certificates.
 | enableHttpClientSystemProperties
 | Defines whether to enable support for configuring the underlying HTTP client using system properties passed to Maven.
 Useful for configuring custom keys and trust stores for SSL.
-+
-+
+
 _Note:_ see https://hc.apache.org/httpcomponents-client-4.5.x/current/httpclient/apidocs/org/apache/http/impl/client/HttpClientBuilder.html[HTTP client documentation]
 for supported system properties. Also, mixing `skipSslVerification` or the `proxy`-related configuration options with
 `enableHttpClientSystemProperties` is currently not supported.
@@ -190,13 +190,12 @@ for supported system properties. Also, mixing `skipSslVerification` or the `prox
 
 | username
 | The username of the user to use for publishing.
-+
-+
+
 _Note:_ Overrules username defined by serverId, when set in conjunction with serverId
 | optional (unspecified behaves like an empty string, see password)
 
 | password
-a| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
+| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
 
 _Note:_ when publishing to Confluence Cloud, an API token or a scoped API token generated via the corresponding Atlassian account has to
 be used as password. Make sure to set the correct root URL for Confluence depending on the token type.
@@ -225,14 +224,13 @@ _Note:_ Overrules password defined by serverId, when set in conjunction with ser
 
 | serverId
 | The id of the server with username and encrypted password defined in settings.xml
-+
-+
+
 _Note:_ see https://maven.apache.org/guides/mini/guide-encryption.html[Maven Password Encryption Guide] for details
 how to setup a server with username and encrypted password.
 | optional (defaults to not set, only supported for Maven plugin)
 
 | publishingStrategy
-a| The strategy to use when publishing to confluence. Possible values:
+| The strategy to use when publishing to confluence. Possible values:
 
 * `APPEND_TO_ANCESTOR`: append the published pages to the ancestor
 * `REPLACE_ANCESTOR`: replace the title and the content of the ancestor with those of the one single root page (requires
@@ -241,7 +239,7 @@ the documentation source structure to contain exactly one single root page)
 | optional (defaults to `APPEND_TO_ANCESTOR`)
 
 | orphanRemovalStrategy
-a| The strategy to use when detecting orphan pages (pages in Confluence not / no longer part of the documentation source
+| The strategy to use when detecting orphan pages (pages in Confluence not / no longer part of the documentation source
 structure) while publishing. Possible values:
 
 * `REMOVE_ORPHANS`: remove all orphan pages under the ancestor from Confluence
@@ -253,38 +251,34 @@ pages in order to avoid future page name conflicts or obsolete pages)
 | versionMessage
 | The message that will be published with the changes into `Page History` comment.
 
-  _Note:_ Confluence only supports version messages for updated pages, but not when creating new pages.
+_Note:_ Confluence only supports version messages for updated pages, but not when creating new pages.
 | optional (defaults to empty)
 
 | notifyWatchers
 | Defines whether to notify page/space watchers upon changes when re-publishing. If set to `false`, subscribers will not
 receive notifications, except for new page or attachment creations.
-+
-+
+
 _Note:_ suppressing notifications to watchers on page changes is not supported by Confluence Cloud.
 | optional (defaults to true)
 
 | attributes
 | User-defined attributes passed to AsciidoctorJ for replacing corresponding attribute placeholders.
-+
-+
+
 _Note:_ when using Docker-based publishing, user attributes have to be provided as JSON object structure.
-+
+
 _Note:_ user attributes are currently not supported for use in the page title.
 | optional (default to empty)
 
 | pageTitlePrefix
 | The prefix to be prepended to every page title.
-+
-+
+
 _Note:_ in order to preserve leading or trailing spaces in the page title prefix, the attribute `xml:space="preserve"`
 has to be added to the `pageTitlePrefix` element.
 | optional (defaults to empty)
 
 | pageTitleSuffix
 | The suffix to be appended to every page title.
-+
-+
+
 _Note:_ in order to preserve leading or trailing spaces in the page title suffix, the attribute `xml:space="preserve"`
 has to be added to the `pageTitleSuffix` element.
 | optional (defaults to empty)
@@ -323,8 +317,7 @@ Confluence instance).
 
 | [[restApiVersion]] restApiVersion
 | The version of the Confluence REST API to be used, either `v1` or `v2`. Default is version 2.
-+
-+
+
 _Note:_ version 1 is no longer supported for Confluence Cloud. Only use version 1 for Confluence Server and only in case of issues with version 2.
 | optional (defaults to `v2`)
 |===

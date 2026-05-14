@@ -152,8 +152,8 @@ jobs:
           ./mvnw clean install -DskipTests=true -nsu -B
           ./publishWithDockerImage.sh
 
-  it-cloud:
-    name: cloud - v2 - integration tests
+  it-cloud-api-token:
+    name: cloud - v2 - integration tests - api token
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
     concurrency:
@@ -178,11 +178,11 @@ jobs:
       - name: install prerequisites
         run: sudo apt-get update -y && sudo apt-get install -y graphviz
 
-      - name: execute integration tests (cloud server, v2)
+      - name: execute integration tests (cloud server, v2, api token)
         env:
           CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
           CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
-          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_API_TOKEN }}
           CPI_SPACE_KEY: CPI01
           CPI_ANCESTOR_ID: 3341844673
           CPI_REST_API_VERSION: v2
@@ -190,8 +190,8 @@ jobs:
           ./mvnw clean install -DskipTests=true -nsu -B
           ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
 
-  maven-cloud:
-    name: cloud - v2 - maven publishing
+  it-cloud-scoped-token:
+    name: cloud - v2 - integration tests - scoped token
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
     concurrency:
@@ -216,20 +216,20 @@ jobs:
       - name: install prerequisites
         run: sudo apt-get update -y && sudo apt-get install -y graphviz
 
-      - name: publish via Maven (cloud server, v2)
+      - name: execute integration tests (cloud server, v2, scoped token)
         env:
-          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_ROOT_URL: https://api.atlassian.com/ex/confluence/${{ secrets.CONFLUENCE_IT_CLOUD_ID }}
           CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
-          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_SCOPED_TOKEN }}
           CPI_SPACE_KEY: CPI02
           CPI_ANCESTOR_ID: 3341222328
           CPI_REST_API_VERSION: v2
         run: |
           ./mvnw clean install -DskipTests=true -nsu -B
-          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+          ./mvnw -Pintegration-tests failsafe:integration-test failsafe:verify -nsu
 
-  docker-cloud:
-    name: cloud - v2 - docker publishing
+  maven-cloud:
+    name: cloud - v2 - maven publishing
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
     concurrency:
@@ -254,13 +254,51 @@ jobs:
       - name: install prerequisites
         run: sudo apt-get update -y && sudo apt-get install -y graphviz
 
+      - name: publish via Maven (cloud server, v2)
+        env:
+          CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
+          CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_API_TOKEN }}
+          CPI_SPACE_KEY: CPI03
+          CPI_ANCESTOR_ID: 3341320439
+          CPI_REST_API_VERSION: v2
+        run: |
+          ./mvnw clean install -DskipTests=true -nsu -B
+          ./mvnw -Dusername=$CPI_USERNAME -Dpassword=$CPI_PASSWORD -DrootConfluenceUrl=$CPI_ROOT_URL -DspaceKey=$CPI_SPACE_KEY -DancestorId=$CPI_ANCESTOR_ID -DrestApiVersion=$CPI_REST_API_VERSION -pl asciidoc-confluence-publisher-doc asciidoc-confluence-publisher:publish -nsu
+
+  docker-cloud:
+    name: cloud - v2 - docker publishing
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
+    concurrency:
+      group: confluence-space-cpi-04
+      cancel-in-progress: false
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha || github.sha }}
+
+      - name: set up java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: install prerequisites
+        run: sudo apt-get update -y && sudo apt-get install -y graphviz
+
       - name: publish via Docker (cloud server, v2)
         env:
           CPI_ROOT_URL: https://confluence-publisher.atlassian.net/wiki
           CPI_USERNAME: ${{ secrets.CONFLUENCE_IT_USERNAME }}
-          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_TOKEN }}
-          CPI_SPACE_KEY: CPI03
-          CPI_ANCESTOR_ID: 3341320439
+          CPI_PASSWORD: ${{ secrets.CONFLUENCE_IT_API_TOKEN }}
+          CPI_SPACE_KEY: CPI04
+          CPI_ANCESTOR_ID: 3818848265
           CPI_REST_API_VERSION: v2
         run: |
           ./mvnw clean install -DskipTests=true -nsu -B
@@ -275,7 +313,8 @@ jobs:
       - it-server
       - maven-server
       - docker-server
-      - it-cloud
+      - it-cloud-api-token
+      - it-cloud-scoped-token
       - maven-cloud
       - docker-cloud
     permissions:

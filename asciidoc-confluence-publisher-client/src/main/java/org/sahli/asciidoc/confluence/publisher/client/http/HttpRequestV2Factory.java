@@ -244,7 +244,7 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     public HttpGet getNextChildPagesByIdRequest(String nextLink) {
         assertMandatoryParameter(isNotBlank(nextLink), "nextLink");
 
-        return new HttpGet(confluenceServerUrl(this.rootConfluenceUrl) + nextLink);
+        return new HttpGet(this.confluenceServerUrl + nextLink);
     }
 
     @Override
@@ -257,16 +257,14 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     public HttpGet getNextAttachmentsRequest(String nextLink) {
         assertMandatoryParameter(isNotBlank(nextLink), "nextLink");
 
-        return new HttpGet(confluenceServerUrl + nextLink);
+        return new HttpGet(this.confluenceServerUrl + nextLink);
     }
 
     @Override
     public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
         assertMandatoryParameter(isNotBlank(relativeDownloadLink), "relativeDownloadLink");
 
-        // For V2, attachment content is available at a standard endpoint
-        // However, we'll continue to use the provided relative download link for backward compatibility
-        return new HttpGet(this.rootConfluenceUrl + relativeDownloadLink);
+        return new HttpGet(this.confluenceServerUrl + relativeDownloadLink);
     }
 
     @Override

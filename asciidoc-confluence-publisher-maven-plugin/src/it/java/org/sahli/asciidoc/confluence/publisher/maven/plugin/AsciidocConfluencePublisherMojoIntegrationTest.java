@@ -19,15 +19,13 @@ package org.sahli.asciidoc.confluence.publisher.maven.plugin;
 import io.restassured.specification.RequestSpecification;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipherException;
@@ -56,12 +54,18 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluencePublisherMojoIntegrationTest.COMMAND_LINE_ARGUMENTS;
+import static org.sahli.asciidoc.confluence.publisher.maven.plugin.AsciidocConfluencePublisherMojoIntegrationTest.POM_PROPERTIES;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{0}")
+@ValueSource(strings = {POM_PROPERTIES, COMMAND_LINE_ARGUMENTS})
 public class AsciidocConfluencePublisherMojoIntegrationTest {
+
+    public static final String POM_PROPERTIES = "pomProperties";
+    public static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
 
     private static final String CONFLUENCE_ROOT_URL = System.getenv("CPI_ROOT_URL");
     private static final String SPACE_KEY = System.getenv("CPI_SPACE_KEY");
@@ -70,27 +74,20 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
-    private static final String POM_PROPERTIES = "pomProperties";
-    private static final String COMMAND_LINE_ARGUMENTS = "commandLineArguments";
     private static final String PLAINTEXT_MAVEN_MASTER_PASSWORD = "test";
 
-    @BeforeClass
+    @BeforeAll
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
     }
 
-    @Parameters(name = "{0}")
-    public static Object[] parameters() {
-        return new Object[]{POM_PROPERTIES, COMMAND_LINE_ARGUMENTS};
-    }
-
     @Parameter
-    public String propertiesMode;
+    private String propertiesMode;
 
-    @ClassRule
-    public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
+    @TempDir
+    public static File TEMPORARY_FOLDER;
 
-    @Before
+    @BeforeEach
     public void deleteAllPages() {
         publish("empty", mandatoryProperties());
     }
@@ -408,7 +405,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
         boolean useCommandLineArguments = this.propertiesMode.equals(COMMAND_LINE_ARGUMENTS);
 
         try {
-            File projectDir = extractResourcePath(getClass(), "/" + pathToContent, TEMPORARY_FOLDER.newFolder(), true);
+            File projectDir = extractResourcePath(getClass(), "/" + pathToContent, TEMPORARY_FOLDER.toPath().toFile(), true);
             publishAndVerify(projectDir, pomProperties, serverProperties, encryptedMasterPassword, useCommandLineArguments, runnable);
         } catch (Exception e) {
             throw new IllegalStateException("publishing failed", e);

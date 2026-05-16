@@ -18,8 +18,8 @@ package org.sahli.asciidoc.confluence.publisher.client;
 
 
 import io.restassured.specification.RequestSpecification;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceClient;
 import org.sahli.asciidoc.confluence.publisher.client.http.ConfluenceRestV2Client;
 import org.sahli.asciidoc.confluence.publisher.client.metadata.ConfluencePageMetadata;
@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.sahli.asciidoc.confluence.publisher.client.OrphanRemovalStrategy.REMOVE_ORPHANS;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.APPEND_TO_ANCESTOR;
 import static org.sahli.asciidoc.confluence.publisher.client.PublishingStrategy.REPLACE_ANCESTOR;
@@ -56,7 +56,7 @@ public class ConfluencePublisherV2IntegrationTest {
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
-    @BeforeClass
+    @BeforeAll
     public static void runForRestApiV2Only() {
         assumeTrue(REST_API_VERSION == null || REST_API_VERSION.equals("v2"));
     }

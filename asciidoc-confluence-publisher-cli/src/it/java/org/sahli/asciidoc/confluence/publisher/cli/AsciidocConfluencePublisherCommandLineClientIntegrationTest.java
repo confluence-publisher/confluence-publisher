@@ -17,16 +17,16 @@
 package org.sahli.asciidoc.confluence.publisher.cli;
 
 import io.restassured.specification.RequestSpecification;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -38,8 +38,8 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.testcontainers.containers.Network.SHARED;
 import static org.testcontainers.containers.wait.strategy.Wait.forListeningPort;
 
@@ -52,12 +52,12 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
     private static final String USERNAME = System.getenv("CPI_USERNAME");
     private static final String PASSWORD = System.getenv("CPI_PASSWORD");
 
-    @BeforeClass
+    @BeforeAll
     public static void exposeConfluenceServerPortOnHost() {
         Testcontainers.exposeHostPorts(8090);
     }
 
-    @Before
+    @BeforeEach
     public void deleteAllPages() throws Exception {
         String[] args = {
                 "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
@@ -273,8 +273,8 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 .then().body("results", hasSize(0));
     }
 
-    @Rule
-    public TemporaryFolder buildDirectory = new TemporaryFolder();
+    @TempDir
+    public File buildDirectory;
 
     @Test
     public void publish_withConvertOnlyAndBuildDirectory_doesNotDeleteTheBuildDirectory() throws Exception {
@@ -288,14 +288,14 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
                 "restApiVersion=" + REST_API_VERSION,
                 "asciidocRootFolder=src/it/resources/default",
                 "convertOnly=true",
-                "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath()
+                "asciidocBuildFolder=" + this.buildDirectory.getAbsolutePath()
         };
 
         // act
         AsciidocConfluencePublisherCommandLineClient.main(args);
 
         // assert
-        assertTrue("Build directory was deleted", this.buildDirectory.getRoot().exists());
+        assertTrue(this.buildDirectory.exists(), "Build directory was deleted");
     }
 
     @Test
@@ -309,7 +309,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
             "ancestorId=" + ANCESTOR_ID,
             "restApiVersion=" + REST_API_VERSION,
             "asciidocRootFolder=src/it/resources/default",
-            "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath(),
+            "asciidocBuildFolder=" + this.buildDirectory.getAbsolutePath(),
             "failOnError=false"
         };
 
@@ -328,7 +328,7 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
             "ancestorId=" + ANCESTOR_ID,
             "restApiVersion=" + REST_API_VERSION,
             "asciidocRootFolder=src/it/resources/default",
-            "asciidocBuildFolder=" + this.buildDirectory.getRoot().getAbsolutePath()
+            "asciidocBuildFolder=" + this.buildDirectory.getAbsolutePath()
         };
 
       try {

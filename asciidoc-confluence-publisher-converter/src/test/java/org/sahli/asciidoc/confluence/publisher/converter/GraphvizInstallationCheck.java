@@ -17,23 +17,20 @@
 package org.sahli.asciidoc.confluence.publisher.converter;
 
 import net.sourceforge.plantuml.dot.GraphvizRuntimeEnvironment;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.File;
 
-class GraphvizInstallationCheck implements TestRule {
+class GraphvizInstallationCheck implements BeforeAllCallback {
 
     @Override
-    public Statement apply(Statement base, Description description) {
+    public void beforeAll(ExtensionContext context) {
         File dotExe = GraphvizRuntimeEnvironment.getInstance().getDotExe();
 
         if (!dotExe.exists()) {
             throw new AssertionError("Graphviz is not installed (Dot binary expected at path '" + dotExe.getAbsolutePath() + "')");
         }
-
-        return base;
     }
 
 }

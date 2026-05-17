@@ -16,13 +16,13 @@
 
 package org.sahli.asciidoc.confluence.publisher.cli;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.StreamSupport.stream;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AsciidocConfluencePublisherCommandLineClientTest {
 

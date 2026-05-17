@@ -26,7 +26,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
@@ -47,8 +47,8 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -157,7 +157,7 @@ public class ConfluenceRestV1ClientTest {
         assertThat(contentId, is(expectedContentId));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getPageByTitle_multipleResultsButNoneBelowProvidedAncestorId_throwsPageNotFoundException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [" +
@@ -167,20 +167,20 @@ public class ConfluenceRestV1ClientTest {
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act + assert
-        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
+        assertThrows(NotFoundException.class, () -> confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title"));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getPageByTitle_withEmptyResult_throwsPageNotFoundException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{}", 200);
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act + assert
-        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
+        assertThrows(NotFoundException.class, () -> confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title"));
     }
 
-    @Test(expected = MultipleResultsException.class)
+    @Test
     public void getPageByTitle_withMultipleResultsUnderProvidedAncestorId_throwsMultipleResultsException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"results\": [" +
@@ -190,7 +190,7 @@ public class ConfluenceRestV1ClientTest {
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act + assert
-        confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title");
+        assertThrows(MultipleResultsException.class, () -> confluenceRestClient.getPageByTitle("~personalSpace", "1234", "Some title"));
     }
 
     @Test
@@ -249,24 +249,24 @@ public class ConfluenceRestV1ClientTest {
         assertThat(confluenceAttachment.getVersion(), is(1));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getAttachmentByFileName_withEmptyResult_throwsNotFoundException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 0}", 200);
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
-        // act
-        confluenceRestClient.getAttachmentByFileName("1234", "file.txt");
+        // act + assert
+        assertThrows(NotFoundException.class, () -> confluenceRestClient.getAttachmentByFileName("1234", "file.txt"));
     }
 
-    @Test(expected = MultipleResultsException.class)
+    @Test
     public void getAttachmentByFileName_withMultipleResults_throwsMultipleResultsException() throws Exception {
         // arrange
         CloseableHttpClient httpClientMock = recordHttpClientForSingleResponseWithContentAndStatusCode("{\"size\": 2}", 200);
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
-        // act
-        confluenceRestClient.getAttachmentByFileName("4321", "another-file.txt");
+        // act + assert
+        assertThrows(MultipleResultsException.class, () -> confluenceRestClient.getAttachmentByFileName("4321", "another-file.txt"));
     }
 
     @Test
@@ -542,7 +542,7 @@ public class ConfluenceRestV1ClientTest {
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // assert
-        Exception expectedException = assertThrows("expected", RequestFailedException.class, () -> {
+        Exception expectedException = assertThrows(RequestFailedException.class, () -> {
             // act
             confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
         });
@@ -557,7 +557,7 @@ public class ConfluenceRestV1ClientTest {
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // assert
-        assertThrows("{\"some\": \"json\"}", RequestFailedException.class, () -> {
+        assertThrows(RequestFailedException.class, () -> {
             // act
             confluenceRestClient.addPageUnderAncestor("~personalSpace", "123", "Hello", "Content", "Version Message");
         });

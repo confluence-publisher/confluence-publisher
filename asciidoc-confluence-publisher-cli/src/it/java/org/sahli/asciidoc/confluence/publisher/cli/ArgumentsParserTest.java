@@ -1,14 +1,15 @@
 package org.sahli.asciidoc.confluence.publisher.cli;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArgumentsParserTest {
 
@@ -39,14 +40,14 @@ public class ArgumentsParserTest {
         assertThat(value.get(), is("value"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void mandatoryArgument_valueNotPresent_throwsException() {
         // arrange
         String[] args = {};
         ArgumentsParser parser = new ArgumentsParser();
 
-        // act
-        parser.mandatoryArgument("key", args);
+        // act + assert
+        assertThrows(IllegalArgumentException.class, () -> parser.mandatoryArgument("key", args));
     }
 
     @Test
@@ -62,14 +63,14 @@ public class ArgumentsParserTest {
         assertThat(value, is("value"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void optionalJsonArgument_valueIsNotParseable_throwsException() {
         // arrange
         String[] args = {"t=test", "t2=test2", "key=value"};
         ArgumentsParser parser = new ArgumentsParser();
 
-        // act
-        parser.optionalJsonArgument("key", args);
+        // act + assert
+        assertThrows(IllegalArgumentException.class, () -> parser.optionalJsonArgument("key", args));
     }
 
     @Test

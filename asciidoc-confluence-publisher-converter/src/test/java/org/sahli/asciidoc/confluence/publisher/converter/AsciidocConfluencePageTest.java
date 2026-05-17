@@ -16,9 +16,9 @@
 
 package org.sahli.asciidoc.confluence.publisher.converter;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.sahli.asciidoc.confluence.publisher.converter.AsciidocPagesStructureProvider.AsciidocPage;
 import org.sahli.asciidoc.confluence.publisher.converter.NoOpPageTitlePostProcessor;
 
@@ -35,6 +35,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
@@ -49,8 +50,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluencePage.newAsciidocConfluencePage;
@@ -59,15 +60,13 @@ import static org.sahli.asciidoc.confluence.publisher.converter.AsciidocConfluen
  * @author Alain Sahli
  * @author Christian Stettler
  */
+@ExtendWith(GraphvizInstallationCheck.class)
 public class AsciidocConfluencePageTest {
 
     private static final Path TEMPLATES_FOLDER = Paths.get("src/main/resources/org/sahli/asciidoc/confluence/publisher/converter/templates");
 
-    @ClassRule
-    public static final GraphvizInstallationCheck GRAPHVIZ_INSTALLATION_CHECK = new GraphvizInstallationCheck();
-
-    @ClassRule
-    public static final TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
+    @TempDir
+    static Path TEMPORARY_FOLDER;
 
     @Test
     public void render_asciidocWithTopLevelHeader_returnsConfluencePageWithPageTitleFromTopLevelHeader() {
@@ -252,7 +251,7 @@ public class AsciidocConfluencePageTest {
     @Test
     public void renderConfluencePage_asciiDocWithSourceFileAttributesInSubdirectory_returnsConfluencePageContentWithCorrectRelativePath() throws IOException {
         // arrange
-        Path rootFolder = TEMPORARY_FOLDER.newFolder().toPath();
+        Path rootFolder = createTempDirectory(TEMPORARY_FOLDER, "tmp");
         Path subDir = rootFolder.resolve("docs").resolve("pages");
         String adocContent = prependTitle("Path: {cp-source-path}, File: {cp-source-file}, Name: {cp-source-name}");
         Path sourceFile = subDir.resolve("user-guide.adoc");
@@ -2088,7 +2087,7 @@ public class AsciidocConfluencePageTest {
 
     private static Path dummyAssetsTargetPath() {
         try {
-            return TEMPORARY_FOLDER.newFolder().toPath();
+            return createTempDirectory(TEMPORARY_FOLDER, "tmp");
         } catch (IOException e) {
             throw new RuntimeException("Could not create assert target path", e);
         }
@@ -2097,7 +2096,7 @@ public class AsciidocConfluencePageTest {
     private static Path copyAsciidocSourceToTemporaryFolder(String pathToSampleAsciidocStructure) {
         try {
             Path sourceFolder = Paths.get(pathToSampleAsciidocStructure);
-            Path targetFolder = TEMPORARY_FOLDER.newFolder().toPath();
+            Path targetFolder = createTempDirectory(TEMPORARY_FOLDER, "tmp");
 
             walk(Paths.get(pathToSampleAsciidocStructure)).forEach((path) -> copyTo(path, targetFolder.resolve(sourceFolder.relativize(path))));
 
@@ -2118,7 +2117,7 @@ public class AsciidocConfluencePageTest {
 
     private static Path temporaryPath(String content) {
         try {
-            Path path = TEMPORARY_FOLDER.newFolder().toPath().resolve("tmp").resolve(sha256Hex(content) + ".adoc");
+            Path path = createTempDirectory(TEMPORARY_FOLDER, "tmp").resolve("tmp").resolve(sha256Hex(content) + ".adoc");
             createDirectories(path.getParent());
             write(path, content.getBytes(UTF_8));
 

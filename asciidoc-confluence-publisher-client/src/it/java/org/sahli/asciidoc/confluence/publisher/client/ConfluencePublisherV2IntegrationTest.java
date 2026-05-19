@@ -59,6 +59,7 @@ public class ConfluencePublisherV2IntegrationTest {
     @BeforeAll
     public static void runForRestApiV2Only() {
         assumeTrue(REST_API_VERSION == null || REST_API_VERSION.equals("v2"));
+        System.out.println("Root Confluence URL: " + CONFLUENCE_ROOT_URL.substring(0, 40));
     }
 
     @Test

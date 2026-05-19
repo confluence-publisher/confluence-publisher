@@ -291,27 +291,6 @@ public class HttpRequestV2FactoryTest {
     }
 
     @Test
-    public void getAttachmentContentRequest_withRelativeDownloadLink_returnsUrlWithServerUrlPrefix() {
-        // arrange
-        String relativeDownloadLink = "/download/attachment.txt";
-
-        // act
-        HttpGet request = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is(ROOT_CONFLUENCE_URL + relativeDownloadLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
-        // assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            // arrange + act
-            this.httpRequestFactory.getAttachmentContentRequest("");
-        });
-    }
-
-    @Test
     public void getPropertyByKeyRequest_withValidParameters_returnsHttpGetToApiV2Endpoint() {
         // act
         HttpGet request = this.httpRequestFactory.getPropertyByKeyRequest("1234", "content-hash");
@@ -427,31 +406,5 @@ public class HttpRequestV2FactoryTest {
 
         // assert
         assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + nextLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withAtlassianApiGatewayUrl_usesServerHostWithoutPathPrefix() {
-        // arrange
-        HttpRequestV2Factory factory = new HttpRequestV2Factory(ATLASSIAN_API_GATEWAY_URL);
-        String relativeDownloadLink = "/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID + "/download/attachments/123/file.png";
-
-        // act
-        HttpGet request = factory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + relativeDownloadLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withStandardConfluenceCloudUrl_usesServerHostWithoutPathPrefix() {
-        // arrange
-        HttpRequestV2Factory factory = new HttpRequestV2Factory("https://mysite.atlassian.net/wiki");
-        String relativeDownloadLink = "/wiki/download/attachments/123/file.png";
-
-        // act
-        HttpGet request = factory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is("https://mysite.atlassian.net" + relativeDownloadLink));
     }
 }

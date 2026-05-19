@@ -268,13 +268,6 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     }
 
     @Override
-    public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
-        assertMandatoryParameter(isNotBlank(relativeDownloadLink), "relativeDownloadLink");
-
-        return new HttpGet(this.confluenceServerUrl + relativeDownloadLink);
-    }
-
-    @Override
     public HttpGet getPropertyByKeyRequest(String contentId, String key) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(key), "key");

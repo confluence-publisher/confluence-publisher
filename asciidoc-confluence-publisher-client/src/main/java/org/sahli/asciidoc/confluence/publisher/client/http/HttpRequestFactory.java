@@ -48,8 +48,6 @@ public interface HttpRequestFactory {
 
     HttpGet getAttachmentsRequest(String contentId, Integer limit, Integer start, String expandOptions);
 
-    HttpGet getAttachmentContentRequest(String relativeDownloadLink);
-
     HttpGet getPropertyByKeyRequest(String contentId, String key);
 
     HttpDelete deletePropertyByKeyRequest(String contentId, String key);

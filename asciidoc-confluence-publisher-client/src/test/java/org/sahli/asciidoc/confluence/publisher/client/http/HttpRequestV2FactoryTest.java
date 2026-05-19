@@ -272,7 +272,7 @@ public class HttpRequestV2FactoryTest {
     public void getNextAttachmentsRequest_withRelativeNextLink_prependsConfluenceServerUrl() {
         // arrange
         HttpRequestV2Factory factory = new HttpRequestV2Factory(ROOT_CONFLUENCE_URL);
-        String nextLink = "/api/v2/pages/1234/attachments?cursor=yyy&limit=25";
+        String nextLink = "/wiki/api/v2/pages/1234/attachments?cursor=yyy&limit=25";
 
         // act
         HttpGet request = factory.getNextAttachmentsRequest(nextLink);
@@ -399,12 +399,12 @@ public class HttpRequestV2FactoryTest {
     public void getNextAttachmentsRequest_withAtlassianApiGatewayUrl_prependsServerHostWithoutPath() {
         // arrange
         HttpRequestV2Factory factory = new HttpRequestV2Factory(ATLASSIAN_API_GATEWAY_URL);
-        String nextLink = "/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID + "/api/v2/pages/1234/attachments?cursor=yyy";
+        String nextLink = "/wiki/api/v2/pages/1234/attachments?cursor=yyy";
 
         // act
         HttpGet request = factory.getNextAttachmentsRequest(nextLink);
 
         // assert
-        assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + nextLink));
+        assertThat(request.getURI().toString(), is(ATLASSIAN_API_GATEWAY_URL + nextLink));
     }
 }

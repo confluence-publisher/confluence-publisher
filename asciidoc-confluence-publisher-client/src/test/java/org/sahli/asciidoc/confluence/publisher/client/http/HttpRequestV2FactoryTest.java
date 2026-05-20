@@ -272,7 +272,7 @@ public class HttpRequestV2FactoryTest {
     public void getNextAttachmentsRequest_withRelativeNextLink_prependsConfluenceServerUrl() {
         // arrange
         HttpRequestV2Factory factory = new HttpRequestV2Factory(ROOT_CONFLUENCE_URL);
-        String nextLink = "/api/v2/pages/1234/attachments?cursor=yyy&limit=25";
+        String nextLink = "/wiki/api/v2/pages/1234/attachments?cursor=yyy&limit=25";
 
         // act
         HttpGet request = factory.getNextAttachmentsRequest(nextLink);
@@ -287,27 +287,6 @@ public class HttpRequestV2FactoryTest {
         assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
             this.httpRequestFactory.getNextAttachmentsRequest("");
-        });
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withRelativeDownloadLink_returnsUrlWithServerUrlPrefix() {
-        // arrange
-        String relativeDownloadLink = "/download/attachment.txt";
-
-        // act
-        HttpGet request = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is(ROOT_CONFLUENCE_URL + relativeDownloadLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
-        // assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            // arrange + act
-            this.httpRequestFactory.getAttachmentContentRequest("");
         });
     }
 
@@ -420,38 +399,12 @@ public class HttpRequestV2FactoryTest {
     public void getNextAttachmentsRequest_withAtlassianApiGatewayUrl_prependsServerHostWithoutPath() {
         // arrange
         HttpRequestV2Factory factory = new HttpRequestV2Factory(ATLASSIAN_API_GATEWAY_URL);
-        String nextLink = "/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID + "/api/v2/pages/1234/attachments?cursor=yyy";
+        String nextLink = "/wiki/api/v2/pages/1234/attachments?cursor=yyy";
 
         // act
         HttpGet request = factory.getNextAttachmentsRequest(nextLink);
 
         // assert
-        assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + nextLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withAtlassianApiGatewayUrl_usesServerHostWithoutPathPrefix() {
-        // arrange
-        HttpRequestV2Factory factory = new HttpRequestV2Factory(ATLASSIAN_API_GATEWAY_URL);
-        String relativeDownloadLink = "/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID + "/download/attachments/123/file.png";
-
-        // act
-        HttpGet request = factory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + relativeDownloadLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withStandardConfluenceCloudUrl_usesServerHostWithoutPathPrefix() {
-        // arrange
-        HttpRequestV2Factory factory = new HttpRequestV2Factory("https://mysite.atlassian.net/wiki");
-        String relativeDownloadLink = "/wiki/download/attachments/123/file.png";
-
-        // act
-        HttpGet request = factory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(request.getURI().toString(), is("https://mysite.atlassian.net" + relativeDownloadLink));
+        assertThat(request.getURI().toString(), is(ATLASSIAN_API_GATEWAY_URL + nextLink));
     }
 }

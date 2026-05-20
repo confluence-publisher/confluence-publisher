@@ -583,27 +583,6 @@ public class HttpRequestV1FactoryTest {
     }
 
     @Test
-    public void getAttachmentContentRequest_withValidParameters_returnsHttpGetRequest() {
-        // arrange
-        String relativeDownloadLink = "/download/attachment.txt";
-
-        // act
-        HttpGet getAttachmentContentRequest = this.httpRequestFactory.getAttachmentContentRequest(relativeDownloadLink);
-
-        // assert
-        assertThat(getAttachmentContentRequest.getURI().toString(), is(ROOT_CONFLUENCE_URL + relativeDownloadLink));
-    }
-
-    @Test
-    public void getAttachmentContentRequest_withBlankRelativeDownloadLink_throwsIllegalArgumentException() {
-        // assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            // arrange + act
-            this.httpRequestFactory.getAttachmentContentRequest("");
-        });
-    }
-
-    @Test
     public void setPropertyByKeyRequest_withValidParameters_returnsHttpPostRequest() throws Exception {
         // arrange
         String contentId = "1234";

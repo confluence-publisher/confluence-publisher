@@ -141,6 +141,35 @@ public class ConfluencePublisherV2IntegrationTest {
     }
 
     @Test
+    public void publish_pageWithMoreThanPageSizeAttachmentsAndAttachmentsRemovedOnRepublish_removesAttachmentsFromPage() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+        attachments.put("attachmentTwo.txt", absolutePathTo("attachments/attachmentTwo.txt"));
+        attachments.put("attachmentThree.txt", absolutePathTo("attachments/attachmentThree.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        confluencePublisher.publish();
+
+        confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"));
+        confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+            .when().get(rootPageAttachments())
+            .then()
+            .body("results", hasSize(0));
+    }
+
+    @Test
     public void publish_attachmentWithNonAsciiCharactersInTitle_uploadsAttachmentWithCorrectName() {
         // arrange
         String title = uniqueTitle("Single Page");

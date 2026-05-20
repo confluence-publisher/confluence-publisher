@@ -257,14 +257,14 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     public HttpGet getNextAttachmentsRequest(String nextLink) {
         assertMandatoryParameter(isNotBlank(nextLink), "nextLink");
 
-        return new HttpGet(this.confluenceServerUrl + nextLink);
-    }
+        String nextLinkBaseUrl = this.rootConfluenceUrl;
 
-    @Override
-    public HttpGet getAttachmentContentRequest(String relativeDownloadLink) {
-        assertMandatoryParameter(isNotBlank(relativeDownloadLink), "relativeDownloadLink");
+        // next link contains /wiki path segment already present in root confluence url (only for api tokens, not for scoped tokens)
+        if (nextLinkBaseUrl.endsWith("/wiki")) {
+            nextLinkBaseUrl = nextLinkBaseUrl.substring(0, nextLinkBaseUrl.length() - "/wiki".length());
+        }
 
-        return new HttpGet(this.confluenceServerUrl + relativeDownloadLink);
+        return new HttpGet(nextLinkBaseUrl + nextLink);
     }
 
     @Override

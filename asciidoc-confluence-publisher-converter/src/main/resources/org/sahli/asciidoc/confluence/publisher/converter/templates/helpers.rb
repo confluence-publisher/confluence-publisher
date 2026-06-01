@@ -135,8 +135,8 @@ module Slim::Helpers
     supported = ['actionscript3','applescript','bash','c#','cpp','css',
                 'coldfusion','delphi','diff','erl','groovy',
                 'xml','java','jfx','js','matlab','php','perl',
-                'text','powershell','py','ruby','sql','sass',
-                'scala','vb','yml']
+                'text','powershell','py','ruby','rust','sql','sass',
+                'scala','toml','vb','yml']
     supported.include? lang
   end
 
@@ -159,6 +159,7 @@ module Slim::Helpers
         'ps' => 'powershell', 'ps1' => 'powershell',
         'python' => 'py', 'gyp' => 'py',
         'rb' => 'ruby', 'gemspec' => 'ruby', 'podspec' => 'ruby', 'thor' => 'ruby', 'irb' => 'ruby',
+        'rs' => 'rust',
         'vbnet' => 'vb', 'vbscript' => 'vb', 'vbs' => 'vb',
         'yaml' => 'yml'
       }

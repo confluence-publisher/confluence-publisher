@@ -1541,6 +1541,26 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithOrderedListWithStart_returnsConfluencePageHavingCorrectOrderedListMarkup() {
+        // arrange
+        String adocContent =
+                ". L1-1\n" +
+                ". L1-2\n" +
+                "\n" +
+                "Some other text\n" +
+                "[start=3]\n"+
+                ". L1-3";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ol><li>L1-1</li><li>L1-2</li></ol>\n<p>Some other text</p>\n<ol start=\"3\"><li>L1-3</li></ol>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithOrderedListAndTitle_returnsConfluencePageHavingCorrectOrderedListAndTitleMarkup() {
         // arrange
         String adocContent = ".An ordered list title\n" +

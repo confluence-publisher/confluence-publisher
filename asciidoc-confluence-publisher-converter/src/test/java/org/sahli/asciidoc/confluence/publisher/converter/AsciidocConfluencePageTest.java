@@ -1274,6 +1274,22 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceAnchorContainingDots_returnsConfluencePageWithLinkToReferencedPageByPageTitleWithAnchor() {
+        // arrange
+        Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");
+        AsciidocPage asciidocPage = asciidocPage(rootFolder, "source-page-reference-with-dotted-anchor.adoc");
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, assetsTargetFolderFor(asciidocPage), "TEST");
+
+        // assert
+        String expectedContent = "<p>This is a <ac:link ac:anchor=\"os.keystore.create\"><ri:page ri:content-title=\"Target Page\" ri:space-key=\"TEST\"></ri:page>" +
+                "<ac:plain-text-link-body><![CDATA[reference with dotted anchor]]></ac:plain-text-link-body>" +
+                "</ac:link> to the target page.</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithInterDocumentCrossReferenceToTargetPageWithHtmlCharacterInTitle_returnsConfluencePageWithLinkToReferencedPageByPageTitle() {
         // arrange
         Path rootFolder = copyAsciidocSourceToTemporaryFolder("src/test/resources/inter-document-cross-references");

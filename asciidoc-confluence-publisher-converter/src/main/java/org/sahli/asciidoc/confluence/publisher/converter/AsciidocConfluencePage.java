@@ -258,7 +258,8 @@ public class AsciidocConfluencePage {
     private static Function<String, String> replaceCrossReferenceTargets(Path pagePath, Map<String, Object> userAttributes, PageTitlePostProcessor pageTitlePostProcessor, Charset sourceEncoding, String spaceKey, Path templatesDir, Path pageAssetsFolder, Path rootFolder) {
         return (content) -> replaceAll(content, PAGE_TITLE_PATTERN, (matchResult) -> {
             String htmlTarget = matchResult.group(1);
-            Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTarget.substring(0, htmlTarget.lastIndexOf('.')) + ".adoc"));
+            String htmlTargetWithoutAnchor = htmlTarget.contains("#") ? htmlTarget.substring(0, htmlTarget.indexOf('#')) : htmlTarget;
+            Path referencedPagePath = pagePath.getParent().resolve(Paths.get(htmlTargetWithoutAnchor.substring(0, htmlTargetWithoutAnchor.lastIndexOf('.')) + ".adoc"));
 
             try {
                 Map<String, Object> userAttributesWithMaskedNullValues = maskNullWithEmptyString(userAttributes);

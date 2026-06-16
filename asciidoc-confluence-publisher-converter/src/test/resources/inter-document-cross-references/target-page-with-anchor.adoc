@@ -4,3 +4,6 @@ This is the target page with an:
 
 [[_anchor]]
 Anchor
+
+[[os.keystore.create]]
+Anchor with dots

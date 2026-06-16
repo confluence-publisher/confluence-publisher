@@ -1,0 +1,3 @@
+= Source Page
+
+This is a <<target-page-with-anchor.adoc#os.keystore.create,reference with dotted anchor>> to the target page.

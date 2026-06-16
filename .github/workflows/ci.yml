@@ -404,7 +404,7 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
           echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-          ./mvnw -pl asciidoc-confluence-publisher-docker dockerfile:push -nsu
+          ./mvnw -pl asciidoc-confluence-publisher-docker docker:push -nsu
 
       - name: prepare cache
         if: always()

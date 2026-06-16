@@ -126,6 +126,9 @@
                             <build>
                                 <dockerFile>${project.basedir}/Dockerfile</dockerFile>
                                 <contextDir>${project.basedir}</contextDir>
+                                <buildx>
+                                    <platforms>linux/amd64,linux/arm64</platforms>
+                                </buildx>
                             </build>
                         </image>
                     </images>

@@ -123,6 +123,19 @@ module Slim::Helpers
     end
   end
 
+  ##
+  # Replaces soft line breaks (single newlines originating from wrapped source
+  # lines) with spaces, while keeping explicit hard breaks (<br/>) intact, so
+  # that wrapped source lines do not show up as visible line breaks in
+  # Confluence.
+  #
+  # @param str [String, nil] the text to process.
+  # @return [String, nil] the text without soft line breaks, or +nil+ if +str+ is +nil+.
+  #
+  def remove_soft_line_breaks(str)
+    str.gsub(/(?<!<br\/>)\n/, ' ') if str
+  end
+
   #--------------------------------------------------------
   # block_listing
   #

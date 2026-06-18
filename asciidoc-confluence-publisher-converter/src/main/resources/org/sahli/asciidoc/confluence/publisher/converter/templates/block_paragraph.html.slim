@@ -12,7 +12,8 @@
 - when 'text-justify'
     - confluence_alignment = 'text-align: justify;'
 
+- content_without_soft_line_breaks = remove_soft_line_breaks(content)
 - if confluence_alignment
-  *{tag: %(p), style: "#{confluence_alignment}"}  =content
+  *{tag: %(p), style: "#{confluence_alignment}"}  =content_without_soft_line_breaks
 - else
-  *{tag: %(p)} =content
+  *{tag: %(p)} =content_without_soft_line_breaks

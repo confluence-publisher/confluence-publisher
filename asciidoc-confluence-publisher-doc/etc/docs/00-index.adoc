@@ -12,7 +12,7 @@ publication is again re-published.
 ====
 The Confluence Publisher has been tested with Confluence Server 6.0.5 and Confluence Cloud.
 
-Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion,`restApiVersion`>> configuration property)
+Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion>> configuration property)
 ====
 
 .Table of Contents
@@ -210,7 +210,7 @@ _Note:_ overrules username defined by serverId, when set in conjunction with ser
 | The password, API token or scoped API token of the user to use for publishing, or a personal access token when the username is unspecified/empty.
 
 _Note:_ when publishing to Confluence Cloud, an API token or a scoped API token generated via the corresponding Atlassian account has to
-be used as password. Make sure to set the correct root URL for Confluence depending on the token type  (see <<rootConfluenceUrl,`rootConfluenceUrl`>> configuration property).
+be used as password. Make sure to set the correct root URL for Confluence depending on the token type  (see <<rootConfluenceUrl>> configuration property).
 
 _Note_: when using a scoped API token, the following OAuth 2.0 scopes are required:
 

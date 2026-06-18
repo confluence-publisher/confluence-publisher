@@ -12,7 +12,7 @@ publication is again re-published.
 ====
 The Confluence Publisher has been tested with Confluence Server 6.0.5 and Confluence Cloud.
 
-Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion>> configuration property)
+Publishing to a locally installed Confluence instance might require the use of REST API v1 (see <<restApiVersion,`restApiVersion`>> configuration property)
 ====
 
 .Table of Contents
@@ -153,7 +153,7 @@ When relying on Maven support for encrypted credentials using the `serverId` con
 | The encoding of the AsciiDoc files.
 | optional (defaults to UTF-8)
 
-| rootConfluenceUrl
+| [[rootConfluenceUrl]] rootConfluenceUrl
 | The root URL of the Confluence instance to publish to.
 
 _Note:_ when publishing to Confluence Cloud using an API token, the root URL is `+https://<project>.atlassian.net/wiki+`.
@@ -197,14 +197,20 @@ for supported system properties. Also, mixing `skipSslVerification` or the `prox
 | username
 | The username of the user to use for publishing.
 
-_Note:_ Overrules username defined by serverId, when set in conjunction with serverId
-| optional (unspecified behaves like an empty string, see password)
+_Note:_ when publishing to Confluence Cloud, specify the email address of the corresponding Atlassian account (even when using an API token or a scoped API token as password).
+
+_Note:_ when publishing to Confluence Server using a personal access token, the username must be left unspecified/empty.
+
+_Note:_ overrules username defined by serverId, when set in conjunction with serverId
+
+
+| optional (unspecified behaves like an empty string)
 
 | password
-| The password of the user to use for publishing or a personal access token when the username is empty or unspecified.
+| The password, API token or scoped API token of the user to use for publishing, or a personal access token when the username is unspecified/empty.
 
 _Note:_ when publishing to Confluence Cloud, an API token or a scoped API token generated via the corresponding Atlassian account has to
-be used as password. Make sure to set the correct root URL for Confluence depending on the token type.
+be used as password. Make sure to set the correct root URL for Confluence depending on the token type  (see <<rootConfluenceUrl,`rootConfluenceUrl`>> configuration property).
 
 _Note_: when using a scoped API token, the following OAuth 2.0 scopes are required:
 
@@ -222,10 +228,7 @@ _Note_: when using a scoped API token, the following OAuth 2.0 scopes are requir
 * write:label:confluence
 * write:page:confluence
 
-_Note:_ when publishing to Confluence Server with an API token, leave the username empty ("") or unspecified
-(for Maven plugin)
-
-_Note:_ Overrules password defined by serverId, when set in conjunction with serverId
+_Note:_ overrules password defined by serverId, when set in conjunction with serverId
 | mandatory, if serverId is not specified
 
 | serverId

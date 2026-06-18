@@ -713,6 +713,19 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithParagraphContainingSoftLineBreaks_returnsConfluencePageContentWithSoftLineBreaksReplacedBySpaces() {
+        // arrange
+        String adoc = "first line\nsecond line\nthird line";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adoc)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<p>first line second line third line</p>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithBoldText_returnsConfluencePageContentWithBoldMarkup() {
         // arrange
         String adocContent = "*Bold phrase.* bold le**t**ter.";
@@ -837,6 +850,22 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<table><tbody><tr><td>A</td><td>B</td><td>C</td></tr><tr><td>10</td><td>11</td><td>12</td></tr><tr><td>20</td><td>21</td><td>22</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableCellContainingSoftLineBreaks_returnsConfluencePageContentWithSoftLineBreaksReplacedBySpaces() {
+        // arrange
+        String adocContent = "|===\n" +
+                "| first part\n" +
+                "second part\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table><tbody><tr><td>first part second part</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1521,6 +1550,21 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithListItemContainingSoftLineBreaks_returnsConfluencePageContentWithSoftLineBreaksReplacedBySpaces() {
+        // arrange
+        String adocContent = "* first part\n" +
+                "second part";
+        AsciidocPage asciidocPage = asciidocPage(prependTitle(adocContent));
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage, UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<ul><li>first part second part</li></ul>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithUnorderedListAndTitle_returnsConfluencePageHavingCorrectUnorderedListAndTitleMarkup() {
         // arrange
         String adocContent = ".An unordered list title\n" +
@@ -2100,7 +2144,7 @@ public class AsciidocConfluencePageTest {
 
         // assert
         String expectedContent = "<div id=\"preamble\">\n<div class=\"sectionbody\">\n" +
-            "<p>This is demo string 0.0\nThis is demo string 0.1\nThis is demo string 0.2\nThis is demo string 0.3</p>\n" +
+            "<p>This is demo string 0.0 This is demo string 0.1 This is demo string 0.2 This is demo string 0.3</p>\n" +
             "</div>\n</div>\n<h1><ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo</ac:parameter>" +
             "</ac:structured-macro>Demo</h1><p>This is demo string 1</p>\n<h1 style=\"text-align: center;\">" +
             "<ac:structured-macro ac:name=\"anchor\"><ac:parameter ac:name=\"\">_demo_size</ac:parameter>" +

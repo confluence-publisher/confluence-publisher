@@ -11,7 +11,7 @@
                   colspan: cell.colspan,
                   rowspan: cell.rowspan}
                 - if tblsec == :head
-                  =cell.text
+                  =remove_soft_line_breaks(cell.text)
                 - else
                   - case cell.style
                   - when :asciidoc
@@ -22,4 +22,4 @@
                     .literal: pre =cell.text
                   - else
                     - cell.content.each do |text|
-                      =text
+                      =remove_soft_line_breaks(text)

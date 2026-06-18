@@ -4,6 +4,6 @@
 ol start=(attr :start if attr :start)
   - items.each do |item|
     li
-      =item.text
+      =remove_soft_line_breaks(item.text)
       - if item.blocks?
         =item.content

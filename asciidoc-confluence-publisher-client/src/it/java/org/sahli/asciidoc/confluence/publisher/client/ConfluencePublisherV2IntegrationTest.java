@@ -170,6 +170,32 @@ public class ConfluencePublisherV2IntegrationTest {
     }
 
     @Test
+    public void publish_moreThanPageSizeChildPagesAndPagesRemovedOnRepublish_removesChildPagesFromAncestor() {
+        // arrange
+        ConfluencePageMetadata[] pages = new ConfluencePageMetadata[26];
+        for (int i = 0; i < pages.length; i++) {
+            pages[i] = confluencePageMetadata(uniqueTitle("Child Page " + i), absolutePathTo("single-page/single-page.xhtml"));
+        }
+
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(pages);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, APPEND_TO_ANCESTOR);
+
+        confluencePublisher.publish();
+
+        ConfluencePublisherMetadata confluencePublisherMetadataWithoutPages = confluencePublisherMetadata();
+        ConfluencePublisher confluencePublisherRemovingPages = confluencePublisher(confluencePublisherMetadataWithoutPages, APPEND_TO_ANCESTOR);
+
+        // act
+        confluencePublisherRemovingPages.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(childPages())
+                .then()
+                .body("results", hasSize(0));
+    }
+
+    @Test
     public void publish_attachmentWithNonAsciiCharactersInTitle_uploadsAttachmentWithCorrectName() {
         // arrange
         String title = uniqueTitle("Single Page");

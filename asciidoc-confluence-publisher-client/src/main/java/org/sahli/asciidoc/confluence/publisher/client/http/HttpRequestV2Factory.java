@@ -244,7 +244,7 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     public HttpGet getNextChildPagesByIdRequest(String nextLink) {
         assertMandatoryParameter(isNotBlank(nextLink), "nextLink");
 
-        return new HttpGet(this.confluenceServerUrl + nextLink);
+        return new HttpGet(nextLinkBaseUrlFor(this.rootConfluenceUrl) + nextLink);
     }
 
     @Override
@@ -257,14 +257,7 @@ class HttpRequestV2Factory implements HttpRequestFactory {
     public HttpGet getNextAttachmentsRequest(String nextLink) {
         assertMandatoryParameter(isNotBlank(nextLink), "nextLink");
 
-        String nextLinkBaseUrl = this.rootConfluenceUrl;
-
-        // next link contains /wiki path segment already present in root confluence url (only for api tokens, not for scoped tokens)
-        if (nextLinkBaseUrl.endsWith("/wiki")) {
-            nextLinkBaseUrl = nextLinkBaseUrl.substring(0, nextLinkBaseUrl.length() - "/wiki".length());
-        }
-
-        return new HttpGet(nextLinkBaseUrl + nextLink);
+        return new HttpGet(nextLinkBaseUrlFor(this.rootConfluenceUrl) + nextLink);
     }
 
     @Override
@@ -354,6 +347,16 @@ class HttpRequestV2Factory implements HttpRequestFactory {
         } else {
             return uriBuilder.getScheme() + "://" + uriBuilder.getHost();
         }
+    }
+
+    private static String nextLinkBaseUrlFor(String rootConfluenceUrl) {
+        String nextLinkBaseUrl = rootConfluenceUrl;
+
+        // next link contains /wiki path segment already present in root confluence url (only for api tokens, not for scoped tokens)
+        if (nextLinkBaseUrl.endsWith("/wiki")) {
+            nextLinkBaseUrl = nextLinkBaseUrl.substring(0, nextLinkBaseUrl.length() - "/wiki".length());
+        }
+        return nextLinkBaseUrl;
     }
 
     private static URIBuilder createUriBuilder(String path) {

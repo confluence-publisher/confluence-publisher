@@ -52,7 +52,6 @@ public class HttpRequestV2FactoryTest {
     private static final String ATLASSIAN_API_GATEWAY_URL = "https://api.atlassian.com/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID;
     private static final String ATLASSIAN_API_V2_ENDPOINT = ATLASSIAN_API_GATEWAY_URL + "/api/v2";
     private static final String ATLASSIAN_REST_API_ENDPOINT = ATLASSIAN_API_GATEWAY_URL + "/rest/api";
-    private static final String ATLASSIAN_SERVER_URL = "https://api.atlassian.com";
 
     private HttpRequestV2Factory httpRequestFactory;
 
@@ -250,6 +249,19 @@ public class HttpRequestV2FactoryTest {
     }
 
     @Test
+    public void getNextChildPagesByIdRequest_withRootConfluenceUrlEndingInWiki_stripsRedundantWikiPathSegment() {
+        // arrange
+        HttpRequestV2Factory factory = new HttpRequestV2Factory("https://confluence.com/wiki");
+        String nextLink = "/wiki/api/v2/pages?cursor=xxx&limit=25";
+
+        // act
+        HttpGet request = factory.getNextChildPagesByIdRequest(nextLink);
+
+        // assert
+        assertThat(request.getURI().toString(), is("https://confluence.com" + nextLink));
+    }
+
+    @Test
     public void getNextChildPagesByIdRequest_withEmptyNextLink_throwsIllegalArgumentException() {
         // assert
         assertThrows(IllegalArgumentException.class, () -> {
@@ -383,16 +395,16 @@ public class HttpRequestV2FactoryTest {
     }
 
     @Test
-    public void getNextChildPagesByIdRequest_withAtlassianApiGatewayUrl_prependsServerHostWithoutPath() {
+    public void getNextChildPagesByIdRequest_withAtlassianApiGatewayUrl_prependsApiGatewayUrl() {
         // arrange
         HttpRequestV2Factory factory = new HttpRequestV2Factory(ATLASSIAN_API_GATEWAY_URL);
-        String nextLink = "/ex/confluence/" + ATLASSIAN_API_GATEWAY_CLOUD_ID + "/api/v2/pages?cursor=xxx&limit=25";
+        String nextLink = "/api/v2/pages?cursor=xxx&limit=25";
 
         // act
         HttpGet request = factory.getNextChildPagesByIdRequest(nextLink);
 
         // assert
-        assertThat(request.getURI().toString(), is(ATLASSIAN_SERVER_URL + nextLink));
+        assertThat(request.getURI().toString(), is(ATLASSIAN_API_GATEWAY_URL + nextLink));
     }
 
     @Test

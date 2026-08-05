@@ -365,7 +365,7 @@ mvn org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-maven-
 
 == Using Snapshot Version
 
-The code on master is automatically published as version `0.0.0-SNAPSHOT` to the Sonatype Maven snapshot repository. Use
+The code on master is automatically published as version `0.34.0` to the Sonatype Maven snapshot repository. Use
 the following configuration in your `pom.xml` in order to use the latest snapshot version:
 
 [source,xml]
@@ -388,7 +388,7 @@ the following configuration in your `pom.xml` in order to use the latest snapsho
     <plugin>
       <groupId>org.sahli.asciidoc.confluence.publisher</groupId>
       <artifactId>asciidoc-confluence-publisher-maven-plugin</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
+      <version>0.34.0</version>
       <!-- ... -->
     </plugin>
   </plugins>
@@ -399,7 +399,7 @@ the following configuration in your `pom.xml` in order to use the latest snapsho
 
 The Confluence Publisher supports publishing documentation via the `confluencepublisher/confluence-publisher` Docker
 image. The Docker image does not provide a `latest` tag, but uses the Confluence Publisher version number as the tag.
-The Docker image for the code on master is automatically published as version `0.0.0-SNAPSHOT` to Docker Hub.
+The Docker image for the code on master is automatically published as version `0.34.0` to Docker Hub.
 
 Instead of providing the `asciidocRootFolder` configuration property as with the Maven plugin, the AsciiDoc sources
 have to be mounted to the `/var/asciidoc-root-folder` volume.
@@ -445,7 +445,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e FAIL_ON_ERROR=true \
    -e REST_API_VERSION=v2 \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
-   confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
+   confluencepublisher/confluence-publisher:0.34.0
 ----
 
 In case you want to extend the Confluence Publisher Docker image or if you use it as part of your CI build, you
@@ -457,7 +457,7 @@ documentation sources already being available in `./docs/` from the project chec
 publish-docs:
   stage: publish-docs
   image:
-    name: confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
+    name: confluencepublisher/confluence-publisher:0.34.0
     entrypoint: [""]
   variables:
     ASCIIDOC_ROOT_FOLDER: ./docs/

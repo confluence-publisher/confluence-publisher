@@ -303,7 +303,7 @@ public class DockerBasedPublishingIntegrationTest {
     }
 
     private static void publishAndVerify(String pathToContent, Map<String, String> env, Runnable runnable) {
-        try (GenericContainer<?> publisher = new GenericContainer<>("confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT")
+        try (GenericContainer<?> publisher = new GenericContainer<>("confluencepublisher/confluence-publisher:0.34.0")
                 .withEnv(env)
                 .withNetwork(SHARED)
                 .withClasspathResourceMapping("/" + pathToContent, "/var/asciidoc-root-folder", READ_ONLY)

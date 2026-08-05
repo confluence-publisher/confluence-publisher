@@ -213,7 +213,7 @@ public class ConfluenceRestV1ClientTest {
         ConfluenceRestV1Client confluenceRestClient = new ConfluenceRestV1Client(CONFLUENCE_ROOT_URL, httpClientMock, null, null, null);
 
         // act
-        confluenceRestClient.updateAttachmentContent("1234", "att12", new ByteArrayInputStream("file content".getBytes()), true);
+        confluenceRestClient.updateAttachmentContent("1234", "att12", "file.txt", new ByteArrayInputStream("file content".getBytes()), true);
 
         // assert
         verify(httpClientMock, times(1)).execute(any(HttpPost.class));

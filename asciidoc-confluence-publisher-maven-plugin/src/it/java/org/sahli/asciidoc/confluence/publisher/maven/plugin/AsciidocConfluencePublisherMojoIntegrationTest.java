@@ -576,7 +576,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
     }
 
     private static String generatePom(Map<String, String> properties) {
-        String pluginVersion = System.getProperty("confluence-publisher.version", "0.0.0-SNAPSHOT");
+        String pluginVersion = System.getProperty("confluence-publisher.version", "0.34.0");
 
         return "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
                 "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
@@ -585,7 +585,7 @@ public class AsciidocConfluencePublisherMojoIntegrationTest {
                 "" +
                 "    <groupId>org.sahli.asciidoc.confluence.publisher.</groupId>" +
                 "    <artifactId>confluence-publisher-it</artifactId>" +
-                "    <version>0.0.0-SNAPSHOT</version>" +
+                "    <version>0.34.0</version>" +
                 "    <packaging>pom</packaging>" +
                 "" +
                 "    <build>" +

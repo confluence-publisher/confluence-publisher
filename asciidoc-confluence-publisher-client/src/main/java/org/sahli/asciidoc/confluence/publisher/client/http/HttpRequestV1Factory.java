@@ -138,15 +138,16 @@ class HttpRequestV1Factory implements HttpRequestFactory {
     }
 
     @Override
-    public HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
+    public HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
         assertMandatoryParameter(isNotBlank(contentId), "contentId");
         assertMandatoryParameter(isNotBlank(attachmentId), "attachmentId");
+        assertMandatoryParameter(isNotBlank(attachmentFileName), "attachmentFileName");
         assertMandatoryParameter(attachmentContent != null, "attachmentContent");
 
         HttpPost attachmentPostRequest = new HttpPost(this.confluenceRestApiEndpoint + "/content/" + contentId + "/child/attachment/" + attachmentId + "/data");
         attachmentPostRequest.addHeader(new BasicHeader("X-Atlassian-Token", "no-check"));
 
-        HttpEntity multipartEntity = multipartEntity(null, attachmentContent, notifyWatchers);
+        HttpEntity multipartEntity = multipartEntity(attachmentFileName, attachmentContent, notifyWatchers);
         attachmentPostRequest.setEntity(multipartEntity);
 
         return attachmentPostRequest;

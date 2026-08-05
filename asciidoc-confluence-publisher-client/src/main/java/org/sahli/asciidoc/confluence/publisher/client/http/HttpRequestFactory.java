@@ -34,7 +34,7 @@ public interface HttpRequestFactory {
 
     HttpPost addAttachmentRequest(String contentId, String attachmentFileName, InputStream attachmentContent);
 
-    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers);
+    HttpPost updateAttachmentContentRequest(String contentId, String attachmentId, String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers);
 
     HttpDelete deleteAttachmentRequest(String attachmentId);
 

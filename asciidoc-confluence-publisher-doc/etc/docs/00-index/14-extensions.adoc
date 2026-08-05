@@ -50,5 +50,5 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -e PROXY_PORT=8443 \
    -e CONVERT_ONLY=false \
    -v /absolute/path/to/asciidoc-root-folder:/var/asciidoc-root-folder \
-   confluencepublisher/confluence-publisher:0.34.0
+   confluencepublisher/confluence-publisher:0.0.0-SNAPSHOT
 ----

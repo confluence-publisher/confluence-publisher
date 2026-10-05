@@ -159,7 +159,7 @@ public class HttpRequestV2FactoryTest {
     @Test
     public void updateAttachmentContentRequest_withValidParametersAndNotifyWatchersOff_fallsBackToV1RestApiEndpointWithMinorEdit() throws Exception {
         // act
-        HttpPost request = this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", new ByteArrayInputStream("hello".getBytes()), false);
+        HttpPost request = this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", "attachment.txt", new ByteArrayInputStream("hello".getBytes()), false);
 
         // assert
         assertThat(request.getMethod(), is("POST"));
@@ -168,14 +168,14 @@ public class HttpRequestV2FactoryTest {
 
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         request.getEntity().writeTo(entityContent);
-        assertThat(entityContent.toString(UTF_8), containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
+        assertThat(entityContent.toString(UTF_8), containsString("Content-Disposition: form-data; name=\"file\"; filename=\"attachment.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nhello"));
         assertThat(entityContent.toString(UTF_8), containsString("Content-Disposition: form-data; name=\"minorEdit\"\r\n\r\ntrue"));
     }
 
     @Test
     public void updateAttachmentContentRequest_withNotifyWatchersOn_doesNotIncludeMinorEdit() throws Exception {
         // act
-        HttpPost request = this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", new ByteArrayInputStream("hello".getBytes()), true);
+        HttpPost request = this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", "attachment.txt", new ByteArrayInputStream("hello".getBytes()), true);
 
         // assert
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();

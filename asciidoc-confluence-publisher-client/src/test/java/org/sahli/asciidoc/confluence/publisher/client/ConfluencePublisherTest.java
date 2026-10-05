@@ -371,7 +371,7 @@ public class ConfluencePublisherTest {
 
         // assert
         verify(confluenceClientMock, never()).addAttachment(any(), any(), any());
-        verify(confluenceClientMock, never()).updateAttachmentContent(any(), any(), any(), anyBoolean());
+        verify(confluenceClientMock, never()).updateAttachmentContent(any(), any(), any(), any(), anyBoolean());
     }
 
     @Test
@@ -396,11 +396,11 @@ public class ConfluencePublisherTest {
 
         // assert
         verify(confluenceClientMock, never()).deletePropertyByKey("72189173", ATTACHMENT_ONE_SHA256_HASH);
-        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), any(FileInputStream.class), eq(true));
+        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), eq("attachmentOne.txt"), any(FileInputStream.class), eq(true));
         verify(confluenceClientMock).setPropertyByKey("72189173", ATTACHMENT_ONE_SHA256_HASH, sha256Hex("attachment1"));
 
         verify(confluenceClientMock, never()).deletePropertyByKey("72189173", ATTACHMENT_TWO_SHA256_HASH);
-        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), any(FileInputStream.class), eq(true));
+        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), eq("attachmentTwo.txt"), any(FileInputStream.class), eq(true));
         verify(confluenceClientMock).setPropertyByKey("72189173", ATTACHMENT_TWO_SHA256_HASH, sha256Hex("attachment2"));
 
         verify(confluenceClientMock, never()).addAttachment(anyString(), anyString(), any(InputStream.class));
@@ -435,12 +435,12 @@ public class ConfluencePublisherTest {
         // assert
         InOrder inOrder = inOrder(confluenceClientMock);
         inOrder.verify(confluenceClientMock).deletePropertyByKey("72189173", ATTACHMENT_ONE_SHA256_HASH);
-        inOrder.verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), content.capture(), eq(true));
+        inOrder.verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att1"), eq("attachmentOne.txt"), content.capture(), eq(true));
         inOrder.verify(confluenceClientMock).setPropertyByKey("72189173", ATTACHMENT_ONE_SHA256_HASH, sha256Hex("attachment1"));
         assertThat(inputStreamAsString(content.getValue(), UTF_8), is("attachment1"));
 
         verify(confluenceClientMock).deletePropertyByKey("72189173", ATTACHMENT_TWO_SHA256_HASH);
-        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), content.capture(), eq(true));
+        verify(confluenceClientMock).updateAttachmentContent(eq("72189173"), eq("att2"), eq("attachmentTwo.txt"), content.capture(), eq(true));
         verify(confluenceClientMock).setPropertyByKey("72189173", ATTACHMENT_TWO_SHA256_HASH, sha256Hex("attachment2"));
         assertThat(inputStreamAsString(content.getValue(), UTF_8), is("attachment2"));
 

@@ -34,7 +34,7 @@ public interface ConfluenceClient {
 
     void addAttachment(String contentId, String attachmentFileName, InputStream attachmentContent);
 
-    void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers);
+    void updateAttachmentContent(String contentId, String attachmentId, String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers);
 
     void deleteAttachment(String attachmentId);
 

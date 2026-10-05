@@ -39,6 +39,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -56,6 +57,7 @@ import static java.util.stream.StreamSupport.stream;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
+import static org.sahli.asciidoc.confluence.publisher.client.http.TooManyRequestsRetry.defaultTooManyRequestsRetry;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
@@ -70,6 +72,7 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestFactory httpRequestFactory;
     private final RateLimiter rateLimiter;
+    private final TooManyRequestsRetry tooManyRequestsRetry;
 
     public ConfluenceRestV1Client(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken );
@@ -81,7 +84,13 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
     }
 
     public ConfluenceRestV1Client(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, httpClient, maxRequestsPerSecond, username, passwordOrPersonalAccessToken, defaultTooManyRequestsRetry());
+    }
+
+    ConfluenceRestV1Client(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken, TooManyRequestsRetry tooManyRequestsRetry) {
         assertMandatoryParameter(httpClient != null, "httpClient");
+
+        this.tooManyRequestsRetry = tooManyRequestsRetry;
 
         this.httpClient = httpClient;
         this.rateLimiter = maxRequestsPerSecond != null ? RateLimiter.create(maxRequestsPerSecond) : null;
@@ -241,14 +250,26 @@ public class ConfluenceRestV1Client implements ConfluenceClient {
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
 
-        if (this.rateLimiter != null) {
-            this.rateLimiter.acquire(1);
-        }
+        for (int retriesSoFar = 0; ; retriesSoFar++) {
+            if (this.rateLimiter != null) {
+                this.rateLimiter.acquire(1);
+            }
 
-        try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
-            return responseHandler.apply(response);
-        } catch (IOException e) {
-            throw new RequestFailedException(httpRequest, null, e);
+            long retryDelayMillis;
+            try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
+                TooManyRequestsRetry.logRequest(httpRequest, response);
+
+                if (!this.tooManyRequestsRetry.shouldRetry(httpRequest, response, retriesSoFar)) {
+                    return responseHandler.apply(response);
+                }
+
+                retryDelayMillis = this.tooManyRequestsRetry.delayMillis(response, retriesSoFar);
+                EntityUtils.consumeQuietly(response.getEntity());
+            } catch (IOException e) {
+                throw new RequestFailedException(httpRequest, null, e);
+            }
+
+            this.tooManyRequestsRetry.pause(httpRequest, retryDelayMillis, retriesSoFar);
         }
     }
 

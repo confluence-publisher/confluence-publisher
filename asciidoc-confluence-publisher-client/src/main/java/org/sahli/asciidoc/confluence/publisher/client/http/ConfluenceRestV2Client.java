@@ -39,13 +39,16 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -55,6 +58,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
 import static org.apache.http.client.config.CookieSpecs.STANDARD;
+import static org.sahli.asciidoc.confluence.publisher.client.http.TooManyRequestsRetry.defaultTooManyRequestsRetry;
 import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.assertMandatoryParameter;
 
 /**
@@ -62,12 +66,17 @@ import static org.sahli.asciidoc.confluence.publisher.client.utils.AssertUtils.a
  */
 public class ConfluenceRestV2Client implements ConfluenceClient {
 
+    // maximum page size supported by the v2 api
+    static final int ATTACHMENTS_PAGE_SIZE = 250;
+
     private final CloseableHttpClient httpClient;
     private final String username;
     private final String passwordOrPersonalAccessToken;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpRequestV2Factory httpRequestV2Factory;
     private final RateLimiter rateLimiter;
+    private final Map<String, String> spaceIdsBySpaceKey = new HashMap<>();
+    private final TooManyRequestsRetry tooManyRequestsRetry;
 
     public ConfluenceRestV2Client(String rootConfluenceUrl, boolean disableSslVerification, boolean enableHttpClientSystemProperties, Double maxRequestsPerSecond, Integer connectionTTL, String username, String passwordOrPersonalAccessToken) {
         this(rootConfluenceUrl, null, disableSslVerification, enableHttpClientSystemProperties, maxRequestsPerSecond, connectionTTL, username, passwordOrPersonalAccessToken);
@@ -79,7 +88,13 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
     }
 
     public ConfluenceRestV2Client(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken) {
+        this(rootConfluenceUrl, httpClient, maxRequestsPerSecond, username, passwordOrPersonalAccessToken, defaultTooManyRequestsRetry());
+    }
+
+    ConfluenceRestV2Client(String rootConfluenceUrl, CloseableHttpClient httpClient, Double maxRequestsPerSecond, String username, String passwordOrPersonalAccessToken, TooManyRequestsRetry tooManyRequestsRetry) {
         assertMandatoryParameter(httpClient != null, "httpClient");
+
+        this.tooManyRequestsRetry = tooManyRequestsRetry;
 
         this.httpClient = httpClient;
         this.rateLimiter = maxRequestsPerSecond != null ? RateLimiter.create(maxRequestsPerSecond) : null;
@@ -96,12 +111,7 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
 
     @Override
     public String addPageUnderAncestor(String spaceKey, String ancestorId, String title, String content, String versionMessage) {
-        HttpGet lookupSpaceIdRequest = this.httpRequestV2Factory.lookupSpaceIdRequest(spaceKey);
-        String spaceId = sendRequestAndFailIfNot20x(lookupSpaceIdRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
-
-            return extractMandatorySingleArrayElement(jsonNode, "results").get("id").asText();
-        });
+        String spaceId = spaceId(spaceKey);
 
         HttpPost addPageUnderSpaceRequest = this.httpRequestV2Factory.addPageUnderAncestorRequest(spaceId, ancestorId, title, content, versionMessage);
 
@@ -126,12 +136,7 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
 
     @Override
     public String getPageByTitle(String spaceKey, String ancestorId, String title) throws NotFoundException, MultipleResultsException {
-        HttpGet lookupSpaceIdRequest = this.httpRequestV2Factory.lookupSpaceIdRequest(spaceKey);
-        String spaceId = sendRequestAndFailIfNot20x(lookupSpaceIdRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
-
-            return extractMandatorySingleArrayElement(jsonNode, "results").get("id").asText();
-        });
+        String spaceId = spaceId(spaceKey);
 
         HttpGet pageByTitleRequest = this.httpRequestV2Factory.getPageByTitleRequest(spaceId, title);
 
@@ -194,6 +199,23 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
         });
     }
 
+    private String spaceId(String spaceKey) {
+        String cachedSpaceId = this.spaceIdsBySpaceKey.get(spaceKey);
+        if (cachedSpaceId != null) {
+            return cachedSpaceId;
+        }
+
+        HttpGet lookupSpaceIdRequest = this.httpRequestV2Factory.lookupSpaceIdRequest(spaceKey);
+        String spaceId = sendRequestAndFailIfNot20x(lookupSpaceIdRequest, (response) -> {
+            JsonNode jsonNode = parseJsonResponse(response);
+
+            return extractMandatorySingleArrayElement(jsonNode, "results").get("id").asText();
+        });
+        this.spaceIdsBySpaceKey.put(spaceKey, spaceId);
+
+        return spaceId;
+    }
+
     private JsonNode parseJsonResponse(HttpResponse response) {
         try {
             return this.objectMapper.readTree(response.getEntity().getContent());
@@ -220,14 +242,26 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
     <T> T sendRequest(HttpRequestBase httpRequest, Function<HttpResponse, T> responseHandler) {
         httpRequest.addHeader(AUTHORIZATION, authorizationHeaderValue(this.username, this.passwordOrPersonalAccessToken));
 
-        if (this.rateLimiter != null) {
-            this.rateLimiter.acquire(1);
-        }
+        for (int retriesSoFar = 0; ; retriesSoFar++) {
+            if (this.rateLimiter != null) {
+                this.rateLimiter.acquire(1);
+            }
 
-        try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
-            return responseHandler.apply(response);
-        } catch (IOException e) {
-            throw new RequestFailedException(httpRequest, null, e);
+            long retryDelayMillis;
+            try (CloseableHttpResponse response = this.httpClient.execute(httpRequest)) {
+                TooManyRequestsRetry.logRequest(httpRequest, response);
+
+                if (!this.tooManyRequestsRetry.shouldRetry(httpRequest, response, retriesSoFar)) {
+                    return responseHandler.apply(response);
+                }
+
+                retryDelayMillis = this.tooManyRequestsRetry.delayMillis(response, retriesSoFar);
+                EntityUtils.consumeQuietly(response.getEntity());
+            } catch (IOException e) {
+                throw new RequestFailedException(httpRequest, null, e);
+            }
+
+            this.tooManyRequestsRetry.pause(httpRequest, retryDelayMillis, retriesSoFar);
         }
     }
 
@@ -249,7 +283,7 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
 
     @Override
     public List<ConfluenceAttachment> getAttachments(String contentId) {
-        int limit = 2;
+        int limit = ATTACHMENTS_PAGE_SIZE;
         ArrayList<ConfluenceAttachment> attachments = new ArrayList<>();
 
         HttpGet getAttachmentsRequest = this.httpRequestV2Factory.getAttachmentsRequest(contentId, limit, -1, null);
@@ -265,18 +299,7 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
 
     @Override
     public void setPropertyByKey(String contentId, String key, String value) {
-        HttpGet lookupPropertyIdByKeyRequest = this.httpRequestV2Factory.lookupPropertyIdByKey(contentId, key);
-        sendRequestAndFailIfNot20x(lookupPropertyIdByKeyRequest, (response) -> {
-            JsonNode jsonNode = parseJsonResponse(response);
-
-            extractOptionalSingleArrayElement(jsonNode, "results").ifPresent((resultNode) -> {
-                String propertyId = resultNode.get("id").asText();
-                HttpDelete deletePropertyByKeyRequest = this.httpRequestV2Factory.deletePropertyByKeyRequest(contentId, propertyId);
-                sendRequestAndFailIfNot20x(deletePropertyByKeyRequest);
-            });
-
-            return null;
-        });
+        deletePropertyByKey(contentId, key);
 
         HttpPost setPropertyByKeyRequest = this.httpRequestV2Factory.setPropertyByKeyRequest(contentId, key, value);
         sendRequestAndFailIfNot20x(setPropertyByKeyRequest);
@@ -299,8 +322,15 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
 
     @Override
     public void deletePropertyByKey(String contentId, String key) {
-        HttpDelete deletePropertyByKeyRequest = this.httpRequestV2Factory.deletePropertyByKeyRequest(contentId, key);
-        sendRequest(deletePropertyByKeyRequest, (ignored) -> null);
+        // the v2 api deletes properties by id, not by key
+        HttpGet lookupPropertyIdByKeyRequest = this.httpRequestV2Factory.lookupPropertyIdByKey(contentId, key);
+        Optional<String> propertyId = sendRequestAndFailIfNot20x(lookupPropertyIdByKeyRequest, (response) -> extractOptionalSingleArrayElement(parseJsonResponse(response), "results")
+                .map((resultNode) -> resultNode.get("id").asText()));
+
+        propertyId.ifPresent((id) -> {
+            HttpDelete deletePropertyByKeyRequest = this.httpRequestV2Factory.deletePropertyByKeyRequest(contentId, id);
+            sendRequestAndFailIfNot20x(deletePropertyByKeyRequest);
+        });
     }
 
     @Override

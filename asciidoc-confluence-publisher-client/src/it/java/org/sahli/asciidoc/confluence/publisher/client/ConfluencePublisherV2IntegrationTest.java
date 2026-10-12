@@ -265,6 +265,47 @@ public class ConfluencePublisherV2IntegrationTest {
                 .body("results.title", hasItems("attachmentOne.txt", "attachmentTwo.txt"));
     }
 
+    @Test
+    public void publish_attachmentContentIsChanged_attachmentIsUpdated() {
+        // arrange
+        String title = uniqueTitle("Single Page");
+        Map<String, String> attachments = new HashMap<>();
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne.txt"));
+
+        ConfluencePageMetadata confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        ConfluencePublisherMetadata confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        ConfluencePublisher confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        // act
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPage())
+                .then().body("title", is(title));
+
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(1))
+                .body("results.title", hasItems("attachmentOne.txt"));
+
+        // act
+        attachments.put("attachmentOne.txt", absolutePathTo("attachments/attachmentOne-changed.txt"));
+
+        confluencePageMetadata = confluencePageMetadata(title, absolutePathTo("single-page/single-page.xhtml"), attachments);
+        confluencePublisherMetadata = confluencePublisherMetadata(confluencePageMetadata);
+        confluencePublisher = confluencePublisher(confluencePublisherMetadata, REPLACE_ANCESTOR);
+
+        confluencePublisher.publish();
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(rootPageAttachments())
+                .then()
+                .body("results", hasSize(1))
+                .body("results.title", hasItems("attachmentOne.txt"));
+    }
 
     @Test
     public void publish_sameContentPublishedMultipleTimes_doesNotProduceMultipleVersions() {

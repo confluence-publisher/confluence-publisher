@@ -19,6 +19,7 @@ package org.sahli.asciidoc.confluence.publisher.client.http;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.ByteStreams;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpDelete;
@@ -26,11 +27,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicHeader;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Ancestor;
@@ -42,7 +43,7 @@ import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Space;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Storage;
 import org.sahli.asciidoc.confluence.publisher.client.http.payloads.Version;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -327,12 +328,11 @@ class HttpRequestV1Factory implements HttpRequestFactory {
         return postRequest;
     }
 
-    private static BasicHttpEntity httpEntityWithJsonPayload(Object payload) {
+    private static HttpEntity httpEntityWithJsonPayload(Object payload) {
         String jsonPayload = toJsonString(payload);
-        BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(new ByteArrayInputStream(jsonPayload.getBytes(UTF_8)));
 
-        return entity;
+        // repeatable entity, allows sending the request again (e.g. after a 429 response)
+        return new ByteArrayEntity(jsonPayload.getBytes(UTF_8));
     }
 
     private static String toJsonString(Object objectToConvert) {
@@ -351,20 +351,25 @@ class HttpRequestV1Factory implements HttpRequestFactory {
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         multipartEntityBuilder.setCharset(UTF_8);
 
-        InputStreamBody inputStreamBody;
-        if (isNotBlank(attachmentFileName)) {
-            inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM, attachmentFileName);
-        } else {
-            inputStreamBody = new InputStreamBody(attachmentContent, APPLICATION_OCTET_STREAM);
-        }
+        // buffered body, makes the entity repeatable and allows sending the request again (e.g. after a 429 response);
+        // the file name is mandatory, a part without file name is not accepted as file by confluence cloud
+        ByteArrayBody attachmentBody = new ByteArrayBody(toByteArray(attachmentContent), APPLICATION_OCTET_STREAM, attachmentFileName);
 
-        multipartEntityBuilder.addPart("file", inputStreamBody);
+        multipartEntityBuilder.addPart("file", attachmentBody);
 
         if (!notifyWatchers) {
             multipartEntityBuilder.addPart("minorEdit", new StringBody("true", ContentType.DEFAULT_TEXT));
         }
 
         return multipartEntityBuilder.build();
+    }
+
+    private static byte[] toByteArray(InputStream inputStream) {
+        try (InputStream content = inputStream) {
+            return ByteStreams.toByteArray(content);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read attachment content", e);
+        }
     }
 
     private static String urlEncode(String value) {

@@ -275,7 +275,7 @@ public class HttpRequestV1FactoryTest {
         boolean notifyWatchers = false;
 
         // act
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, "attachment.txt", attachmentContent, notifyWatchers);
 
         // assert
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
@@ -285,7 +285,7 @@ public class HttpRequestV1FactoryTest {
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         updateAttachmentContentRequest.getEntity().writeTo(entityContent);
         String multiPartPayload = entityContent.toString(UTF_8);
-        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
+        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"; filename=\"attachment.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nhello"));
         assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"minorEdit\"\r\n\r\ntrue"));
     }
 
@@ -298,7 +298,7 @@ public class HttpRequestV1FactoryTest {
         boolean notifyWatchers = true;
 
         // act
-        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
+        HttpPost updateAttachmentContentRequest = this.httpRequestFactory.updateAttachmentContentRequest(contentId, attachmentId, "attachment.txt", attachmentContent, notifyWatchers);
 
         // assert
         assertThat(updateAttachmentContentRequest.getMethod(), is("POST"));
@@ -308,7 +308,7 @@ public class HttpRequestV1FactoryTest {
         ByteArrayOutputStream entityContent = new ByteArrayOutputStream();
         updateAttachmentContentRequest.getEntity().writeTo(entityContent);
         String multiPartPayload = entityContent.toString(UTF_8);
-        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"\r\n\r\nhello"));
+        assertThat(multiPartPayload, containsString("Content-Disposition: form-data; name=\"file\"; filename=\"attachment.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nhello"));
         assertThat(multiPartPayload, not(containsString("Content-Disposition: form-data; name=\"minorEdit\"")));
     }
 
@@ -317,7 +317,7 @@ public class HttpRequestV1FactoryTest {
         // assert
         assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
-            this.httpRequestFactory.updateAttachmentContentRequest("", "45", new ByteArrayInputStream("hello".getBytes()), true);
+            this.httpRequestFactory.updateAttachmentContentRequest("", "45", "attachment.txt", new ByteArrayInputStream("hello".getBytes()), true);
         });
     }
 
@@ -326,7 +326,7 @@ public class HttpRequestV1FactoryTest {
         // assert
         assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
-            this.httpRequestFactory.updateAttachmentContentRequest("1234", "", new ByteArrayInputStream("hello".getBytes()), true);
+            this.httpRequestFactory.updateAttachmentContentRequest("1234", "", "attachment.txt", new ByteArrayInputStream("hello".getBytes()), true);
         });
     }
 
@@ -335,7 +335,7 @@ public class HttpRequestV1FactoryTest {
         // assert
         assertThrows(IllegalArgumentException.class, () -> {
             // arrange + act
-            this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", null, true);
+            this.httpRequestFactory.updateAttachmentContentRequest("1234", "45", "attachment.txt", null, true);
         });
     }
 

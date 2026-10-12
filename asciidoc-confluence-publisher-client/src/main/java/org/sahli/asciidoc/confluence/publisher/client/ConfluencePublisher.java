@@ -217,7 +217,7 @@ public class ConfluencePublisher {
                 if (existingAttachmentHash != null) {
                     this.confluenceClient.deletePropertyByKey(contentId, getAttachmentHashKey(attachmentFileName));
                 }
-                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
+                this.confluenceClient.updateAttachmentContent(contentId, attachmentId, attachmentFileName, fileInputStream(absoluteAttachmentPath), this.notifyWatchers);
                 this.confluenceClient.setPropertyByKey(contentId, getAttachmentHashKey(attachmentFileName), newAttachmentHash);
                 this.confluencePublisherListener.attachmentUpdated(attachmentFileName, contentId);
             }

@@ -155,8 +155,8 @@ public class ConfluenceRestV2Client implements ConfluenceClient {
     }
 
     @Override
-    public void updateAttachmentContent(String contentId, String attachmentId, InputStream attachmentContent, boolean notifyWatchers) {
-        HttpPost updateAttachmentContentRequest = this.httpRequestV2Factory.updateAttachmentContentRequest(contentId, attachmentId, attachmentContent, notifyWatchers);
+    public void updateAttachmentContent(String contentId, String attachmentId, String attachmentFileName, InputStream attachmentContent, boolean notifyWatchers) {
+        HttpPost updateAttachmentContentRequest = this.httpRequestV2Factory.updateAttachmentContentRequest(contentId, attachmentId, attachmentFileName, attachmentContent, notifyWatchers);
         sendRequestAndFailIfNot20x(updateAttachmentContentRequest, (response) -> {
             closeInputStream(attachmentContent);
 

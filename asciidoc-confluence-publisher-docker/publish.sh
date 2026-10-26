@@ -6,6 +6,7 @@ exec java -cp "/opt/*:/opt/extensions/*" \
     rootConfluenceUrl="$ROOT_CONFLUENCE_URL" \
     skipSslVerification="$SKIP_SSL_VERIFICATION" \
     maxRequestsPerSecond="$MAX_REQUESTS_PER_SECOND" \
+    maxRetriesOnTooManyRequests="$MAX_RETRIES_ON_TOO_MANY_REQUESTS" \
     connectionTimeToLive="$CONNECTION_TIME_TO_LIVE" \
     spaceKey="$SPACE_KEY" \
     ancestorId="$ANCESTOR_ID" \

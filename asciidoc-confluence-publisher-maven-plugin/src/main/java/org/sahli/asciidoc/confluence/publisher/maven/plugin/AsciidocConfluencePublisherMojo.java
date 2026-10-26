@@ -79,6 +79,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
     @Parameter(property = PREFIX + "maxRequestsPerSecond")
     private Double maxRequestsPerSecond;
 
+    @Parameter(property = PREFIX + "maxRetriesOnTooManyRequests")
+    private Integer maxRetriesOnTooManyRequests;
+
     @Parameter(property = PREFIX + "connectionTimeToLive")
     private Integer connectionTimeToLive;
 
@@ -199,9 +202,9 @@ public class AsciidocConfluencePublisherMojo extends AbstractMojo {
 
     private ConfluenceClient buildConfluenceClient(ProxyConfiguration proxyConfiguration) {
         if ("v1".equals(this.restApiVersion)) {
-            return new ConfluenceRestV1Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
+            return new ConfluenceRestV1Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.maxRetriesOnTooManyRequests, this.connectionTimeToLive, this.username, this.password);
         } else {
-            return new ConfluenceRestV2Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.connectionTimeToLive, this.username, this.password);
+            return new ConfluenceRestV2Client(this.rootConfluenceUrl, proxyConfiguration, this.skipSslVerification, this.enableHttpClientSystemProperties, this.maxRequestsPerSecond, this.maxRetriesOnTooManyRequests, this.connectionTimeToLive, this.username, this.password);
         }
     }
 

@@ -193,6 +193,29 @@ public class AsciidocConfluencePublisherCommandLineClientIntegrationTest {
     }
 
     @Test
+    public void publish_withMaxRetriesOnTooManyRequests() throws Exception {
+        // arrange
+        String[] args = {
+                "rootConfluenceUrl=" + CONFLUENCE_ROOT_URL,
+                "username=" + USERNAME,
+                "password=" + PASSWORD,
+                "spaceKey=" + SPACE_KEY,
+                "ancestorId=" + ANCESTOR_ID,
+                "restApiVersion=" + REST_API_VERSION,
+                "asciidocRootFolder=src/it/resources/default",
+                "maxRetriesOnTooManyRequests=2"
+        };
+
+        // act
+        AsciidocConfluencePublisherCommandLineClient.main(args);
+
+        // assert
+        givenAuthenticatedAsPublisher()
+                .when().get(childPagesFor(ANCESTOR_ID))
+                .then().body("results.title", hasItem("Index"));
+    }
+
+    @Test
     public void publish_proxySchemeHostAndPortProvided_publishesDocumentationViaProxyToConfluence() throws Exception {
         // arrange
         withForwardProxyEnabled("localhost", 8443, (proxyPort) -> {

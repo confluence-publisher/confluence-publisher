@@ -33,6 +33,7 @@ docker run --rm -e ROOT_CONFLUENCE_URL=http://confluence-host \
    -v /extension.jar:/opt/extensions/extension.jar \
    -e SKIP_SSL_VERIFICATION=false \
    -e MAX_REQUESTS_PER_SECOND=10 \
+   -e MAX_RETRIES_ON_TOO_MANY_REQUESTS=6 \
    -e CONNECTION_TIME_TO_LIVE=500 \
    -e USERNAME=username \
    -e PASSWORD=1234 \

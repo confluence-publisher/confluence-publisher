@@ -63,6 +63,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
         String ancestorId = argumentsParser.mandatoryArgument("ancestorId", args);
         String versionMessage = argumentsParser.optionalArgument("versionMessage", args).orElse(null);
         Double maxRequestsPerSecond = argumentsParser.optionalArgument("maxRequestsPerSecond", args).map((value) -> parseDouble(value)).orElse(null);
+        Integer maxRetriesOnTooManyRequests = argumentsParser.optionalArgument("maxRetriesOnTooManyRequests", args).map((value) -> parseInt(value)).orElse(null);
         Integer connectionTTL = argumentsParser.optionalArgument("connectionTimeToLive", args).map(value -> parseInt(value)).orElse(null);
         PublishingStrategy publishingStrategy = PublishingStrategy.valueOf(argumentsParser.optionalArgument("publishingStrategy", args).orElse(APPEND_TO_ANCESTOR.name()));
         OrphanRemovalStrategy orphanRemovalStrategy = OrphanRemovalStrategy.valueOf(argumentsParser.optionalArgument("orphanRemovalStrategy", args).orElse(REMOVE_ORPHANS.name()));
@@ -108,7 +109,7 @@ public class AsciidocConfluencePublisherCommandLineClient {
                 System.out.println("Publishing to Confluence (REST API " + restApiVersion + ")");
                 ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyScheme, proxyHost, proxyPort, proxyUsername, proxyPassword);
 
-                ConfluenceClient confluenceClient = buildConfluenceClient(restApiVersion, rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, connectionTTL, username, password);
+                ConfluenceClient confluenceClient = buildConfluenceClient(restApiVersion, rootConfluenceUrl, proxyConfiguration, skipSslVerification, maxRequestsPerSecond, maxRetriesOnTooManyRequests, connectionTTL, username, password);
                 ConfluencePublisher confluencePublisher = new ConfluencePublisher(confluencePublisherMetadata, publishingStrategy, orphanRemovalStrategy, confluenceClient, new SystemOutLoggingConfluencePublisherListener(), versionMessage, notifyWatchers);
                 confluencePublisher.publish();
             }
@@ -125,11 +126,11 @@ public class AsciidocConfluencePublisherCommandLineClient {
         }
     }
 
-    private static ConfluenceClient buildConfluenceClient(String restApiVersion, String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean skipSslVerification, Double maxRequestsPerSecond, Integer connectionTTL, String username, String password) {
+    private static ConfluenceClient buildConfluenceClient(String restApiVersion, String rootConfluenceUrl, ProxyConfiguration proxyConfiguration, boolean skipSslVerification, Double maxRequestsPerSecond, Integer maxRetriesOnTooManyRequests, Integer connectionTTL, String username, String password) {
         if ("v1".equals(restApiVersion)) {
-            return new ConfluenceRestV1Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, connectionTTL, username, password);
+            return new ConfluenceRestV1Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, maxRetriesOnTooManyRequests, connectionTTL, username, password);
         } else {
-            return new ConfluenceRestV2Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, connectionTTL, username, password);
+            return new ConfluenceRestV2Client(rootConfluenceUrl, proxyConfiguration, skipSslVerification, false, maxRequestsPerSecond, maxRetriesOnTooManyRequests, connectionTTL, username, password);
         }
     }
 

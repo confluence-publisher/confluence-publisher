@@ -404,7 +404,7 @@ public class ConfluencePublisherV2IntegrationTest {
     }
 
     private static ConfluenceClient confluenceClient() {
-        return new ConfluenceRestV2Client(CONFLUENCE_ROOT_URL, false, false, null, 500, USERNAME, PASSWORD);
+        return new ConfluenceRestV2Client(CONFLUENCE_ROOT_URL, false, false, null, null, 500, USERNAME, PASSWORD);
     }
 
 }

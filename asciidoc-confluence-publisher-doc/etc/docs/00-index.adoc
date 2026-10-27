@@ -470,3 +470,63 @@ publish-docs:
     paths:
     - $CI_PROJECT_DIR/build/docs
 ----
+
+== Confluence Publisher CLI
+
+In addition to the Maven plugin and the Docker image, the Confluence Publisher can also be used as a standalone CLI tool. The CLI tool is available as a JAR artifact in the same version as the Maven plugin and can be executed with Java 11 or higher.
+
+The CLI tool accepts the same configuration properties as the Maven plugin but they are used as command-line parameters.
+Instead of downloading the JAR artifact manually, rather use JBang to directly execute the CLI tool with the following command:
+
+.Linux or macOS
+----
+# publish.sh
+
+CONFLUENCE_PASSWORD=....
+
+CONFLUENCE_URL=https://....
+CONFLUENCE_SPACE=....
+CONFLUENCE_ANCESTOR_ID=....
+CONFLUENCE_USERNAME=....
+
+jbang run --java 21 \
+  -m org.sahli.asciidoc.confluence.publisher.cli.AsciidocConfluencePublisherCommandLineClient \
+  org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-cli:RELEASE \
+  rootConfluenceUrl=$CONFLUENCE_URL \
+  skipSslVerification=true \
+  username=$CONFLUENCE_USERNAME \
+  password=$CONFLUENCE_PASSWORD \
+  spaceKey=$CONFLUENCE_SPACE \
+  ancestorId=$CONFLUENCE_ANCESTOR_ID \
+  publishingStrategy=REPLACE_ANCESTOR \
+  orphanRemoveStrategy=REMOVE_ORPHANS \
+  convertOnly=false \
+  asciidocRootFolder=./docs/
+----
+
+.Windows
+----
+REM publish.cmd
+
+set CONFLUENCE_PASSWORD=....
+
+set CONFLUENCE_URL=https://....
+set CONFLUENCE_SPACE=....
+set CONFLUENCE_ANCESTOR_ID=....
+set CONFLUENCE_USERNAME=....
+
+jbang run --java 21 ^
+  -m org.sahli.asciidoc.confluence.publisher.cli.AsciidocConfluencePublisherCommandLineClient ^
+  org.sahli.asciidoc.confluence.publisher:asciidoc-confluence-publisher-cli:RELEASE ^
+  rootConfluenceUrl=%CONFLUENCE_URL% ^
+  skipSslVerification=true ^
+  username=%CONFLUENCE_USERNAME% ^
+  password=%CONFLUENCE_PASSWORD% ^
+  spaceKey=%CONFLUENCE_SPACE% ^
+  ancestorId=%CONFLUENCE_ANCESTOR_ID% ^
+  publishingStrategy=REPLACE_ANCESTOR ^
+  orphanRemoveStrategy=REMOVE_ORPHANS ^
+  convertOnly=false ^
+  asciidocRootFolder=.\docs\
+----
+

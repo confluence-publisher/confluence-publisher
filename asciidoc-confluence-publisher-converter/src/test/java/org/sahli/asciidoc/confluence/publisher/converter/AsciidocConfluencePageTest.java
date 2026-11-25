@@ -1048,6 +1048,162 @@ public class AsciidocConfluencePageTest {
     }
 
     @Test
+    public void renderConfluencePage_asciiDocWithTableWithProportionalColumnWidths_returnsConfluencePageContentWithTableWithRelativeColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"1,3\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col style=\"width: 75%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithPercentageColumnWidths_returnsConfluencePageContentWithTableWithRelativeColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"20%,30%,50%\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "| Column C\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 20%;\" /><col style=\"width: 30%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithEqualExplicitColumnWidths_returnsConfluencePageContentWithTableWithRelativeColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"1,1\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 50%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColumnWidthsCombinedWithMultiplierAndAlignment_returnsConfluencePageContentWithTableWithRelativeColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"2*<1,>.^2\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "| Column C\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col style=\"width: 25%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColumnWidthsAndTableWidth_returnsConfluencePageContentWithTableWithWidthAndRelativeColumnWidthsButWithoutDefaultTableWidth() {
+        // arrange
+        String adocContent = "[cols=\"1,3\", width=\"100%\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table style=\"width: 100%\"><colgroup><col style=\"width: 25%;\" /><col style=\"width: 75%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithAutoWidthColumn_returnsConfluencePageContentWithTableWithRelativeColumnWidthsExceptForAutoWidthColumn() {
+        // arrange
+        String adocContent = "[cols=\"25%,~\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColumnWidthsAndAutoWidthOption_returnsConfluencePageContentWithTableWithoutColumnWidths() {
+        // arrange
+        String adocContent = "[%autowidth, cols=\"1,3\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColumnMultiplierOnly_returnsConfluencePageContentWithTableWithoutColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"3*\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "| Column C\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
+    public void renderConfluencePage_asciiDocWithTableWithColumnStylesOnly_returnsConfluencePageContentWithTableWithoutColumnWidths() {
+        // arrange
+        String adocContent = "[cols=\"<,^\"]\n" +
+                "|===\n" +
+                "| Column A\n" +
+                "| Column B\n" +
+                "|===";
+
+        // act
+        AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
+
+        // assert
+        String expectedContent = "<table><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        assertThat(asciidocConfluencePage.content(), is(expectedContent));
+    }
+
+    @Test
     public void renderConfluencePage_asciiDocWithNoteContent_returnsConfluencePageContentWithInfoMacroWithContent() {
         // arrange
         String adocContent = "[NOTE]\n" +

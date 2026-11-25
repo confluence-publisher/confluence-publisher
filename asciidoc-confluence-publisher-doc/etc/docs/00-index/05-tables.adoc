@@ -192,6 +192,82 @@ a|
 * A4
 |===
 
+== Table with Column Widths
+
+The relative width of the columns of a table can be configured using the `cols` attribute, either as proportional
+values (e.g. `cols="1,3"`) or as percentage values (e.g. `cols="25%,75%"`). In both cases, the column widths are
+published as percentage values relative to the width of the table.
+
+[NOTE]
+====
+Column widths are only published if at least one column width is defined explicitly. If the `cols` attribute only
+defines the number of columns (e.g. `cols="2"` or `cols="2*"`), or if the `%autowidth` option is set on the table, the
+columns are sized by Confluence based on their content. Individual columns can be sized based on their content using
+`~` as column width (e.g. `cols="25%,~"`).
+====
+
+[NOTE]
+====
+Confluence Cloud only applies relative column widths to tables with a known width. Therefore, tables defining column
+widths without defining a `width` are published with the default table width of Confluence Cloud (760 pixels). This
+default table width is ignored by Confluence Server / Data Center, where the width of such tables is still determined by
+their content.
+====
+
+[listing]
+....
+[cols="1,3", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+....
+
+[cols="1,3", options="header"]
+|===
+| Column 1
+| Column 2
+
+| A1
+| A2
+
+| B1
+| B2
+|===
+
+Column widths can be combined with the `width` attribute of the table:
+
+[listing]
+....
+[cols="20%,30%,50%", width="100%", options="header"]
+|===
+| Column 1
+| Column 2
+| Column 3
+
+| A1
+| A2
+| A3
+|===
+....
+
+[cols="20%,30%,50%", width="100%", options="header"]
+|===
+| Column 1
+| Column 2
+| Column 3
+
+| A1
+| A2
+| A3
+|===
+
 == Table with Width
 
 Tables can be configured with a specific width using the `width` attribute. This allows to control the horizontal space the table occupies.

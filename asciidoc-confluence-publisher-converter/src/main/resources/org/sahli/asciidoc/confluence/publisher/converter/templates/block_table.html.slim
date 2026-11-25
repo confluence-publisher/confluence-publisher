@@ -2,6 +2,10 @@
   - if title?
     caption.title =captioned_title
   - unless (attr :rowcount).zero?
+    - if column_widths_defined?
+      colgroup
+        - columns.each do |column|
+          col style=column_width_style(column)
     - [:head, :foot, :body].reject { |tblsec| rows[tblsec].empty? }.each do |tblsec|
       *{tag: %(t#{tblsec})}
         - rows[tblsec].each do |row|

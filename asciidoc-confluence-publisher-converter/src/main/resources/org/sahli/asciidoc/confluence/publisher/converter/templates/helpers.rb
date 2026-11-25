@@ -137,6 +137,47 @@ module Slim::Helpers
   end
 
   #--------------------------------------------------------
+  # block_table
+  #
+
+  # Matches a single column specifier of the cols attribute, capturing its
+  # width (if any), e.g. "3", "2*", "<.^20%", "3*>2a" or "~".
+  COLUMN_SPEC_RX = /^(?:\d+\*)?(?:[<^>](?:\.[<^>])?|(?:[<^>]\.)?[<^>])?(\d+%?|~)?[a-z]?$/
+
+  ##
+  # Determines whether the cols attribute of the table defines at least one
+  # column width (e.g. cols="1,3" or cols="20%,80%"), as opposed to only
+  # defining the number of columns (e.g. cols="2" or cols="2*") or not being
+  # set at all. Column widths are only published to Confluence if they have
+  # been defined explicitly, as Confluence otherwise sizes the columns of a
+  # table based on their content.
+  #
+  # @return [Boolean] +true+ if at least one column width is defined, +false+ otherwise.
+  #
+  def column_widths_defined?
+    return false if option? 'autowidth'
+
+    cols = (attr 'cols').to_s.strip
+    return false if cols.empty? || cols.match?(/^\d+$/)
+
+    cols.split(cols.include?(',') ? ',' : ';').any? do |column_spec|
+      match = COLUMN_SPEC_RX.match(column_spec.strip)
+      match && match[1] && match[1] != '~'
+    end
+  end
+
+  ##
+  # Returns the style defining the relative width of the given table column.
+  #
+  # @param column [Asciidoctor::Table::Column] the table column.
+  # @return [String, nil] the width style in percent, or +nil+ if the width of
+  #   the column is determined by its content (autowidth).
+  #
+  def column_width_style(column)
+    %(width: #{column.attr 'colpcwidth'}%;) unless column.option? 'autowidth'
+  end
+
+  #--------------------------------------------------------
   # block_listing
   #
 

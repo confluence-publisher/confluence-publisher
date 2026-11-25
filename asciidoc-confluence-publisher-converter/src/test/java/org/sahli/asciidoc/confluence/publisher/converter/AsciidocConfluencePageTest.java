@@ -1060,7 +1060,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<table><colgroup><col style=\"width: 25%;\" /><col style=\"width: 75%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col style=\"width: 75%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1078,7 +1078,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<table><colgroup><col style=\"width: 20%;\" /><col style=\"width: 30%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 20%;\" /><col style=\"width: 30%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1095,7 +1095,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<table><colgroup><col style=\"width: 50%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 50%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
@@ -1113,12 +1113,12 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<table><colgroup><col style=\"width: 25%;\" /><col style=\"width: 25%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col style=\"width: 25%;\" /><col style=\"width: 50%;\" /></colgroup><tbody><tr><td>Column A</td><td>Column B</td><td>Column C</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 
     @Test
-    public void renderConfluencePage_asciiDocWithTableWithColumnWidthsAndTableWidth_returnsConfluencePageContentWithTableWithWidthAndRelativeColumnWidths() {
+    public void renderConfluencePage_asciiDocWithTableWithColumnWidthsAndTableWidth_returnsConfluencePageContentWithTableWithWidthAndRelativeColumnWidthsButWithoutDefaultTableWidth() {
         // arrange
         String adocContent = "[cols=\"1,3\", width=\"100%\"]\n" +
                 "|===\n" +
@@ -1147,7 +1147,7 @@ public class AsciidocConfluencePageTest {
         AsciidocConfluencePage asciidocConfluencePage = newAsciidocConfluencePage(asciidocPage(prependTitle(adocContent)), UTF_8, TEMPLATES_FOLDER, dummyAssetsTargetPath());
 
         // assert
-        String expectedContent = "<table><colgroup><col style=\"width: 25%;\" /><col /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
+        String expectedContent = "<table data-table-width=\"760\" data-layout=\"default\"><colgroup><col style=\"width: 25%;\" /><col /></colgroup><tbody><tr><td>Column A</td><td>Column B</td></tr></tbody></table>";
         assertThat(asciidocConfluencePage.content(), is(expectedContent));
     }
 

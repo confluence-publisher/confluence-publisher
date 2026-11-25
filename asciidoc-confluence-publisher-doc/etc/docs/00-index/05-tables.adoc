@@ -208,8 +208,10 @@ columns are sized by Confluence based on their content. Individual columns can b
 
 [NOTE]
 ====
-Column widths are honoured by Confluence Server / Data Center. The new Confluence Cloud editor might apply its own
-column sizing logic instead.
+Confluence Cloud only applies relative column widths to tables with a known width. Therefore, tables defining column
+widths without defining a `width` are published with the default table width of Confluence Cloud (760 pixels). This
+default table width is ignored by Confluence Server / Data Center, where the width of such tables is still determined by
+their content.
 ====
 
 [listing]

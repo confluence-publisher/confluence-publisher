@@ -1,4 +1,4 @@
-*{tag: %(table), style: (attr?("width") ? "width: #{attr "width"}" : nil)}
+*{tag: %(table), style: (attr?("width") ? "width: #{attr "width"}" : nil), "data-table-width": default_table_width, "data-layout": (default_table_width ? "default" : nil)}
   - if title?
     caption.title =captioned_title
   - unless (attr :rowcount).zero?

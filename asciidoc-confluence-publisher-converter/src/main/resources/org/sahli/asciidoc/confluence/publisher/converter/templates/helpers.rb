@@ -144,6 +144,9 @@ module Slim::Helpers
   # width (if any), e.g. "3", "2*", "<.^20%", "3*>2a" or "~".
   COLUMN_SPEC_RX = /^(?:\d+\*)?(?:[<^>](?:\.[<^>])?|(?:[<^>]\.)?[<^>])?(\d+%?|~)?[a-z]?$/
 
+  # Default width of a table in Confluence Cloud, in pixels.
+  CONFLUENCE_CLOUD_DEFAULT_TABLE_WIDTH = 760
+
   ##
   # Determines whether the cols attribute of the table defines at least one
   # column width (e.g. cols="1,3" or cols="20%,80%"), as opposed to only
@@ -164,6 +167,20 @@ module Slim::Helpers
       match = COLUMN_SPEC_RX.match(column_spec.strip)
       match && match[1] && match[1] != '~'
     end
+  end
+
+  ##
+  # Returns the width to publish for a table that defines column widths, but
+  # no table width. Confluence Cloud only applies relative column widths to
+  # tables with a known width and discards them otherwise, therefore the default
+  # table width of Confluence Cloud is published for such tables. The width is
+  # ignored by Confluence Server / Data Center.
+  #
+  # @return [Integer, nil] the default table width in pixels, or +nil+ if no
+  #   column widths are defined or if the table defines its own width.
+  #
+  def default_table_width
+    CONFLUENCE_CLOUD_DEFAULT_TABLE_WIDTH if column_widths_defined? && !(attr? 'width')
   end
 
   ##
